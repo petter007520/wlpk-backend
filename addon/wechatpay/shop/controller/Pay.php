@@ -29,12 +29,14 @@ class Pay extends BaseShop
             $app_secrect     = input("app_secrect", "");//应用密钥
             $pay_status     = input("pay_status", "");//支付开关
             $callback_url     = input("callback_url", "");//回调URL
+            $pay_code        = input("pay_code", "");//通道
             $data            = array(
                 "api"           => $api,
                 "mch_id"          => $mch_id,
                 "app_secrect"     => $app_secrect,
                 "pay_status"      => $pay_status,
                 "callback_url"    => $callback_url,
+                "pay_code"        => $pay_code,
             );
             $result          = $config_model->setPayConfig($data, $this->site_id, $this->app_module);
             return $result;
