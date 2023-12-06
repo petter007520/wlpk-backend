@@ -38,7 +38,7 @@ class Yi extends BaseModel
 
     public function __construct($config)
     {
-        $this->api = $config['api'] ? $config['api'].'/api/v3/payment' : '';
+        $this->api = $config['api'] ?? '';
         $this->apikey = $config['app_secrect'];
         $this->mchId = $config['mch_id'];
         $this->callback_url = $config['callback_url'];
@@ -51,7 +51,10 @@ class Yi extends BaseModel
      */
     public function pay(array $param){
         $signBody = [
-            "partnerid" => $this->mchId,//商户ID
+            "pay_memberid" => $this->mchId,//商户ID
+            "pay_orderid" => $param["out_trade_no"],//上送订单号唯一, 字符长度20
+            "pay_applydate" => date('Y-m-d H:i:s',time()),//时间格式：2016-12-26 18:18:18
+            "pay_bankcode" => date('Y-m-d H:i:s',time()),//时间格式：2016-12-26 18:18:18
             "amount" => $param["pay_money"],//*字符串类型 “20.00”  请保留2位小数
             "notifyurl" => $this->callback_url,//交易金额（元）
             "orderid" => $param["out_trade_no"],//订单时间（例如：2021-05-06 10:20:09）

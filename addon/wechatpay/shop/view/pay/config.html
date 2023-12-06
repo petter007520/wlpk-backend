@@ -22,7 +22,15 @@
 		<div class="layui-input-block">
 			<input name="mch_id" type="text" value="{$info.value.mch_id ?? ''}" class="layui-input len-long" lay-verify="required">
 		</div>
-		<div class="word-aux"><span>[MCHID]</span>Yipay商户名</div>
+		<div class="word-aux"><span>[MCHID]</span>商户名</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">通道编码：</label>
+		<div class="layui-input-block">
+			<input name="pay_code" type="text" value="{$info.value.pay_code ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[PAYCODE]</span>通道吗</div>
 	</div>
 
 	<div class="layui-form-item">
