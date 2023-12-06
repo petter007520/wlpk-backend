@@ -1,0 +1,375 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	/*时间选择*/
+	.time-screen .screen{display: flex}
+	.time-screen .screen .item {height: 32px;line-height: 32px;padding: 0 20px;border: 1px solid #D2D2D2;cursor: pointer;border-right: none;border-left: none;position: relative}
+	.time-screen .screen .item:after{content: '';position: absolute;top: -1px;left: 0;bottom: -1px;right: -1px;border-right: 1px solid #D2D2D2;border-left: 1px solid #D2D2D2;}
+	.time-screen .screen .selected,.time-screen .item:hover{color: #fff;background: var(--base-color);border-color: var(--base-color) }
+	.time-screen .screen .selected:after, .time-screen .item:hover:after {border-right: 1px solid var(--base-color);border-left: 1px solid var(--base-color);}
+
+	.data-wrap {display: flex;margin-top: 15px;}
+	.data-wrap .data-item {flex: 1;display: flex}
+	.data-wrap .data-item .box {flex: 1;margin-right: 15px;border: 1px solid #eee;box-sizing: border-box;padding: 15px;cursor: pointer}
+	.data-wrap .data-item:last-child .box {margin-right: 0}
+	.data-wrap .data-item .js-prompt-top {color:#C8C9CC;font-size:14px;z-index:999;cursor:pointer;}
+	.data-wrap .data-item .info {font-size: 12px;color: #999;}
+	.data-wrap .info .iconfont {font-size: 12px;}
+	.data-wrap .data-item .text-color-green {color: #00A717}
+	.data-wrap .data-item .text-color-red {color: #ff0000}
+	.data-wrap .data-item.selected .box {border-color: var(--base-color);color: var(--base-color);}
+	.data-wrap .data-item .data {display: flex;justify-content: space-between;align-items: end;font-size: 14px;color: #999;margin-top: 15px}
+	.statistics-wrap {position: relative}
+	.statistics-wrap .loading {background: rgba(255,255,255,.5);position: absolute;left: 0; top: 0;text-align: center;width: 100%;height: 100%;box-sizing: border-box;padding-top: 100px;display: none}
+	.statistics-wrap .loading i {font-size: 25px}
+
+	.layui-layer-content .layui-form-label {width: 100px}
+	.echart {margin-top: 15px}
+	.echart-wrap {margin-top: 30px;display: flex;}
+	.echart-wrap .main {flex: 1;height: 400px}
+	.echart-wrap .main:nth-child(2) {margin-left: 15px}
+
+	.stat-board {display: flex;margin-top: 15px}
+	.stat-board .board-title {color:#fff;display: flex;flex-direction: column;align-items: center;justify-content: center;width: 100px;height: 120px;}
+	.stat-board .board-title .iconfont{color: #fff;font-size: 36px;margin-bottom: 10px;}
+	.stat-board.visit{background: #f3f8ff;}
+	.stat-board.order{background: #fffaf3;}
+	.stat-board.visit .board-title {background: #177bff;}
+	.stat-board.order .board-title {background: #ff9f15;}
+	.stat-board .board-item {display: flex;flex-direction: column;justify-content: center;padding: 0 50px;width: 15%}
+	.stat-board .board-item .title {font-size: 14px;}
+	.stat-board .board-item .value {font-size: 26px;margin: 8px 0;}
+	.stat-board .board-item .ratio {font-size: 12px;color: #999;line-height: 1}
+	.stat-board .board-item .iconfont {font-size: 12px}
+	.stat-board .board-item .rise {color: #f97337}
+	.stat-board .board-item .decline {color: #0cc361}
+	.date-input{width: 300px}
+</style>
+{/block}
+{block name="main"}
+<div class="main-wrap">
+	<div class="time-screen statistics">
+		<div class="screen">
+			<div class="item selected" date-type="today">今日</div>
+			<div class="item" date-type="yesterday">昨日</div>
+			<div class="item" date-type="seven">7日内</div>
+			<div class="item" date-type="thirty">30日内</div>
+			<div class="item" date-type="custom">自定义</div>
+		</div>
+	</div>
+	<div class="statistics-wrap">
+		<div class="data-wrap">
+			<div class="data-item selected" data-value="visit_count">
+				<div class="box">
+					<div class="title">
+						<span class="title-text">全部</span>
+						<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，全部端口总的访客人数"></span>
+					</div>
+					<div class="data">
+						<div class="name">访客数</div>
+						<div class="value" data-type="num">0</div>
+					</div>
+				</div>
+			</div>
+			<div class="data-item" data-value="h5_visit_count">
+				<div class="box">
+					<div class="title">
+						<span class="title-text">H5</span>
+						<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，H5端的访客人数"></span>
+					</div>
+					<div class="data">
+						<div class="name">访客数</div>
+						<div class="value" data-type="num">0</div>
+					</div>
+				</div>
+			</div>
+			<div class="data-item" data-value="weapp_visit_count">
+				<div class="box">
+					<div class="title">
+						<span class="title-text">小程序</span>
+						<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，微信小程序端的访客人数"></span>
+					</div>
+					<div class="data">
+						<div class="name">访客数</div>
+						<div class="value" data-type="num">0</div>
+					</div>
+				</div>
+			</div>
+			<div class="data-item" data-value="wechat_visit_count">
+				<div class="box">
+					<div class="title">
+						<span class="title-text">公众号</span>
+						<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，微信公众号端的访客人数"></span>
+					</div>
+					<div class="data">
+						<div class="name">访客数</div>
+						<div class="value" data-type="num">0</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="loading">
+			<i class="common-loading-layer layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>
+		</div>
+	</div>
+
+	<div class="echart-wrap">
+		<div class="main" id="main"></div>
+	</div>
+</div>
+
+<div class="stat-board visit">
+	<div class="board-title">
+		<i class="iconfont iconyonghu3"></i>
+		<div>浏览访问</div>
+	</div>
+	<div class="board-item">
+		<div class="title">访客数(人)</div>
+		<div class="value">{$stat_today.visit_count}</div>
+		{if $day_rate.visit_count < 0}
+		<div class="ratio">比前日<i class="iconfont iconxia--jiantou decline"></i><span class="decline">{$day_rate.visit_count}</span></div>
+		{else/}
+		<div class="ratio">比前日<i class="iconfont iconshang--jiantou rise"></i><span class="rise">{$day_rate.visit_count}</span></div>
+		{/if}
+	</div>
+	<div class="board-item">
+		<div class="title">新增会员数(人)</div>
+		<div class="value">{$stat_today.member_count}</div>
+		{if $day_rate.member_count < 0}
+		<div class="ratio">比前日<i class="iconfont iconxia--jiantou decline"></i><span class="decline">{$day_rate.member_count}</span></div>
+		{else/}
+		<div class="ratio">比前日<i class="iconfont iconshang--jiantou rise"></i><span class="rise">{$day_rate.member_count}</span></div>
+		{/if}
+	</div>
+</div>
+
+<div class="stat-board order">
+	<div class="board-title">
+		<i class="iconfont iconyingxiaozhongxin"></i>
+		<div>成交转化</div>
+	</div>
+	<div class="board-item">
+		<div class="title">支付人数(人)</div>
+		<div class="value">{$stat_today.order_member_count}</div>
+		{if $day_rate.order_member_count < 0}
+		<div class="ratio">比前日<i class="iconfont iconxia--jiantou decline"></i><span class="decline">{$day_rate.order_member_count}</span></div>
+		{else/}
+		<div class="ratio">比前日<i class="iconfont iconshang--jiantou rise"></i><span class="rise">{$day_rate.order_member_count}</span></div>
+		{/if}
+	</div>
+	<div class="board-item">
+		<div class="title">访问-支付转化率(%)</div>
+		<div class="value">{$stat_today.conversion_ratio}</div>
+		{if $day_rate.conversion_ratio < 0}
+		<div class="ratio">比前日<i class="iconfont iconxia--jiantou decline"></i><span class="decline">{$day_rate.conversion_ratio}</span></div>
+		{else/}
+		<div class="ratio">比前日<i class="iconfont iconshang--jiantou rise"></i><span class="rise">{$day_rate.conversion_ratio}</span></div>
+		{/if}
+	</div>
+</div>
+
+<script type="text/html" id="custom-box">
+	<div class="layui-form-item">
+		<div class="layui-inline">
+			<label class="layui-form-label">选择时间：</label>
+
+			<div class="layui-inline layui-inline-margin" id="time_fission">
+				<div class="layui-input-inline">
+					<input type="text" id="date" name="date" autocomplete="off" class="layui-input date-input" placeholder="请选择日期">
+					<i class="iconfont iconriqi"></i>
+				</div>
+			</div>
+			<input type="hidden" name="start_time" value="">
+			<input type="hidden" name="end_time" value="">
+		</div>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script src="SHOP_JS/echarts.min.js"></script>
+<script>
+	$('.time-screen.statistics .item').click(function () {
+		// if ($(this).hasClass('selected')) return;
+
+		var type = $(this).attr('date-type'),
+				self = this;
+		if (type != 'custom') $(this).addClass('selected').siblings().removeClass('selected');
+
+		switch (type) {
+			case 'today':
+				var time = {
+					start_time: (new Date('{$today} 00:00:00')).getTime() / 1000,
+					end_time: (new Date('{$today} 23:59:59')).getTime() / 1000,
+				}
+				getShopStatistics(time);
+				getShopStatData(time, 'hour');
+				break;
+			case 'yesterday':
+				var time = {
+					start_time: (new Date('{$yesterday} 00:00:00')).getTime() / 1000,
+					end_time: (new Date('{$yesterday} 23:59:59')).getTime() / 1000,
+				}
+				getShopStatistics(time);
+				getShopStatData(time, 'hour');
+				break;
+			case 'seven':
+				var dateObj = new Date(Date.now() - 604800000);
+				var date = dateObj.getFullYear() + '-' + (dateObj.getMonth() + 1) + '-' + dateObj.getDate();
+				getShopStatistics({start_time: new Date(date).getTime() / 1000});
+				getShopStatData({start_time: new Date(date).getTime() / 1000}, 'day');
+				break;
+			case 'thirty':
+				var dateObj = new Date(Date.now() - 2592000000);
+				var date = dateObj.getFullYear() + '-' + (dateObj.getMonth() + 1) + '-' + dateObj.getDate();
+				getShopStatistics({start_time: new Date(date).getTime() / 1000});
+				getShopStatData({start_time: new Date(date).getTime() / 1000}, 'day');
+				break;
+			case 'custom':
+				var _layer = layer.open({
+					title: '自定义时间选择',
+					type: 1,
+					area: ['480px', '160px'], //自定义文本域宽高
+					btn: ['确认', '取消'],
+					content: $('#custom-box').html(),
+					success: function (layero, index) {
+						new LayDate({
+							elem: '#date',
+							type: 'datetime',
+							rangeId:['start_time','end_time'],
+							max: '{:date("Y-m-d")}',
+							done: function(value, date, endDate){
+								var time_arr = value.split(' - ');
+								var start_time = time_arr[0];
+								var end_time = time_arr[1];
+								$('input[name="start_time"]').val(time_arr[0]);
+								$('input[name="end_time"]').val(time_arr[1]);
+							}
+						});
+					},
+					yes: function () {
+						var start_time = $('input[name="start_time"]').val();
+						var end_time = $('input[name="end_time"]').val();
+						if (start_time == ''){
+							layer.msg('请选择时间');
+							return;
+						}
+						var time = {
+							start_time: (new Date(start_time)).getTime() / 1000,
+							end_time: (new Date(end_time)).getTime() / 1000
+						};
+						getShopStatistics(time);
+						getShopStatData(time, 'day');
+						$(self).addClass('selected').siblings().removeClass('selected');
+						layer.close(_layer);
+					}
+				})
+				break;
+		}
+	})
+
+	/**
+	 * 获取统计数据
+	 * */
+	function getShopStatistics(data) {
+		$('.statistics-wrap .loading').show();
+		$.ajax({
+			dataType: "JSON",
+			type: "POST",
+			data: data,
+			url: ns.url("shop/stat/getstattotal"),
+			success: function(res){
+				$('.statistics-wrap .loading').hide();
+				if (res.code == 0) {
+					Object.keys(res.data).forEach(function (key) {
+						var type = $('[data-value="'+ key +'"] .value').attr('data-type');
+						var value = type == 'money' ? moneyFormat(res.data[key]) : parseInt(res.data[key]);
+						$('[data-value="'+ key +'"] .value').text(value);
+					})
+				}
+			}
+		})
+	}
+	getShopStatistics({});
+
+	/**
+	 * 获取趋势数据
+	 * */
+	var statData = [];
+	function getShopStatData(data, type) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: type == 'hour' ? ns.url("shop/stat/getstathourdata") : ns.url("shop/stat/getStatData"),
+			data: data,
+			success: function(res) {
+				statData = res;
+				fetchEchart();
+			}
+		});
+	}
+	getShopStatData({}, 'hour');
+
+	// 图表
+	var baseColor = getComputedStyle(document.documentElement).getPropertyValue('--base-color');
+	var myChart = echarts.init(document.getElementById('main'));
+	var option = {
+		tooltip: {
+			trigger: 'axis'
+		},
+		legend: {
+			data: ['新增商品数'],
+			textStyle: {
+				fontSize: 14,
+				color: "#000"
+			}
+		},
+		grid: {
+			left: '4%',
+			right: '4%'
+		},
+		xAxis: {
+			type: 'category',
+			boundaryGap: false,
+			data: []
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value} '
+			},
+			splitLine:{
+				show:false
+			},
+		},
+		color: [baseColor],
+		series: [
+			{
+				name: '新增商品数',
+				type: 'line',
+				smooth: true,
+				data: [],
+			}
+		]
+	};
+
+	/**
+	 * 渲染echart图表
+	 */
+	function fetchEchart() {
+		var key = $('.statistics-wrap .data-item.selected').attr('data-value');
+		option.xAxis.data = statData.time;
+		option.legend.data[0] = $('.statistics-wrap .data-item.selected .title-text').text();
+		option.series[0].name = $('.statistics-wrap .data-item.selected .title-text').text();
+		option.series[0].data = statData[key];
+		myChart.setOption(option);
+	}
+
+	$('.statistics-wrap .data-item').click(function () {
+		if ($(this).hasClass('selected')) return;
+		$('.statistics-wrap .data-item').removeClass('selected');
+		$(this).addClass('selected');
+		fetchEchart();
+	})
+</script>
+{/block}

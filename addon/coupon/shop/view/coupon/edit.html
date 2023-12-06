@@ -1,0 +1,848 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.discount {
+		display: flex;
+		justify-content: space-between;
+		height: 34px;
+		line-height: 34px;
+		padding: 5px 15px;
+		background-color: #F6FBFD;
+		border: 1px dashed #BCE8F1;
+	}
+
+	.exchange-type {
+		padding: 0 20px;
+		position: relative;
+	}
+	.exchange-type i{position: absolute;bottom: -10px;right: -1px;display: none;}
+	.exchange-type.border-color i{display: block;}
+
+	.form-wrap {
+		position: relative;
+	}
+
+	.custom-right {
+		position: absolute;
+		top: 150px;
+		left: 900px;
+		padding: 20px 0;
+		box-sizing: border-box;
+		overflow: hidden;
+		background-color: #fff;
+		height: 670px;
+		width: 600px;
+	}
+
+	.custom-right .phone {
+		min-width: 280px;
+		height: 650px;
+		background: url(__STATIC__/img/quan.png) no-repeat center;
+		background-size: contain;
+		position: relative;
+		overflow: auto;
+		padding-top: 30px;
+		box-sizing: border-box;
+	}
+
+	.custom-right .phone h2 {
+		position: absolute;
+		left: 250px;
+		top: 80px;
+	}
+
+	.item {
+		position: absolute;
+		top: 100px;
+		left: 165px;
+		width: 274px;
+		height: 100px;
+		display: flex;
+		background: url(__STATIC__/img/quan_bj.png) no-repeat center;
+		border-radius: 10px;
+		align-items: stretch;
+		overflow: hidden;
+		font-size: 13px;
+	}
+
+	.item-base {
+		position: relative;
+		width: 65px;
+		min-width: 65px;
+		text-align: center;
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+		padding: 10px 10px 0 10px;
+	}
+
+	.item-base p {
+		display: inline-block;
+	}
+
+	.item .item-base .aaa {
+		height: auto;
+		position: relative;
+		top: 50%;
+		right: 5px;
+		transform: translate(0, -50%);
+	}
+
+	.item-info {
+		margin: 0 20px 0 0;
+		width: 100px;
+	}
+
+	.use_price {
+		line-height: 1;
+		color: #fff;
+	}
+
+	.use_condition {
+		color: #fff;
+		margin-top: 15px;
+		font-size: 12px;
+	}
+
+	.use_title {
+		margin-top: 10px !important;
+	}
+
+	.item-btn {
+		width: 50px;
+		min-width: 50px;
+		align-self: center;
+		position: relative;
+	}
+
+	.item-btn .btn {
+		font-size: 12px;
+		width: 40px;
+		height: 24px;
+		border-radius: 20px;
+		line-height: 24px;
+		margin-left: 20px;
+		text-align: center;
+		background-image: linear-gradient(to right, #fc6831, #ff4544);
+		color: #fff;
+	}
+
+	.max_price {
+		margin: 5px 0;
+		padding-bottom: 5px;
+		border-bottom: 1px dashed #d7d2d1;
+		font-size: 12px;
+	}
+
+	.use_time span {
+		display: inline-block;
+		font-size: 12px;
+		color: #909399;
+	}
+
+	.priceaaaa {
+		font-size: 16px;
+	}
+
+	.thistitle {
+		font-size: 14px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse tips-wrap">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>满减活动包括店铺所有商品，活动时间不能和已有活动重叠</li>
+			<li>每添加一个规则都需点击确定规则设置按钮，生成一条规则，提交之后才可成功添加</li>
+			<li>点击确定规则设置按钮生成的规则都有一个删除按钮，如不需要该条规则点击删除按钮即可删除</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form form-wrap">
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>优惠券名称：</label>
+		<div class="layui-input-block">
+			<input type="text" name="coupon_name" value="{$coupon_type_info.coupon_name}" lay-verify="required" autocomplete="off" class="layui-input len-long" maxlength="15">
+		</div>
+	</div>
+
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">优惠券类型：</label>
+			<div class="layui-input-block">
+				<button class="layui-btn layui-btn-primary exchange-type {if $coupon_type_info.type == 'reward'} border-color {/if}" data-status="reward">满减<i class="iconfont iconxuanzhong text-color"></i></button>
+				<button class="layui-btn layui-btn-primary exchange-type {if $coupon_type_info.type == 'discount'} border-color {/if}" data-status="discount">折扣<i class="iconfont iconxuanzhong text-color"></i></button>
+				<input type="hidden" name="type" value="{$coupon_type_info.type}">
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item" id="coupon_type">
+		{if $coupon_type_info.type == 'reward'}
+		<label class="layui-form-label"><span class="required">*</span>优惠券面额：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="money" value="{$coupon_type_info.money}" lay-verify="required|number|money|coupon_money" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">元</span>
+		</div>
+		<div class="word-aux">
+			<p>价格不能小于0，可保留两位小数</p>
+		</div>
+		{else /}
+		<label class="layui-form-label"><span class="required">*</span>优惠券折扣：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="discount" min="1" value="{$coupon_type_info.discount}" lay-verify="required|fl" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">折</span>
+		</div>
+		<div class="word-aux">
+			<p>优惠券折扣不能小于1折，且不可大于9.9折，可保留两位小数</p>
+		</div>
+		{/if}
+	</div>
+
+	{if $coupon_type_info.type == 'discount'}
+	<div class="layui-form-item discount_limit">
+		<label class="layui-form-label">最多优惠：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="discount_limit" min=0 value="{$coupon_type_info.discount_limit}" lay-verify="number|int" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">元</span>
+		</div>
+	</div>
+	{/if}
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>满多少元可以使用：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="at_least" value="{$coupon_type_info.at_least}" lay-verify="required|number|money" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">元</span>
+		</div>
+		<div class="word-aux">
+			<p>价格不能小于0，可保留两位小数</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否允许直接领取：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_show" min=0 lay-filter="is_show" value="1" lay-skin="switch" {if condition="$coupon_type_info.is_show == 1" }checked{/if} />
+		</div>
+	</div>
+
+	<div class="receive-limit" {if $coupon_type_info.is_show eq 0}style="display:none;"{/if}>
+		<div class="layui-form-item">
+			<label class="layui-form-label"><span class="required">*</span>发放数量：</label>
+			<div class="layui-input-block">
+				<div class="layui-input-inline">
+					<input type="number" name="count" min=0 value="{$coupon_type_info.count}" lay-verify="count" autocomplete="off" class="layui-input len-short" {if $coupon_type_info.count == -1}disabled style="cursor:not-allowed"{/if}>
+				</div>
+				<span class="layui-form-mid">张</span>
+			</div>
+			<div class="word-aux">
+				<p>优惠券发放数量，没有之后不能领取或发放，-1为不限制发放数量,发放数量只能增加不能减少。</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label"><span class="required">*</span>最大领取数量：</label>
+			<div class="layui-input-block">
+				<div class="layui-input-inline">
+					<input type="number" name="max_fetch" min=0 value="{$coupon_type_info.max_fetch}" lay-verify="max" autocomplete="off" class="layui-input len-short">
+				</div>
+				<span class="layui-form-mid">张</span>
+			</div>
+			<div class="word-aux">
+				<p>数量不能小于0，且必须为整数；设置为0时，可无限领取</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">优惠券图片：</label>
+		<div class="layui-input-block img-upload">
+			<div class="upload-img-block">
+				<div class="upload-img-box {notempty name=" $coupon_type_info['image']"}hover{/notempty}">
+					<div class="upload-default " id="couponImg">
+						{if condition="$coupon_type_info.image"}
+						<div id="preview_couponImg" class="preview_img">
+							<img layer-src src="{:img($coupon_type_info.image)}" class="img_prev" />
+						</div>
+						{else/}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{/if}
+					</div>
+					<div class="operation">
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" class="layui-input" name="image" value="{$coupon_type_info.image}" />
+				</div>
+			</div>
+		</div>
+		<div class="word-aux">
+			<p>建议尺寸：325*95像素，图片上传默认不限制大小</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">有效期类型：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="validity_type" value="0" lay-filter="filter" title="固定时间" {if condition="$coupon_type_info.validity_type == 0" }checked{/if}>
+			<input type="radio" name="validity_type" value="1" lay-filter="filter" title="领取之日起" {if condition="$coupon_type_info.validity_type == 1" }checked{/if}>
+			<input type="radio" name="validity_type" value="2" lay-filter="filter" title="长期有效" {if condition="$coupon_type_info.validity_type == 2" }checked{/if}>
+		</div>
+	</div>
+
+	<div class="layui-form-item end-time validity-type validity-type-0">
+		<label class="layui-form-label ">活动结束时间：</label>
+		<div class="layui-input-block">
+			<input type="text" name="end_time" value="{:date('Y-m-d H:i:s',$coupon_type_info.end_time)}" lay-verify="time" id="end_time" class="layui-input len-mid" readonly>
+		</div>
+	</div>
+
+	<div class="layui-form-item fixed-term validity-type validity-type-1">
+		<label class="layui-form-label">领取后几天有效：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="fixed_term" value="{$coupon_type_info.fixed_term}" lay-verify="days" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">天</span>
+		</div>
+		<div class="word-aux">
+			<p>不能小于0，且必须为整数</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>活动商品：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="goods_type" lay-filter="goods_type" value="1" title="全部商品参与" {if $coupon_type_info.goods_type==1} checked {/if}>
+			<input type="radio" name="goods_type" lay-filter="goods_type" value="2" title="指定商品参与" {if $coupon_type_info.goods_type==2} checked {/if}>
+		</div>
+	</div>
+
+	{if $coupon_type_info.goods_type == 1}
+	<div class="layui-form-item goods_list" style="display:none">
+	{else /}
+	<div class="layui-form-item goods_list">
+	{/if}
+		<label class="layui-form-label"></label>
+		<div class="layui-input-block">
+			<table id="selected_sku_list"></table>
+			<button class="layui-btn" onclick="addGoods()">选择商品</button>
+			<span class="goods_num">已选商品（<span id="goods_num" class="text-color">{$coupon_type_info.goods_list_count}</span>）</span>
+		</div>
+	</div>
+
+		<input type="hidden" name="goods_ids">
+
+		<div class="form-row">
+			<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+			<a id="imageId"></a>
+		</div>
+
+		<input type="hidden" name="site_id" value="{$coupon_type_info.site_id}" />
+		<input type="hidden" name="coupon_type_id" value="{$coupon_type_info.coupon_type_id}" />
+	</div>
+
+	<div class="custom-right">
+		<div class="phone">
+			<div class="item">
+				<div class="item-base">
+					<div class="aaa">
+						<div class="use_price">
+							<span class="priceaaaa">￥__</span>
+						</div>
+						<div class="use_condition font-size-tag">满<span class="use_price2">__</span>元可用</div>
+					</div>
+				</div>
+				<div class="item-info">
+					<div class="use_title">
+						<div class="thistitle">{$coupon_type_info.coupon_name}</div>
+						<div class="max_price">全场商品</div>
+					</div>
+					<div class="use_time">
+						<span class="time-aaa validity-type validity-type-0">有效期：</span>
+						<span style="display: none;" class="time-bbb validity-type validity-type-1">有效期：领取之日起10天内有效</span>
+						<span class="validity-type validity-type-2" style="display: none;">有效期：长期有效</span>
+					</div>
+				</div>
+				<div class="item-btn">
+					<div class="btn">领取</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 操作 -->
+	<script type="text/html" id="operation">
+		<div class="table-btn">
+			<a class="layui-btn" onclick="delGoods({{d.goods_id}})">删除</a>
+		</div>
+	</script>
+	{/block}
+	{block name="script"}
+	<script>
+		var validity_type = $("input[name='validity_type']:checked").val();
+		var saveData = null;
+		var totalUploadNum = 0;
+		var completeUploadNum = 0;
+		var upload;
+
+		$('.validity-type').hide();
+		$('.validity-type-' + validity_type).show();
+
+		var delRule, selectedGoodsId = [],
+			goods_id = [],
+			table;
+		var goods_list = {:json_encode($coupon_type_info.goods_list, JSON_UNESCAPED_UNICODE)};
+
+		$("body").on("change", 'input[name="money"]', function() {
+			let aa = $('input[name="money"]').val();
+			$('.priceaaaa').html('￥' + aa)
+		});
+
+		$("body").on("change", 'input[name="discount"]', function() {
+			let bb = $('input[name="discount"]').val();
+			$('.pricebbbb').html(bb + ' 折 ')
+		});
+
+		$('input[name="at_least"]').change(function() {
+			let cc = $('input[name="at_least"]').val();
+			$('.use_price2').html(cc)
+		})
+
+		$('input[name="fixed_term"]').change(function() {
+			var time_time = $('input[name="fixed_term"]').val();
+			$('.time-bbb').html('有效期：领取之日起' + time_time + '日内有效');
+		})
+
+		$("body").on("change", 'input[name="coupon_name"]', function() {
+			let dd = $('input[name="coupon_name"]').val();
+			$('.thistitle').html(dd)
+		});
+
+		$.each(goods_list, function(index, item) {
+			var id = item.goods_id;
+			selectedGoodsId.push(id);
+			goods_id.push(id);
+		});
+		$("input[name='goods_ids']").val(goods_id.toString());
+
+		layui.use(['form', 'laydate'], function() {
+			var form = layui.form,
+				laydate = layui.laydate,
+				repeat_flag = false, //防重复标识
+				currentDate = new Date();  //当前时间
+			form.render();
+
+			form.on('switch(is_show)', function (data) {
+				if ($(data.elem).is(':checked')) {
+					$('.receive-limit').show();
+				} else {
+					$('.receive-limit').hide();
+				}
+			})
+
+			// 时间模块
+			laydate.render({
+				elem: '#end_time', //指定元素
+				type: 'datetime',
+				// value: currentDate,
+				done: function(value, date, endDate) {
+					$('.time-aaa').html('有效期：' + value);
+				}
+			});
+
+			var date = new Date(currentDate);
+			var y = date.getFullYear();
+			var m = date.getMonth() + 1;
+			m = m < 10 ? ('0' + m) : m;
+			var d = date.getDate();
+			d = d < 10 ? ('0' + d) : d;
+			var h = date.getHours();
+			var minute = date.getMinutes();
+			var second = date.getSeconds();
+			minute = minute < 10 ? ('0' + minute) : minute;
+			let time = y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+			$('.time-aaa').html('有效期：' + time);
+			var time_time = $('input[name="fixed_term"]').val();
+			$('.time-bbb').html('有效期：领取之日起' + time_time + '日内有效');
+
+			renderTable(goods_list); // 初始化表格
+
+			//监听活动商品类型
+			form.on('radio(goods_type)', function(data) {
+				var value = data.value;
+
+				if (value == 1) {
+					$(".goods_list").hide();
+					$('.max_price').html('全场商品');
+				}
+				if (value == 2) {
+					$(".goods_list").show();
+					$('.max_price').html('指定商品');
+				}
+			});
+
+			// 监听单选按钮
+			form.on('radio(filter)', function(data) {
+				$('.validity-type').hide();
+				$('.validity-type-' + data.value).show();
+			});
+			/**
+			 * 表单验证
+			 */
+			form.verify({
+				days: function(value) {
+					var validity_type = $('[name="validity_type"]:checked').val();
+					if (validity_type == 1) {
+						if (value%1 != 0) {
+							return '请输入整数';
+						}
+						if (value <= 0) {
+							return '有效天数不能小于等于0';
+						}
+					}
+				},
+				number: function(value) {
+					if (value < 0) {
+						return '请输入不小于0的数!'
+					}
+				},
+				coupon_money: function (value) {
+					if(parseFloat(value) > 10000){
+						return '优惠券面额不能大于10000'
+					}
+				},
+				int: function(value) {
+					if (value % 1 != 0) {
+						return '请输入整数!'
+					}
+					if (value < 0) {
+						return '请输入大于0的数!'
+					}
+				},
+				money: function(value) {
+					var arrMen = value.split(".");
+					var val = 0;
+					if (arrMen.length == 2) {
+						val = arrMen[1];
+					}
+					if (val.length > 2) {
+						return '保留小数点后两位'
+					}
+				},
+				time: function(value) {
+					var validity_type = $('[name="validity_type"]:checked').val();
+					if (validity_type == 0) {
+						var now_time = (new Date()).getTime();
+						var end_time = (new Date(value)).getTime();
+						if (now_time > end_time) {
+							return '结束时间不能小于当前时间!'
+						}
+					}
+				},
+				max: function(value) {
+					if ($('[name="is_show"]').is(':checked')) {
+						if (!/[\S]+/.test(value)) {
+							return '请输入最大领取数量';
+						}
+						var _count = $("input[name=count]").val();
+						if (_count != -1 && parseFloat(value) > parseFloat(_count)) {
+							return '最大领取数量不能超过发放数量!';
+						}
+					}
+				},
+				fl: function(value, item) {
+					var str = $(item).parents(".layui-form-item").find("label").text().split("*").join(
+					"");
+					str = str.substring(0, str.length - 1);
+
+					if (value < 1) {
+						return str + "不能小于1折";
+					}
+
+					if (value > 9.9) {
+						return str + "不能大于9.9折";
+					}
+
+					var arrMen = value.split(".");
+					var val = 0;
+					if (arrMen.length == 2) {
+						val = arrMen[1];
+					}
+					if (val.length > 2) {
+						return str + "最多可保留两位小数";
+					}
+				},
+				count: function(value) {
+					if ($('[name="is_show"]').is(':checked')) {
+						if (!/[\S]+/.test(value)) {
+							return '请输入发放数量';
+						}
+						if (value % 1 != 0) {
+							return '请输入整数';
+						}
+						if (value == 0) {
+							return '发放数量不能为0';
+						}
+						if (value != -1 && parseInt(value) < parseInt('{$coupon_type_info.count}')) {
+							return '发放数量不能小于原发放数量!';
+						}
+					}
+				}
+			});
+
+			upload = new Upload({
+				elem: '#couponImg',
+				auto:false,
+				bindAction:'#imageId',
+				callback: function(res) {
+					uploadComplete('image', res.data.pic_path);
+				}
+			});
+
+			function uploadComplete(field, pic_path) {
+				saveData.field[field] = pic_path;
+				completeUploadNum += 1;
+				if(completeUploadNum == totalUploadNum){
+					saveFunc();
+				}
+			}
+
+			function saveFunc(){
+				var data = saveData;
+
+				// 删除图片
+				if (!data.field.image) upload.delete();
+				$.ajax({
+					url: ns.url("coupon://shop/coupon/edit"),
+					data: data.field,
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							layer.confirm('编辑成功', {
+								title: '操作提示',
+								btn: ['返回列表', '继续操作'],
+								yes: function() {
+									location.href = ns.url(
+											"coupon://shop/coupon/lists")
+								},
+								btn2: function() {
+									location.reload();
+								}
+							});
+						} else {
+							layer.msg(res.message);
+						}
+					}
+				});
+			}
+
+			/**
+			 * 监听提交
+			 */
+			form.on('submit(save)', function(data) {
+				if (data.field.goods_type != 1) {
+					if (data.field.goods_ids == '') {
+						layer.msg("请选择商品");
+						return;
+					}
+				}
+
+				if (repeat_flag) return;
+				repeat_flag = true;
+
+				let new_goods_ids = [];
+				goods_list.forEach((item,i)=>{
+					new_goods_ids.push(item.goods_id)
+				});
+				data.field.goods_ids = new_goods_ids.join(',');
+
+				saveData = data;
+				var obj = $("img.img_prev[data-prev='1']");
+				totalUploadNum = obj.length;
+				if(totalUploadNum > 0){
+					obj.each(function(){
+						var actionId = $(this).attr('data-action-id');
+						$(actionId).click();
+					})
+				}else{
+					saveFunc();
+				}
+			});
+
+			delRule = function(obj) {
+				$(obj).parent().parent().remove();
+			};
+
+			$(".exchange-type").click(function() {
+				$(this).addClass("border-color");
+				$(this).siblings("button").removeClass("border-color");
+
+				var type = $(this).attr('data-status');
+
+				var current_type = $("input[name='type']").val();
+				if (current_type == type) {
+					return false;
+				}
+
+				$("input[name='type']").val(type);
+
+				var html = '';
+				if (type == 'reward') {
+					html += '<label class="layui-form-label"><span class="required">*</span>优惠券面额：</label>' +
+						'<div class="layui-input-block">' +
+						'<div class="layui-input-inline">' +
+						'<input type="number" name="money" min="0" lay-verify="required|number|money" autocomplete="off" class="layui-input len-short">' +
+						'</div>' +
+						'<span class="layui-form-mid">元</span>' +
+						'</div>' +
+						'<div class="word-aux">' +
+						'<p>价格不能小于0，可保留两位小数</p>' +
+						'</div>';
+
+					$('.discount_limit').remove();
+					$("body").on("change", 'input[name="money"]', function() {
+						let aa = $('input[name="money"]').val();
+						$('.priceaaaa').html('￥' + aa)
+					});
+				}
+
+				if (type == 'discount') {
+					html += '<label class="layui-form-label"><span class="required">*</span>优惠券折扣：</label>' +
+						'<div class="layui-input-block">' +
+						'<div class="layui-input-inline">' +
+						'<input type="number" name="discount" min="1" lay-verify="required|fl" autocomplete="off" class="layui-input len-short">' +
+						'</div>' +
+						'<span class="layui-form-mid">折</span>' +
+						'</div>' +
+						'<div class="word-aux">' +
+						'<p>优惠券折扣不能小于1折，且不可大于9.9折，可保留两位小数</p>' +
+						'</div>';
+
+					var discount_limit = '';
+					discount_limit += '<div class="layui-form-item discount_limit">' +
+						'<label class="layui-form-label">最多优惠：</label>' +
+						'<div class="layui-input-block">' +
+						'<div class="layui-input-inline">' +
+						'<input type="number" name="discount_limit" min="0" lay-verify="number|int" autocomplete="off" class="layui-input len-short">' +
+						'</div>' +
+						'<span class="layui-form-mid">元</span>' +
+						'</div>' +
+						'</div>';
+
+					$('#coupon_type').after(discount_limit);
+					$("body").on("change", 'input[name="discount"]', function() {
+						let bb = $('input[name="discount"]').val();
+						$('.pricebbbb').html(bb + ' 折 ')
+					});
+
+				}
+				$('#coupon_type').html(html);
+			});
+		});
+
+		// 表格渲染
+		function renderTable(goods_list) {
+			//展示已知数据
+			table = new Table({
+				elem: '#selected_sku_list',
+				cols: [
+					[{
+						field: 'goods_name',
+						title: '商品名称',
+						unresize: 'false',
+						width: '50%'
+					}, {
+						field: 'price',
+						title: '商品价格(元)',
+						unresize: 'false',
+						align: 'right',
+						width: '20%',
+						templet: function(data) {
+							return '￥' + data.price;
+						}
+					}, {
+						field: 'goods_stock',
+						title: '库存',
+						unresize: 'false',
+						align: 'center',
+						width: '20%'
+					}, {
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						align:'right'
+					}],
+				],
+				data: goods_list,
+			});
+		}
+
+		// 删除选中商品
+		function delGoods(id) {
+			var i, j;
+			$.each(goods_list, function(index, item) {
+				var goods_id = item.goods_id;
+
+				if (id == goods_id) {
+					i = index;
+				}
+			});
+			goods_list.splice(i, 1);
+			renderTable(goods_list);
+
+			$.each(selectedGoodsId, function(index, item) {
+				if (id == item) {
+					j = index;
+				}
+			});
+			selectedGoodsId.splice(j, 1);
+			goods_id = selectedGoodsId;
+			$("#goods_num").html(selectedGoodsId.length);
+			$("input[name='goods_ids']").val(goods_id.toString());
+		}
+
+		function addGoods() {
+			goodsSelect(function(res) {
+				if (!res.length) return false;
+				for (var i = 0; i < res.length; i++) {
+					goods_id.push(res[i].goods_id);
+					goods_list.push(res[i]);
+				}
+				renderTable(goods_list);
+				$("input[name='goods_ids']").val(goods_id.toString());
+				selectedGoodsId = goods_id;
+				$("#goods_num").html(selectedGoodsId.length)
+			}, selectedGoodsId, {
+				mode: "spu"
+			});
+			$("#goods_num").html(goods_list.length)
+		}
+
+		function back() {
+			location.href = ns.url("coupon://shop/coupon/lists");
+		}
+	</script>
+	{/block}

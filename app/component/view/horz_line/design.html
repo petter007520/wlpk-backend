@@ -1,0 +1,48 @@
+<nc-component :data="data[index]" class="auxiliary-line">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="auxiliary-line-content" :style="{ borderBottom: '1px ' + nc.borderStyle + ' ' + nc.color}"></div>
+		<div class="auxiliary-line-bottom"></div>
+	</template>
+	
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<div class="template-edit-title">
+			<h3>风格</h3>
+			<div class="layui-form-item icon-radio">
+				<label class="layui-form-label sm">线条样式</label>
+				<div class="layui-input-block">
+					<span :class="{'layui-hide': nc.borderStyle!='solid'}">实线</span>
+					<span :class="{'layui-hide': nc.borderStyle!='dashed'}">虚线</span>
+					<ul class="icon-wrap">
+						<li :class="{'text-color border-color': nc.borderStyle=='solid'}" @click="nc.borderStyle='solid'">
+							<i class="iconfont iconshixian" :class="{'text-color': nc.borderStyle=='solid'}"></i>
+						</li>
+						<li :class="{'text-color border-color': nc.borderStyle=='dashed'}" @click="nc.borderStyle='dashed'">
+							<i class="iconfont iconxuxian" :class="{'text-color': nc.borderStyle=='dashed'}"></i>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<horz-line-set></horz-line-set>
+			<div class="template-edit-title">
+				<h3>线条样式</h3>
+				<color :data="{ field : 'color', label : '线条颜色', defaultColor : '#303133' }"></color>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+	
+</nc-component>

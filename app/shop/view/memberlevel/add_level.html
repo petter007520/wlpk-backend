@@ -1,0 +1,698 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.form-wrap {margin-top: 0;}
+	.coupon-box{
+		padding: 20px;
+	}
+
+	.coupon-box .layui-form{
+		padding: 0!important;
+	}
+
+	.layui-layer-page .layui-layer-content{
+		overflow: auto !important;
+	}
+
+	.del-btn {
+		cursor: pointer;
+	}
+	.level-equity .layui-input {
+		display: inline-block;
+	}
+	.gods-box table:first-of-type{
+		margin-bottom: 0;
+	}
+	.gods-box table:last-of-type{
+		margin-top: 0;
+		display: block;
+		max-height: 323px;
+		overflow: auto;
+	}
+	.coupon-box .single-filter-box{
+		padding-top: 0;
+	}
+	.align-center{
+		text-align: center!important;
+	}
+	.coupon-box td,th{
+		padding: 15px 10px !important;
+		box-sizing: border-box;
+	}
+	.gods-box .layui-table#goods tbody{
+		width: 100%;
+	}
+	[name="growth"]::placeholder {
+		font-size: 12px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">基础信息</span>
+		</div>
+		<div class="layui-card-body">
+
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>等级名称：</label>
+				<div class="layui-input-block">
+					<input name="level_name" type="text" lay-verify="required" class="layui-input len-long" maxlength="40">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">等级说明：</label>
+				<div class="layui-input-block len-long">
+					<textarea name="remark" class="layui-textarea" maxlength="150"></textarea>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">等级封面背景色：</label>
+				<div class="layui-input-block flex">
+					<input name="bg_color" type="hidden"  value="#333333" class="layui-input len-short" id="bg_color_input">
+					<div id="bg_color">
+
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">等级文字颜色：</label>
+				<div class="layui-input-block ">
+					<input name="level_text_color" type="hidden"  value="#ffffff" class="layui-input len-short" id="level_text_color_input">
+					<div id="level_text_color">
+
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">背景图：</label>
+				<div class="layui-input-block img-upload">
+					<div class="upload-img-block">
+						<div class="upload-img-box">
+						<div class="upload-default" id="imgUpload">
+							<div class="upload">
+								<i class="iconfont iconshangchuan"></i>
+								<p>点击上传</p>
+							</div>
+						</div>
+						<div class="operation">
+							<div>
+								<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+								<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+							</div>
+							<div class="replace_img js-replace">点击替换</div>
+						</div>
+						<input type="hidden" name="level_picture" value=""/>
+					</div>
+				</div>
+			</div>
+
+			<div class="word-aux">
+				<p>尺寸：1000*525像素，小于1M，支持jpg、png、jpeg格式，上传背景图后，手机端将不会展示背景颜色，优先展示背景图</p>
+			</div>
+		</div>
+
+
+		<div class="gratis-wrap">
+				<div class="layui-form-item">
+					<label class="layui-form-label"><span class="required">*</span>所需成长值：</label>
+					<div class="layui-input-block">
+						<input name="growth" type="number" lay-verify="required|growth" min="0" class="layui-input len-short"  onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')">
+					</div>
+					{if $growth_up > 0}
+					<div class="word-aux">所设成长值需大于{:round($growth_up)}</div>
+					{/if}
+					<div class="word-aux">修改等级所需成长值后，部分客户会因无法达到该成长值要求而发生会员等级的变化</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="layui-card card-common card-brief level-equity" >
+		<div class="layui-card-header">
+			<span class="card-title">权益</span>
+		</div>
+		<div class="layui-card-body">
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">是否包邮：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="is_free_shipping" value="1" lay-skin="switch" />
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>消费折扣：</label>
+				<div class="layui-input-block">
+					<input type="number" name="consume_discount" min="0" max="100" lay-verify="fl" autocomplete="off" class="layui-input len-short"> %
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">积分回馈倍率：</label>
+				<div class="layui-input-block">
+					<input type="number" name="point_feedback" min="0" max="100" lay-verify="jf" autocomplete="off" class="layui-input len-short"> 倍
+				</div>
+				<div class="word-aux">回馈积分 = 消费金额 * 积分回馈倍率</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">等级礼包</span>
+		</div>
+		<div class="layui-card-body">
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">赠送积分：</label>
+				<div class="layui-input-block">
+					<input name="send_point" type="number" lay-verify="num" min="0" class="layui-input len-short">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">赠送红包：</label>
+				<div class="layui-input-block len-long">
+					<input name="send_balance" type="number" lay-verify="num" min="0" class="layui-input len-short">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">赠送优惠券：</label>
+				<div class="layui-input-block">
+					<table class="layui-table" id="coupon_selected" lay-skin="line" lay-size="lg">
+						<colgroup>
+							<col width="45%">
+							<col width="15%">
+							<col width="25%">
+							<col width="15%">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>优惠券名称</th>
+								<th>优惠金额/折扣</th>
+								<th>结束时间</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="goods-empty" colspan="4">
+									<div class="goods-null">尚未选择赠送优惠券</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<button class="layui-btn" onclick="addCoupon()">添加优惠券</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="layui-card card-common">
+		<div class="layui-card-body">
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+				<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    var coupon_id = [], addCoupon;
+    var form,colorpicker;
+
+    layui.use(['form', 'laytpl', 'colorpicker'], function() {
+        form = layui.form;
+		colorpicker = layui.colorpicker;
+		var laytpl = layui.laytpl,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+		var logo_upload = new Upload({
+			elem: '#imgUpload'
+		});
+
+		colorpicker.render({
+			elem: '#bg_color',  //绑定元素
+			color: "#333333",
+			done: function(color) {
+				$("#bg_color_input").attr("value", color);
+			}
+		});
+
+		colorpicker.render({
+			elem: '#level_text_color',  //绑定元素
+			color: "#ffffff",
+			done: function(color) {
+				$("#level_text_color_input").attr("value", color);
+			}
+		});
+
+        /**
+         * 监听保存
+         */
+        form.on('submit(save)', function(data) {
+            data.field.send_coupon = coupon_id.toString();
+            data.field.growth = parseInt(data.field.growth);
+            if (repeat_flag) return false;
+
+			repeat_flag = true;
+			$.ajax({
+                url: ns.url("shop/memberlevel/addlevel"),
+                data: data.field,
+                dataType: 'JSON', //服务器返回json格式数据
+                type: 'POST', //http请求类型
+                success: function(res) {
+                    repeat_flag = false;
+                    if (res.code == 0) {
+                        layer.confirm('添加成功', {
+                            title:'操作提示',
+                            btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+                            yes: function(){
+                                location.href = ns.url("shop/memberlevel/levellist")
+                            },
+                            btn2: function() {
+                                location.href = ns.url("shop/memberlevel/addlevel")
+                            }
+                        });
+                    }else{
+                        layer.msg(res.message);
+                    }
+                }
+            });
+        });
+        
+        /**
+         * 表单验证
+         */
+        form.verify({
+            num: function(value) {
+                var arrmen = value.split(".");
+                var val = 0;
+                if (arrmen.length == 2) {
+                    val = arrmen[1];
+                }
+
+                if (value == "") {
+                    return false;
+                }
+                if (value < 0 || val.length > 2) {
+                    return '请输入大于0的数，保留小数点后两位'
+                }
+            },
+            fl: function(value, item) {
+                var str = $(item).parents(".layui-form-item").find("label").text().split("*").join("");
+                str = str.substring(0, str.length - 1);
+
+            	if (isNaN(parseFloat(value))) {
+                	return  "请设置" + str;
+                }
+
+                if (value <= 0) {
+                    return str + "不能小于等于0";
+                }
+
+                if (value > 100) {
+                    return str + "不能大于100";
+                }
+
+                var arrMen = value.split(".");
+                var val = 0;
+                if (arrMen.length == 2) {
+                    val = arrMen[1];
+                }
+                if (val.length > 2) {
+                    return str + "最多可保留两位小数";
+                }
+            },
+            jf: function(value, item) {
+                var str = $(item).parents(".layui-form-item").find("label").text().split("*").join("");
+                str = str.substring(0, str.length - 1);
+
+                if (value < 0) {
+                    return str + "不能小于0";
+                }
+
+                if (value > 100) {
+                    return str + "不能大于100";
+                }
+
+                var arrMen = value.split(".");
+                var val = 0;
+                if (arrMen.length == 2) {
+                    val = arrMen[1];
+                }
+                if (val.length > 2) {
+                    return str + "最多可保留两位小数";
+                }
+            },
+			growth: function (value, item){
+				let min = parseInt("{$growth_up}");
+				if (isNaN(parseInt(value))) {
+					return "请设置成长值";
+				}
+				if(parseInt(value) <= min){
+					return "成长值必须大于"+min;
+				}
+			}
+        });
+
+		//优惠券
+        addCoupon = function() {
+            var data = {};
+            data.coupon_id = coupon_id;
+
+            laytpl($("#couponList").html()).render(data, function(html) {
+                coupon_list = layer.open({
+                    title: '优惠券列表',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['1100px', '600px'],
+                    content: html,
+                });
+
+                if ($("tbody tr input:checked").length == $(".coupon-box tbody tr").length) {
+                    $("input[lay-filter='selectAll']").prop("checked", true);
+                }
+
+                form.render();
+            });
+
+            /**
+             * 监听全选按钮
+             */
+            form.on('checkbox(selectAll)', function(data) {
+                if (data.elem.checked) {
+                    $("tr .check-box input:checkbox").each(function(index) {
+                        $(this).prop("checked", true);
+                    });
+                } else {
+                    $("tr .check-box input:checkbox").each(function() {
+                        $(this).prop("checked", false);
+                    });
+                }
+                form.render();
+            });
+
+			/**
+             * 监听每一行的多选按钮
+             */
+            var len = $(".coupon-box tbody tr").length;
+            for (var i = 0; i < len; i++) {
+                form.on('checkbox(select' + i + ')', function(data) {
+                    if ($("tbody tr input:checked").length == len) {
+                        $("input[lay-filter='selectAll']").prop("checked", true);
+                    } else {
+                        $("input[lay-filter='selectAll']").prop("checked", false);
+                    }
+
+                    form.render();
+                });
+            }
+        }
+    });
+
+    function couponSelected() {
+        layer.closeAll('page');
+
+        coupon_id = [];
+        var _len = $("tbody tr input:checked").length;
+
+        $("#coupon_selected tbody").empty();
+
+        $("#goods tbody tr").each(function(){
+            var bool = $(this).find("input[type='checkbox']").is(":checked");
+
+            if (bool) {
+                coupon_id.push($(this).find("#coupon_id").val());
+                var html = '';
+
+                var _id = $(this).find("#coupon_id").val(),
+                    image = $(this).find(".title-pic img").attr("src"),
+                    coupon_name = $(this).find(".title-content p").text(),
+                    money = $(this).find(".coupon-money").text(),
+                    end_time = $(this).find(".coupon-end-time").text();
+
+                html += '<tr>'+
+							'<td>'+
+								'<div class="table-title">'+
+									'<input type="hidden" value="'+ _id +'" />'+
+									'<div class="title-pic">';
+                if (image) {
+                    html +=   			'<img src="'+ image +'">';
+                }
+                html +=				'</div>'+
+									'<div class="title-content">'+
+										'<p class="multi-line-hiding">'+ coupon_name +'</p>'+
+									'</div>'+
+								'</div>'+
+							'</td>'+
+							'<td class="layui-elip coupon-money">'+ money +'</td>'+
+							'<td class="layui-elip coupon-end-time">'+ end_time +'</td>'+
+							'<td class="layui-elip"><div class="table-btn"><a  class="layui-btn del-btn" onclick="delCoupon(this)">删除</a></div></td>'+
+						'</tr>';
+
+                $("#coupon_selected tbody").append(html);
+            }
+
+        });
+
+        if (_len == 0) {
+            var html = '<tr>'+
+							'<td class="goods-empty" colspan="4">'+
+								'<div class="goods-null">尚未选择赠送礼包</div>'+
+							'</td>'+
+						'</tr>';
+            $("#coupon_selected tbody").append(html);
+        }
+    }
+
+    //删除优惠券
+    function delCoupon(e) {
+        $(e).parents("tr").remove();
+
+        var _len = $("#coupon_selected tbody tr").length;
+        if(_len == 0) {
+
+            var html = '<tr>'+
+                '<td class="goods-empty" colspan="4">'+
+                '<div class="goods-null">尚未选择赠送优惠券</div>'+
+                '</td>'+
+                '</tr>';
+
+            $("#coupon_selected tbody").append(html);
+        }
+
+        couponId();
+    }
+
+    function couponId() {
+        coupon_id = [];
+
+        $("#coupon_selected tbody tr").each(function(){
+            coupon_id.push($(this).find(".table-title input").val());
+        });
+    }
+
+    function back(){
+        location.href = ns.url("shop/memberlevel/levellist");
+    }
+
+    //添加付费规则
+	function addRule() {
+		let level_select = {:json_encode($level_time, JSON_UNESCAPED_UNICODE)};
+    	$('#level-rule tr').each(function (i, e) {
+    		if($(e).find('select').val() && $(e).find('select').val() != undefined){
+				delete level_select[$(e).find('select').val()];
+			}
+		});
+
+    	var select_html = '';
+    	for (let i in level_select){
+			select_html += '<option value="'+i+'">'+level_select[i]+'</option>';
+		}
+
+		var html = `
+			<tr>
+				<td>
+					<div class="len-short">
+						<select lay-filter="selectRule">
+							${select_html}
+						</select>
+					</div>
+				</td>
+				<td class="align-center">
+					<input  type="text" value="0" lay-verify="num" class="layui-input len-short price" placeholder="价格/元">
+				</td>
+				<td>
+					<a href="javascript:void(0)" class="text-color" onclick="deleteRule(this)">删除</a>
+				</td>
+			</tr>
+		`;
+
+    	$('#level-rule tbody').append(html);
+    	if($('#level-rule tr').length == 5){
+    		$('#add_rule_btn').hide()
+		}
+		form.render();
+		form.on('select(selectRule)', function(data){
+			let num = 0;
+			$('#level-rule tr').each(function (i, e) {
+				if($(e).find('select').val() == data.value){
+					num++;
+					$('.delete-rule').removeClass('delete-rule');
+					$(e).find('select').addClass('delete-rule');
+				}
+			})
+			if(num > 1) deleteRule($('.delete-rule'));
+		});
+
+		form.verify({
+			num: function (value) {
+				var arrmen = value.split(".");
+				var val = 0;
+				if (arrmen.length == 2) {
+					val = arrmen[1];
+				}
+
+				if (value == "") {
+					return false;
+				}
+				if (value <= 0 || val.length > 2) {
+					return '请输入大于0的数，保留小数点后两位'
+				}
+			}
+		})
+
+		return false;
+	}
+
+
+	function deleteRule(obj) {
+		$(obj).parents('tr').remove();
+		if($('#level-rule tr').length < 5){
+			$('#add_rule_btn').show()
+		}
+	}
+
+</script>
+
+<!-- 优惠券 -->
+<script type="text/html" id="couponList">
+	<div class="coupon-box">
+		<div class="single-filter-box">
+			<div class="layui-form">
+				<div class="layui-input-inline">
+					<input type="text" name="coupon_name" placeholder="请输优惠券名称" class="layui-input">
+					<button type="button" class="layui-btn layui-btn-primary" lay-filter="coupon-search" lay-submit>
+						<i class="layui-icon">&#xe615;</i>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="gods-box">
+			<table class="layui-table" lay-skin="line" lay-size="lg">
+				<colgroup>
+					<col width="5%">
+					<col width="25%">
+					<col width="10%">
+					<col width="10%">
+					<col width="10%">
+					<col width="10%">
+					<col width="10%">
+					<col width="20%">
+				</colgroup>
+				<thead>
+				<tr>
+					<th class="check-box">
+						<div class="layui-form">
+							<input type="checkbox" name="" lay-filter="selectAll" lay-skin="primary">
+						</div>
+					</th>
+					<th class="layui-elip">优惠券名称</th>
+					<th class="layui-elip">类型</th>
+					<th class="layui-elip">优惠金额/折扣</th>
+					<th class="layui-elip">适用商品</th>
+					<th class="layui-elip">领取人限制</th>
+					<th class="layui-elip">已领取/发放数</th>
+					<th class="layui-elip">结束时间</th>
+				</tr>
+				</thead>
+			</table>
+			<table class="layui-table"  style="table-layout:fixed" id="goods" lay-skin="line" lay-size="lg">
+				<tbody>
+				{foreach $coupon_list.data as $coupon_list_k => $coupon_list_v}
+				<tr>
+					<td width="50px" class="check-box">
+						<div class="layui-form">
+							{{# var a = {$coupon_list_v.coupon_type_id} }}
+							{{#  if($.inArray(a.toString(), d.coupon_id) != -1){  }}
+							<input type="checkbox" name="" lay-filter="select{$coupon_list_k}" lay-skin="primary" checked>
+							{{#  }else{  }}
+							<input type="checkbox" name="" lay-filter="select{$coupon_list_k}" lay-skin="primary">
+							{{#  }  }}
+							<input type="hidden" id="coupon_id" value="{$coupon_list_v.coupon_type_id}">
+						</div>
+					</td>
+					<td width="250px">
+						<div class="table-title">
+							<div class="title-pic">
+								{if condition="$coupon_list_v.image"}
+								<img src="{:img($coupon_list_v.image)}">
+								{else/}
+								<img src="__ROOT__/public/uniapp/game/coupon.png">
+								{/if}
+							</div>
+							<div class="title-content">
+								<p class="multi-line-hiding">{$coupon_list_v.coupon_name}</p>
+							</div>
+						</div>
+					</td>
+					{if $coupon_list_v.type == 'reward'}
+					<td width="101px">满减</td>
+					{else/}
+					<td width="101px">折扣</td>
+					{/if}
+					{if $coupon_list_v.type == 'reward'}
+					<td width="101px" class="layui-elip coupon-money">{$coupon_list_v.money}元</td>
+					{else/}
+					<td width="101px" class="layui-elip coupon-money">{$coupon_list_v.discount}折</td>
+					{/if}
+					{if $coupon_list_v.goods_type == '1'}
+					<td width="101px">全部商品</td>
+					{else/}
+					<td width="101px">指定商品</td>
+					{/if}
+					<td width="107px">{$coupon_list_v.max_fetch}</td>
+					<td width="107px">{$coupon_list_v.lead_count}/{$coupon_list_v.count}</td>
+					{if $coupon_list_v.validity_type == 0}
+					<td width="180px" class="layui-elip coupon-end-time">{:time_to_date($coupon_list_v.end_time)}</td>
+					{else/}
+					<td width="180px" class="layui-elip coupon-end-time">领取之日起{$coupon_list_v.fixed_term}天有效</td>
+					{/if}
+				</tr>
+				{/foreach}
+				</tbody>
+			</table>
+		</div>
+
+		<button class="layui-btn" onclick="couponSelected()">确定</button>
+	</div>
+</script>
+{/block}

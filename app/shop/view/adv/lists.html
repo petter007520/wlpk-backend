@@ -1,0 +1,301 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+
+<div class="single-filter-box">
+    <button class="layui-btn" onclick="add()">添加广告</button>
+
+    <div class="layui-form">
+        <div class="layui-input-inline">
+            <select name="ap_id">
+                <option value="">所属广告位</option>
+                {notempty name="adv_position"}
+                    {foreach name="adv_position" item="vo"}
+                        <option value="{$vo.ap_id}" {if $ap_id == $vo.ap_id}selected{/if}>{$vo.ap_name}</option>
+                    {/foreach}
+                {/notempty}
+            </select>
+        </div>
+
+        <div class="layui-input-inline len-mid">
+            <input type="text" name="search_text" placeholder="请输入广告名称" class="layui-input">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+        </div>
+    </div>
+
+    <input type="hidden" name="ap_id" value="{$ap_id}" />
+</div>
+
+<!-- 列表 -->
+<table id="adv_list" lay-filter="adv_list"></table>
+
+<!-- 广告图片 -->
+<script type="text/html" id="adv_image">
+    <div class="img-box">
+        <img layer-src src="{{ns.img(d.adv_image)}}" />
+    </div>
+</script>
+
+<!-- 排序 -->
+<script type="text/html" id="slide_sort">
+    <input name="slide_sort" type="number" onchange="editSort({{d.adv_id}},'slide_sort', this)" value="{{d.slide_sort}}" class="layui-input sort-len">
+</script>
+
+<!-- 广告链接 -->
+<script type="text/html" id="adv_url">
+	<a href="{{d.adv_url}}">{{d.adv_url}}</a>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="action">
+    <div class="table-btn">
+        <a class="layui-btn" lay-event="edit">编辑</a>
+        <a class="layui-btn" lay-event="delete">删除</a>
+    </div>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="toolbarOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+{/block}
+{block name="script"}
+<script>
+    var ap_id = '{$ap_id}';
+    layui.use('form', function () {
+        var table,
+            form = layui.form,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        form.on('switch(state)', function(data){
+            let state = data.elem.checked ? 1 : 0;
+            let adv_id = $(data.elem).attr('data-adv-id');
+
+            if(repeat_flag) return;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("shop/adv/alterAdvState"),
+                data: {
+                    adv_id : adv_id,
+                    state : state,
+                },
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag = false;
+                }
+            });
+        })
+
+        table = new Table({
+            elem: '#adv_list',
+            url: ns.url("shop/adv/lists"),
+            where: {
+                'ap_id': '{$ap_id}'
+            },
+            cols: [
+                [{
+                    width: '3%',
+                    type: 'checkbox',
+                    unresize: 'false',
+                }, {
+                    field: 'adv_title',
+                    title: '广告名称',
+                    unresize: 'false',
+                    width: '15%'
+                }, {
+                    title: '广告链接',
+                    unresize: 'false',
+                    width: '15%',
+					templet: function(data) {
+                    	var adv_url = data.adv_url;
+                    	if(adv_url){
+							adv_url = JSON.parse(data.adv_url);
+							return adv_url.title ? adv_url.title : '';
+                        }else{
+                    		return '';
+                        }
+					}
+                }, {
+                    field: 'ap_name',
+                    title: '所属广告位',
+                    unresize: 'false',
+                    templet:'#ap_posi',
+                    width: '15%'
+                }, {
+                    title: '广告图片',
+                    unresize: 'false',
+                    templet: '#adv_image',
+                    width: '15%'
+                }, {
+                    field: 'slide_sort',
+                    title: '排序',
+                    templet: '#slide_sort',
+                    align: 'center',
+                    sort : true,
+                    width: '12%'
+                },{
+                    title: '是否启用',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return '<input type="checkbox" name="state" value="1" lay-skin="switch" lay-filter="state" data-adv-id="'+ data.adv_id +'" '+ (data.state == 1 ? 'checked' : '') +' />';
+                    },
+                    width: '10%',
+                }, {
+                    title: '操作',
+                    toolbar: '#action',
+                    unresize: 'false',
+                    align:'right'
+                }]
+            ],
+            bottomToolbar: "#batchOperation",
+            toolbar: "#toolbarOperation"
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'edit': //编辑
+                    location.href = ns.url("shop/adv/editadv",{"adv_id":data.adv_id, ap_id:ap_id});
+                    break;
+                case 'delete': //删除
+                    deleteAdv(data.adv_id);
+                    break;
+            }
+        });
+
+        /**
+         * 批量操作
+         */
+        table.bottomToolbar(function(obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].adv_id);
+                    deleteAdv(id_array.toString());
+                    break;
+            }
+        });
+
+        table.on("sort",function (obj) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    order:obj.field,
+                    sort:obj.type
+                }
+            });
+        });
+
+        /**
+         * 批量操作
+         */
+        table.toolbar(function(obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].adv_id);
+                    deleteAdv(id_array.toString());
+                    break;
+            }
+        });
+
+        /**
+         * 删除
+         */
+        function deleteAdv(adv_ids) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            layer.confirm('确定要删除该广告位吗?', function() {
+                $.ajax({
+                    url: ns.url("shop/adv/deleteAdv"),
+                    data: {'adv_ids': adv_ids},
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+                repeat_flag = false;
+            });
+        }
+
+        /**
+         * 监听搜索
+         */
+        form.on('submit(search)', function(data){
+            ap_id = $("select[name='ap_id']").val();
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+    });
+
+    // 监听单元格编辑
+    function editSort(adv_id, type, event){
+        var value = $(event).val();
+
+        if(!new RegExp("^-?[1-9]\\d*$").test(value)){
+            layer.msg("排序号只能是整数");
+            return ;
+        }
+        if(value<0){
+			layer.msg("排序号必须大于0");
+			return ;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: ns.url("shop/adv/editAdvField"),
+            data: {'type': type, 'value': value, 'adv_id': adv_id},
+            dataType: 'JSON',
+            success: function(res) {
+                layer.msg(res.message);
+                if(res.code==0){
+                    table.reload();
+                }
+            }
+        });
+    }
+
+    function add() {
+        location.href = ns.url("shop/adv/addAdv", {ap_id : ap_id});
+    }
+</script>
+{/block}

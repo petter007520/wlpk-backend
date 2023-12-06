@@ -1,0 +1,225 @@
+{block name="resources"}
+<style type="text/css">
+	.refresh-time {color: #B2B2B2;margin-top: 10px;}
+	.form-row p {margin:8px 0 0 100px !important;font-size: 12px;color: #979897;}
+	.all-box-item{width:100%;background: #FFFFFF;height: 160px;}
+	.all-shop-information{width: 100%;background: white;padding: 15px;box-sizing: border-box;margin-top: 15px;margin-bottom: 30px;}
+	.all-shop-information .all-top{display: flex;align-items: center;justify-content: space-between;}
+	.all-shop-information .all-top .title{display: flex; color:#333333;margin-bottom: 0;width: 80%;height: 16px;line-height: 16px;padding-left: 10px;border-left: 3px solid rgb(254,106,0);box-sizing: border-box;font-size: 17px;}
+	.all-shop-information .all-top .title .prompt{font-size: 1px;}
+	.all-shop-information .all-top .edit{cursor: pointer;}
+	.all-shop-information .all-item{display: flex;align-items: center;}
+	.all-shop-information .all-item{margin-bottom: 18px;}
+	.all-shop-information .all-item p{width: 140px;text-align: right;font-size: 14px;margin-right: 10px;}
+	.all-box-item .reason-growth{margin-left: 10px;color: #999;cursor: pointer;}
+</style>
+{/block}
+
+{block name="main"}
+	<div class="layui-form all-box-item all-shop-information">
+		<div class="all-top ">
+			<div class="title ">
+				手机端设置
+				<!-- <div class="prompt-block">
+					<div class="prompt">
+						<i class="iconfont iconwenhao1 required growth"></i>
+						<div class="growth-box reason-box reason-growth prompt-box">
+							<div class="prompt-con">
+								<p>默认</p>
+							</div>
+						</div>
+					</div>
+				</div> -->
+			</div>
+			<span class="edit text-color" onclick="editOpenH5()">编辑</span>
+		</div>
+		<div class="all-content">
+			<div class="all-item">
+				<p>部署方式：</p>
+				<a>
+					{if $config.deploy_way eq 'default'}
+						默认部署
+					{/if}
+					
+					{if $config.deploy_way eq 'separate'}
+						独立部署
+					{/if}
+				</a>
+			</div>
+			<div class="all-item">
+				<p>手机端域名：</p>
+				{if $config.deploy_way eq 'default'}
+				<a class="text-color" href="{$root_url}/h5" target="_blank">
+					{$root_url}/h5
+				</a>
+				{/if}
+				{if $config.deploy_way eq 'separate'}
+				<a class="text-color" href="{$config.domain_name_h5 ?? ''}" target="_blank">
+					{$config.domain_name_h5 ?? ''}
+				</a>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/block}
+
+{block name="script"}
+<script type="text/html" id="contentH5">
+	<div class="layui-collapse tips-wrap">
+		<div class="layui-colla-item">
+			<h2 class="layui-colla-title">操作提示</h2>
+			<ul class="layui-colla-content layui-show">
+				<li>为满足不同用户的需求，方便快速搭建手机端，增加以下三种部署方式供其选择，易上手难度递增。</li>
+				<li>（难度：简单）默认部署：无需下载，一键刷新，API接口请求地址默认为当前域名，编译代码存放到h5文件夹中。</li>
+				<li>（难度：中等）独立部署：下载编译代码包后，放到网站根目录下运行。</li>
+				<li>（难度：较高）独立部署：下载uniapp代码包，可进行二次开发。</li>
+			</ul>
+		</div>
+	</div>
+	<div class="layui-form form-wrap">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">部署方式：</label>
+			<div class="layui-input-block">
+				<input type="radio" name="deploy_way" value="default" lay-filter="deploy_way" title="默认部署" data-desc="无需下载，一键刷新，API接口请求地址为当前域名，编译代码存放到h5文件夹中" {if $config.deploy_way eq 'default'}checked{/if} />
+				<input type="radio" name="deploy_way" value="separate" lay-filter="deploy_way" title="独立部署" data-desc="可下载编译包或源码包进行独立部署" {if $config.deploy_way eq 'separate'}checked{/if}/>
+			</div>
+			<div class="word-aux js-desc">
+				{if $config.deploy_way eq 'default'}
+					无需下载，一键刷新，API接口请求地址为当前域名，编译代码存放到h5文件夹中
+				{else/}
+					可下载编译包或源码包进行独立部署
+				{/if}      
+			</div>
+		</div>
+
+		<div class="deploy-way default {if $config.deploy_way neq 'default'}layui-hide{/if}">
+			<div class="layui-form-item web-url">
+				<label class="layui-form-label">手机端域名：</label>
+				<div class="layui-input-block">
+					<a href="{$root_url}/h5" target="_blank" class="text-color">{$root_url}/h5</a>
+				</div>
+			</div>
+			<div class="form-row" style="margin: 0;">
+				<label class="layui-form-label">部署操作：</label>
+				<button class="layui-btn js-save" onclick="refreshh5()">重新编译</button>
+				<p>以下几种情况，需重新编译</p>
+				<p>在线升级后，如果是默认部署，则需点击重新编译</p>
+				<p>SSL证书变更后，由于http协议变更，则需点击重新编译</p>
+			</div>
+		</div>
+		
+		<div class="deploy-way separate {if $config.deploy_way neq 'separate'}layui-hide{/if}">
+			<div class="layui-form-item">
+				<label class="layui-form-label">手机端域名：</label>
+				<div class="layui-input-block">
+					<input type="text" name="domain" lay-verify="domain" {if $config.deploy_way eq 'separate'}value="{$config['domain_name_h5'] ?? ''}"{/if} autocomplete="off" class="layui-input len-long">
+				</div>
+				<div class="word-aux">域名必须以http://或https://为开头</div>
+			</div>
+			<div class="layui-form-item web-url">
+				<label class="layui-form-label">源码下载：</label>
+				<div class="layui-input-block">
+					<button class="layui-btn" lay-submit lay-filter="downloadseparate">H5编译包下载</button>
+					{if $is_auth}
+					<button class="layui-btn" onclick="window.open(ns.url('shop/h5/downloaduniapp'));">UNIAPP源码包下载</button>
+					{/if}
+				</div>
+				<div class="word-aux">H5编译包下载之后直接解压到手机端域名根目录即部署完成。</div>
+				<div class="word-aux">UNIAPP源码包下载之后可进行二次开发，可自行发行H5进行部署。</div>
+			</div>
+		</div>
+	   
+		<div class="form-row all-box-left">
+			<button class="layui-btn js-save" lay-submit lay-filter="h5Save">保存</button>
+		</div>
+		
+	</div>
+</script>
+<script type="text/javascript">
+	var form,h5Popup;
+    layui.use(['form'], function() {
+        form = layui.form,
+            repeat_flag = false; //防重复标识;
+
+        form.render();
+
+        $(".js-desc").text($("input[name='deploy_way']:checked").attr("data-desc"));
+
+        form.on('radio(deploy_way)', function(data){
+            var value = $(data.elem).val();
+            $('.deploy-way').addClass('layui-hide');
+            $('.deploy-way.' + value).removeClass('layui-hide');
+
+            var desc = $(data.elem).attr("data-desc");
+            $(".js-desc").text(desc);
+			refreshArea(h5Popup)
+        });
+
+        form.verify({
+            domain : function(value, item) {
+                var reg = /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+)\.)+([A-Za-z0-9-~\/])+$/; //正则表达式验证域名
+                if($("input[name='deploy_way']:checked").val() == "separate") {
+                    if (value === '') {
+                        return "请输入域名地址";
+                    } else if (!(reg.test(value))) {
+                        return '请输入正确的域名地址';
+                    }
+                }
+            }
+        });
+
+        form.on("submit(h5Save)",function(data){
+            if (repeat_flag) return false;
+            repeat_flag = true;
+            $.ajax({
+                url: ns.url("shop/h5/h5domainname"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res){
+                    repeat_flag = false;
+                    layer.msg(res.message);
+					if(res.code >= 0){
+						location.reload();
+					}
+                }
+            });
+        });
+
+        form.on("submit(downloadseparate)",function(data){
+            window.open(ns.url('shop/h5/downloadseparate', {domain: data.field.domain}));
+        })
+		
+    });
+
+    function refreshh5(){
+        if (repeat_flag) return false;
+        repeat_flag = true;
+        $.ajax({
+            url: ns.url("shop/h5/refreshh5"),
+            dataType: 'JSON',
+            type: 'POST',
+            success: function(res){
+                repeat_flag = false;
+                layer.msg(res.message);
+            }
+        });
+    }
+	
+	//打开手机端编辑弹窗
+	function editOpenH5(){
+		h5Popup = layer.open({
+			title:'手机端设置',
+			type:1,
+			area: 'auto',
+			maxWidth:700,
+			maxHeight:540,
+			content:$('#contentH5').html(),
+			success:function(res){
+				form.render()
+			}
+		})
+	}
+</script>
+{/block}

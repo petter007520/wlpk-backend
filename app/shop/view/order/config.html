@@ -1,0 +1,382 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-card.card-common.card-brief .balance-boday {
+		padding-left: 20px
+	}
+
+	.layui-card.card-common.card-brief .layui-form-radio {
+		margin: 0px
+	}
+
+	.invoice-content-block .layui-form-select {
+		margin-bottom: 10px
+	}
+
+	.invoice-content-block .layui-form-select:last-child {
+		margin-bottom: 0
+	}
+
+	.invoice-content-block .item {
+		position: relative;
+		margin-bottom: 10px
+	}
+
+	.invoice-content-block .item .layui-icon-close {
+		font-size: 12px;
+		position: absolute;
+		top: -8px;
+		right: -8px;
+		width: 16px;
+		height: 16px;
+		line-height: 16px;
+		text-align: center;
+		color: #fff;
+		-webkit-border-radius: 10px;
+		-moz-border-radius: 10px;
+		border-radius: 10px;
+		background: rgba(0, 0, 0, .3);
+		cursor: pointer
+	}
+
+	.invoice-tip {
+		padding-left: 90px;
+	}
+
+	.examples {
+		cursor: pointer;
+	}
+
+	.examples2 {
+		cursor: pointer;
+		font-weight: 600;
+	}
+	.radio-type{
+		display: none;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">余额支付</span>
+		</div>
+		<div class="layui-form-item balance-boday">
+			<label class="layui-form-label">是否启用：</label>
+			<div class="layui-input-block">
+				<div class="layui-input-inline">
+					<input type="radio" name="balance_show" value="0" title="关闭" autocomplete="off" class="layui-input len-long" {if $balance_config.balance_show==0} checked {/if}>
+					<input type="radio" name="balance_show" value="1" title="开启" autocomplete="off" class="layui-input len-long" {if $balance_config.balance_show==1} checked {/if}>
+				</div>
+			</div>
+			<div class="word-aux">当启用余额支付，在客户端待支付订单会显示使用余额，反之，则不显示。 <a onclick="showDemo()" class="examples text-color">查看示例</a></div>
+		</div>
+	</div>
+
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">订单设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">未付款自动关闭时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_close_time" value="{$order_event_time_config.auto_close ?? 0}" lay-verify="closetime" autocomplete="off" class="layui-input len-short">
+					</div>
+					<span class="layui-form-mid">分钟</span>
+				</div>
+				<div class="word-aux">订单创建后多长时间未付款自动关闭</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">发货后自动收货时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_take_delivery_time" value="{$order_event_time_config.auto_take_delivery ?? ''}" lay-verify="deliverytime" autocomplete="off" class="layui-input len-short">
+					</div>
+					<span class="layui-form-mid">天</span>
+				</div>
+				<div class="word-aux">订单发货后多长时间后自动收货</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">收货后自动完成时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_complete_time" value="{$order_event_time_config.auto_complete ?? ''}" lay-verify="positiv" autocomplete="off" class="layui-input len-short">
+					</div>
+					<span class="layui-form-mid">天</span>
+				</div>
+				<div class="word-aux">收货后，多长时间订单自动完成</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">完成后可维权时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="after_sales_time" value="{$order_event_time_config.after_sales_time ?? 0}" lay-verify="positivEinteger" autocomplete="off" class="layui-input len-short">
+					</div>
+					<span class="layui-form-mid">天</span>
+				</div>
+				<div class="word-aux">订单完成后，多长时间内可申请维权，设置为0则订单完成后不可维权</div>
+			</div>
+
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">主动退款设置：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="do_refund" value="1" title="直接确认退款" autocomplete="off" class="layui-input len-long" {if empty($order_event_time_config.do_refund) || $order_event_time_config.do_refund==1} checked {/if}>
+						<input type="radio" name="do_refund" value="2" title="发起退款申请" autocomplete="off" class="layui-input len-long" {if !empty($order_event_time_config.do_refund) && $order_event_time_config.do_refund==2} checked {/if}>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">评价设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">订单评价：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_status" value="0" title="关闭" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_status==0} checked {/if}>
+						<input type="radio" name="evaluate_status" value="1" title="开启" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_status==1} checked {/if}>
+					</div>
+				</div>
+				<div class="word-aux">开启订单评价功能</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">显示评价：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_show" value="0" title="关闭" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_show==0} checked {/if}>
+						<input type="radio" name="evaluate_show" value="1" title="开启" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_show==1} checked {/if}>
+					</div>
+				</div>
+				<div class="word-aux">前台商品详情是否显示评价</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">评价审核：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_audit" value="0" title="关闭" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_audit==0} checked {/if}>
+						<input type="radio" name="evaluate_audit" value="1" title="开启" autocomplete="off" class="layui-input len-long" {if $order_evaluate_config.evaluate_audit==1} checked {/if}>
+					</div>
+				</div>
+				<div class="word-aux">评价是否需要后台审核</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card card-common card-brief">
+		<div class="layui-card-header">
+			<span class="card-title">发票设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>发票开关：</label>
+				<div class="layui-input-inline">
+					<input type="radio" name="invoice_status" value="0" title="关闭" lay-filter='postage' autocomplete="off" class="layui-input len-long" {if $order_event_time_config.invoice_status==0} checked {/if}>
+					<input type="radio" name="invoice_status" value="1" title="开启" lay-filter='postage' autocomplete="off" class="layui-input len-long" {if $order_event_time_config.invoice_status==1} checked {/if}>
+				</div>
+			</div>
+			<div class="layui-form-item radio-type-box  {if $order_event_time_config.invoice_status==0} radio-type {/if}">
+				<label class="layui-form-label"><span class="required">*</span>发票税率：</label>
+				<div class="layui-input-inline">
+					<input type="number" name="invoice_rate" min="0" lay-verify="required" value="{$order_event_time_config.invoice_rate}" placeholder="请输入税率" autocomplete="off" class="layui-input len-short">
+				</div>
+				<span class="layui-form-mid">%</span>
+			</div>
+			<div class="layui-form-item invoice-content-block radio-type-box  {if $order_event_time_config.invoice_status==0} radio-type {/if}">
+				<label class="layui-form-label"><span class="required">*</span>发票内容：</label>
+				<div class="layui-input-inline invoice-content-box">
+					<input type="hidden" lay-verify="invoice_content2">
+					{if !empty($order_event_time_config.invoice_content)}
+					{foreach $order_event_time_config.invoice_content as $k => $v}
+					<div class="item">
+						<input type="text" name="invoice_content[]" lay-verify="invoice_content" value="{$v}" placeholder="请输入发票内容" autocomplete="off" class="layui-input len-short short-required">
+						<i class="layui-icon layui-icon-close"></i>
+					</div>
+					{/foreach}
+					{else/}
+					<div class="item">
+						<input type="text" name="invoice_content[]" lay-verify="invoice_content" value="" placeholder="请输入发票内容" autocomplete="off" class="layui-input len-short short-required">
+						<i class="layui-icon layui-icon-close"></i>
+					</div>
+					{/if}
+				</div>
+				<a class="layui-btn layui-btn-primary add-invoice-content-button">添加</a>
+			</div>
+			<div class="layui-form-item radio-type-box  {if $order_event_time_config.invoice_status==0} radio-type {/if}">
+				<label class="layui-form-label"><span class="required">*</span>邮寄费用：</label>
+				<div class="layui-input-block">
+					<input type="number" name="invoice_money" min="0" lay-verify="required" value="{$order_event_time_config.invoice_money}" placeholder="请输入费用" autocomplete="off" class="layui-input len-short">
+				</div>
+			</div>
+			<div class="layui-form-item radio-type-box  {if $order_event_time_config.invoice_status==0} radio-type {/if}">
+				<label class="layui-form-label"><span class="required">*</span>支持发票类型：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="hidden" lay-verify="support_invoice">
+						<input type="checkbox" class="support-invoice-type" name="invoice_type[]" value="1" title="普通发票" lay-skin="primary" {if !empty($order_event_time_config.invoice_type) && in_array(1, $order_event_time_config['invoice_type'])}checked{/if}>
+						<input type="checkbox" class="support-invoice-type2" name="invoice_type[]" value="2" title="电子发票" lay-skin="primary" {if !empty($order_event_time_config.invoice_type) && in_array(2, $order_event_time_config['invoice_type'])}checked{/if}>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item radio-type-box {if $order_event_time_config.invoice_status==0} radio-type {/if}">
+				<label class="invoice-tip text-color">注：普通发票需要给客户进行邮寄，电子发票需要给客户发送对应预留邮件 <a onclick="showDemo2()" class="examples2 text-color">查看示例</a></label>
+			</div>
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form','laydate'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		var laydate = layui.laydate;
+		form.render();
+
+
+
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			var value = $("input[name='invoice_rate']").val();
+			var arrMen = value.split(".");
+			var val = 0;
+			if (arrMen.length == 2) {
+				val = arrMen[1];
+			}
+			if (val.length > 1) {
+				repeat_flag = false;
+				layer.msg("发票税率最多保留一位小数！", {icon: 5, anim: 6});
+				return;
+			}
+			$.ajax({
+				type: 'POST',
+				url: ns.url("shop/order/config"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0 && !res.message) {
+						location.reload();
+						return;
+					}
+					layer.msg(res.message);
+				}
+			});
+		});
+
+		form.on('radio(postage)',function(data){
+			if(this.value == 1){
+				$('.radio-type-box').removeClass("radio-type")
+			}else if( this.value == 0){
+				// console.log(0)
+				$('.radio-type-box').addClass("radio-type")
+			}
+		})
+
+		// 验证正整数
+		form.verify({
+			support_invoice:function(value){
+				if(parseInt($("input[name='invoice_status']:checked").val().toString()) == 1){
+					if($('.support-invoice-type').is(':checked') == false && $('.support-invoice-type2').is(':checked') == false ){
+						return '发票类型不能为空';
+					}
+				}
+			},
+			invoice_content2:function(value){
+				if( $('.invoice-content-box > .item').length == 0 && parseInt($("input[name='invoice_status']:checked").val().toString()) == 1 ){
+					return '发票内容不能为空';
+				}
+			},
+			positivEinteger: function(value) {
+				if (!new RegExp("^(\\d|[1-9]\\d|99)$").test(value)) {
+					return '请输入0-99之间的正整数';
+				}
+			},
+			positiv: function(value) {
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '时间不能小于0，且必须是整数！';
+				}
+			},
+			invoice_content: function(value) {
+				if (parseInt($("input[name='invoice_status']:checked").val().toString()) == 1) {
+					if (value == "") {
+						return '发票内不能为空';
+					}
+				}
+			},
+			closetime: function(value) {
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '自动关闭时间须是整数天数！';
+				}
+				if (parseInt(value) < 1) {
+					return '自动关闭时间须大于0天！';
+				}
+			},
+			deliverytime: function(value) {
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '自动收货时间须是整数天数！';
+				}
+				if (parseInt(value) < 1) {
+					return '自动收货时间须大于0天！';
+				}
+			},
+		});
+		//添加发票内容
+		$(".add-invoice-content-button").click(function() {
+			var html = '';
+			html += '<div class="item">';
+			html +=
+				'<input type="text" name="invoice_content[]" lay-verify="invoice_content" value="" placeholder="请输入发票内容"  autocomplete="off" class="layui-input len-short" >';
+			html += '<i class="layui-icon layui-icon-close" ></i>';
+			html += '</div>';
+			$(".invoice-content-box").append(html);
+		});
+
+		//删除发票内容
+		$('.invoice-content-block ').on('click', ".layui-icon-close", function() {
+			$(this).parent().remove();
+		});
+
+
+	});
+
+	function showDemo() {
+		layer.open({
+			title: '查看示例',
+			type: 1,
+			area: ['500px', '660px'],
+			content: '<img style="margin:20px 80px;" src="SHOP_IMG/yue_pay.png">'
+		})
+	}
+
+	function showDemo2() {
+		layer.open({
+			title: '查看示例',
+			type: 1,
+			area: ['500px', '660px'],
+			content: '<img style="margin:20px 80px;" src="SHOP_IMG/fapiao.png">'
+		})
+	}
+</script>
+{/block}

@@ -1,0 +1,113 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .tips {margin: 20px 0;border: 1px dashed;padding: 5px 10px;width: 90%;}
+    .theme-item{display: inline-block;min-width: 140px;height: 60px;line-height: 60px;border: 1px solid #ededed;border-radius: 4px;margin-right: 10px;position: relative;cursor: pointer;margin-bottom: 15px;}
+    .style{display: flex;-webkit-box-align: center;align-items: center;-webkit-box-pack: center;justify-content: center;padding: 0 10px;}
+    .style div{width: 50px;height: 16px;}
+    .style p{margin-left: 10px;font-size: 12px;color: #333;}
+
+    .template-list{display: flex;flex-wrap: wrap;}
+    .template-list li{overflow: hidden;position: relative;padding: 10px;margin-left: 30px;margin-bottom: 30px;width: 270px;height: 440px;border: 1px solid #e9e9e9;border-radius: 4px;box-sizing: border-box;}
+    .template-list li:first-child{margin-left: 0;}
+    .template-list li .item-img{overflow: hidden;width: 244px;height: 355px;}
+    .template-list li .item-img img{max-width: 100%;}
+    .template-list li .item-hide{display: none;position: absolute;left: 0;right: 0;top: 0;bottom: 0;background-color: rgba(0,0,0,.6);text-align: center;}
+    .template-list li .item-name{display: block;padding-top: 7px;line-height: 22px;font-size: 14px;overflow: hidden;text-overflow: ellipsis;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;}
+    .template-list li .item-hide .item-btn-box{position: absolute;top: 50%;left: 50%;display: flex;flex-wrap: wrap;justify-content: center;align-items: center;transform: translate(-50%, -50%);}
+    .template-list li .item-hide button{border: 1px solid #fff;display: flex;justify-content: center;align-items: center;height: 33px;width: 100px;color: #fff;background: none;border-radius: 4px;cursor: pointer;}
+    .template-list li:hover .item-hide{display: block;}
+    .template-list li .item-hide button ~ button{margin-top: 15px;}
+    .template-list li .is-default{padding: 6px;font-size: 12px;color:#fff;border-radius: 4px;display: inline-block;margin-top: 5px;line-height: 1;}
+</style>
+{/block}
+{block name="main"}
+<div class="theme-wrap">
+    {foreach $theme_list as $k=>$v}
+    <div class="theme-item {if $style['name']==$v['name']}border-color{/if}" data-id="{$v['id']}" data-title="{$v['title']}" data-name="{$v['name']}" data-main-color="{$v['main_color']}" data-aux-color="{$v['aux_color']}">
+        <div class="style">
+            <div style="background: url('{:img($v['color_img'])}') no-repeat;"></div>
+            <p>{$v['title']}</p>
+        </div>
+    </div>
+    {/foreach}
+</div>
+
+<ul class="template-list">
+    {foreach name="$template" item="vo"}
+    <li data-name="{$vo.name}" data-title="{$vo.title}" data-preview="{$vo.preview}" data-desc="{$vo.desc}">
+        <div class="item-img">
+            <img src="{:img($vo.cover)}" alt="">
+        </div>
+        <span class="item-name">{$vo.title}</span>
+        {if isset($vo.is_default) && $vo.is_default == 1}
+        <span class="is-default bg-color">使用中</span>
+        {/if}
+        <div class="item-hide">
+            <div class="item-btn-box">
+                <button class="use" onclick="createTemplate('{$vo.goods_id}','{$vo.name}')">立即使用</button>
+                <button class="preview" onclick="$('#{$vo.name}').click()">预览</button>
+            </div>
+        </div>
+        <img id="{$vo.name}" class="layui-hide" src="{:img($vo.preview)}" layer-src>
+    </li>
+    {/foreach}
+</ul>
+{/block}
+{block name="script"}
+<script>
+layui.use('form', function() {
+    var repeat_flag = false; //防重复标识
+    $(".theme-item").click(function () {
+        $(this).addClass("border-color").siblings("div").removeClass("border-color");
+        var obj = {
+            id: $(this).attr('data-id'),
+            title: $(this).attr('data-title'),
+            name: $(this).attr('data-name'),
+            main_color: $(this).attr('data-main-color'),
+            aux_color: $(this).attr('data-aux-color'),
+        };
+
+        if (repeat_flag) return;
+        repeat_flag = true;
+        $.ajax({
+            url: ns.url("shop/diy/style"),
+            data: obj,
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                repeat_flag = false;
+                layer.msg(res.message);
+            }
+        });
+    });
+});
+
+// 使用模板
+function createTemplate(goods_id,name) {
+    $.ajax({
+        type: 'post',
+        url: ns.url("shop/diy/create"),
+        data: {
+            goods_id: goods_id,
+            name: name
+        },
+        dataType: 'JSON',
+        success: function(res) {
+            if (res.code >= 0){
+                location.href = ns.url("shop/diy/index");
+            }else{
+                layer.msg(res.message);
+            }
+        }
+    });
+    // var tips = `切换模版后需要重新<a href="{:addon_url('shop/config/sitedeploy')}" target="_blank" class="text-color">部署</a>H5、小程序`;
+    // layer.confirm(tips, {
+    //     title: '操作提示',
+    //     btn: ['确定', '取消'],
+    //     yes: function () {
+    //     }
+    // });
+}
+</script>
+{/block}

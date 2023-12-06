@@ -1,0 +1,24 @@
+.body-content{margin: 0 !important;width: 100%;min-height: calc(100vh - 0px);background: url("../img/back.jpg") no-repeat center / contain;background-size: 100% 100% ;overflow: auto;position: relative;background-attachment: fixed;}
+.guide-top {width: 1200px;margin:0 auto;overflow: hidden}
+.guide-top>div {width: 38.5px; height: 38.5px;margin:0 auto;margin-top:134px;}
+.guide-top>span { display: block;width: 15px;height: 4px;background: #fff;margin: 15px auto 10px;}
+.guide-top>p {text-align: center;color:#fff;font-size: 24px; margin:10px 0}
+.guide-links {background: rgba(255, 255, 255, 0.83);width: 1200px;margin:95px auto 0;display: flex}
+.guide-links>a{ cursor:pointer; display: block;width: 240px;height: 320px;overflow: hidden;text-decoration: none;border-right: 1px solid #ccc; }
+.guide-links>a:nth-child(5){ border:0px}
+.guide-links li {width:240px;height: 320px;overflow: hidden}
+.guide-links li img {width: 39.5px;height: 39.5px;display: block;margin:115px auto 0}
+.guide-links li p {text-align: center;font-size: 20px;color:#000;margin-top: 15px}
+.guide-forter {width: 1200px;margin:0 auto;margin-top: 95px}
+.guide-forter>a {display: block}
+.guide-forter p{text-align: center;padding: 3px 0px}
+.guide-forter p a{color:#6D7278;font-size: 16px;}
+.guide-forter div {width: 150px;height: 50px;margin: 0 auto;line-height: 50px;text-align: center;}
+.guide-forter img {height: auto;width: auto;max-width: 150px;max-height: 50px;}
+.guide-links li .selected{ display: none}
+.guide-links li.li-selected{background: #155FFA;}
+.guide-links li.li-selected .no-select{display: none}
+.guide-links li.li-selected .selected{display: block}
+.guide-links li.li-selected p{color: #fff}
+.goods-preview .qrcode-wrap {max-width: 130px; max-height: 130px; overflow: hidden;}
+.goods-preview .qrcode-wrap input {margin-top: 30px;}

@@ -1,0 +1,394 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_CSS/promotion_detail.css">
+<style>
+    .layui-tab-content {padding: 0}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">基本信息</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <div class="promotion-view">
+            <div class="promotion-view-item">
+                <label>优惠券名称：</label>
+                <span>{$info.coupon_name}</span>
+            </div>
+            <div class="promotion-view-item">
+                <label>优惠券类型：</label>
+                <span>{if $info.type == 'reward'} 满减 {else /} 折扣 {/if}</span>
+            </div>
+            <div class="promotion-view-item">
+                <label>{if $info.type == 'reward'} 优惠券面额 {else /} 优惠券折扣 {/if}：</label>
+                <span>{if $info.type == 'reward'} ￥ {$info.money} {else /} {$info.discount} 折 {/if}</span>
+            </div>
+            {if $info.type == 'discount'}
+                {if $info.discount_limit != 0}
+                    <div class="promotion-view-item">
+                        <label>最多优惠：</label>
+                        <span>￥ {$info.discount_limit}</span>
+                    </div>
+                {/if}
+            {/if}
+
+            <div class="promotion-view-item">
+                <label>发放数量：</label>
+                <span>
+                     {if $info.count > 0 }
+                        {$info.count} 张
+                    {else /}
+                        无限制
+                    {/if}
+                </span>
+            </div>
+            <div class="promotion-view-item">
+                <label>最大领取数量：</label>
+                <span>{$info.max_fetch} 张</span>
+            </div>
+            <div class="promotion-view-item">
+                <label>使用门槛：</label>
+                <span>{$info.at_least} 元</span>
+            </div>
+            <div class="promotion-view-item">
+                <label>有效期：</label>
+                <span>
+                    {if $info.validity_type == 0}
+                        {:date('Y-m-d H:i:s',$info.end_time)}
+                    {elseif $info.validity_type == 1 }
+                        领取后 {$info.fixed_term} 天有效
+                    {else /}
+                        长期有效
+                    {/if}
+                </span>
+            </div>
+
+            {if $info.goods_type == 1}
+                <div class="promotion-view-item">
+                    <label>活动商品：</label>
+                    <span>全部商品参与</span>
+                </div>
+            {/if}
+        </div>
+        <div class="promotion-view">
+            <div class="promotion-view-item-line">
+                <label class="promotion-view-item-custom-label">优惠券图片：</label>
+                <div class="promotion-view-item-custom-box img-upload">
+                    <div class="upload-img-block icon">
+                        <div class="upload-img-box" id="couponImg">
+                            {if condition="$info.image"}
+                            <img layer-src src="{:img($info.image)}" />
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">数据统计</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <div class="promotion-stat-view todo-list">
+            <div class="promotion-stat-item" >
+                <div class="promotion-stat-item-title">发放数</div>
+                <div class="promotion-stat-item-value">{$info.count}</div>
+            </div>
+            <div class="promotion-stat-item" >
+                <div class="promotion-stat-item-title">领取数</div>
+                <div class="promotion-stat-item-value">{$info.lead_count}</div>
+            </div>
+
+            <div class="promotion-stat-item" >
+                <div class="promotion-stat-item-title">使用数</div>
+                <div class="promotion-stat-item-value">{$info.used_count}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">领取记录</span>
+        </div>
+    </div>
+    <div class="layui-card-body layui-tab table-tab" lay-filter="coupon_tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="">全部</li>
+            <li lay-id="1">已领取</li>
+            <li lay-id="2">已使用</li>
+            <li lay-id="3">已过期</li>
+        </ul>
+        <div class="layui-tab-content">
+            <!-- 列表 -->
+            <table id="coupon" lay-filter="coupon"></table>
+        </div>
+    </div>
+</div>
+
+{if $info.goods_type != 1}
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">活动商品</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <div class='promotion-view-list'>
+            <table id="promotion_list"></table>
+        </div>
+    </div>
+</div>
+{/if}
+
+{/block}
+{block name="script"}
+<script type='text/html' id="promotion_list_item_box_html">
+    <div class="promotion-list-item-title">
+        <div class="promotion-list-item-title-icon">
+            <img src="{{ ns.img(d.goods_image) }}" alt="">
+        </div>
+        <p class="promotion-list-item-title-name multi-line-hiding">{{ d.goods_name }}</p>
+    </div>
+</script>
+
+<script type="text/html" id="memberInfo">
+    <div class='table-title'>
+        <div class='title-pic'>
+            <img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+        </div>
+        <div class='title-content' onclick="location.href = ns.url('shop/member/editmember?member_id={{d.member_id}}')">
+            <p class="layui-elip">{{d.nickname}}</p>
+            <p class="layui-elip">{{d.mobile}}</p>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="operation">
+    <div class="table-btn" align="right">
+        {{# if(d.state == 1){ }}
+        <a class="layui-btn" lay-event="recovery">回收</a>
+        {{# } }}
+    </div>
+</script>
+
+<script type="text/html" id="toolbarOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="recovery">批量回收</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="recovery">批量回收</button>
+</script>
+
+<script>
+    var promotion_list = {:json_encode($info.goods_list, JSON_UNESCAPED_UNICODE)},
+        coupon_type_id = {$info.coupon_type_id},
+        element,table,
+        getType = {:json_encode($get_type)};
+
+    layui.use('element', function() {
+        element = layui.element;
+
+        element.on('tab(coupon_tab)', function(){
+            table.reload({
+                page: {curr: 1},
+                where: {'state': this.getAttribute('lay-id'),"coupon_type_id": coupon_type_id},
+            })
+        });
+
+        new Table({
+            elem: '#promotion_list',
+            cols: [
+                [{
+                    field: 'goods_name',
+                    title: '商品名称',
+                    unresize: 'false',
+                    width: '60%',
+                    templet: '#promotion_list_item_box_html'
+                }, {
+                    field: 'price',
+                    title: '商品价格(元)',
+                    unresize: 'false',
+                    align: 'right',
+                    width: '20%',
+                    templet: function(data) {
+                        return '￥' + data.price;
+                    }
+                }, {
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    align: 'center',
+                    width: '20%'
+                }],
+            ],
+            data: promotion_list
+        });
+
+        table = new Table({
+            elem: '#coupon',
+            url: ns.url("coupon://shop/coupon/receive"),
+            where: {
+                "coupon_type_id": coupon_type_id
+            },
+            cols: [
+                [{
+                    type: 'checkbox',
+                    width: '3%',
+                    unresize: 'false'
+                },{
+                    templet: '#memberInfo',
+                    title: '会员信息',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+                    field: 'coupon_name',
+                    title: '优惠券',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return `<a href="`+ ns.url('coupon://shop/coupon/detail', {coupon_type_id: data.coupon_type_id }) +`" target="_blank" class="text-color">`+ data.coupon_name +`</a>`;
+                    }
+                }, {
+                    title: '类型',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return data.type == 'reward' ? '满减券' : '折扣券';
+                    }
+                }, {
+                    title: '获取方式',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return getType[data.get_type] ? getType[data.get_type] : '';
+                    }
+                }, {
+                    title: '状态',
+                    width: '12%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        var str = '';
+                        switch (data.state) {
+                            case 1:
+                                str = '已领取';
+                                break;
+                            case 2:
+                                str = '已使用';
+                                break;
+                            case 3:
+                                str = '已过期';
+                                break;
+                        }
+                        return str;
+                    }
+                },  {
+                    title: '领取时间',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return ns.time_to_date(data.fetch_time);
+                    }
+                }, {
+                    title: '使用时间',
+                    width: '15%',
+                    templet: function(data) {
+                        return data.use_time ? ns.time_to_date(data.use_time) : '';
+                    }
+                },
+                    {
+                        title: '操作',
+                        width: '5%',
+                        templet: '#operation'
+                    }
+                ]
+            ],
+            parseData: function(data){
+                data.data.list = data.data.list.map(function (item) {
+                    item.LAY_DISABLED = item.state != 1;
+                    return item;
+                })
+                return {
+                    "code": data.code,
+                    "msg": data.message,
+                    "count": data.data.count,
+                    "data": data.data.list
+                };
+            },
+            toolbar: '#toolbarOperation',
+            bottomToolbar: "#batchOperation"
+        });
+
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'recovery': //编辑
+                    recoveryCoupon([{coupon_type_id: data.coupon_type_id, coupon_id: data.coupon_id}]);
+                    break;
+            }
+        })
+
+        /**
+         * 批量操作
+         */
+        table.bottomToolbar(function(obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+            switch (obj.event) {
+                case "recovery":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push({coupon_type_id: obj.data[i].coupon_type_id, coupon_id: obj.data[i].coupon_id});
+                    recoveryCoupon(id_array);
+                    break;
+            }
+        });
+
+        /**
+         * 批量操作
+         */
+        table.toolbar(function(obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push({coupon_type_id: obj.data[i].coupon_type_id, coupon_id: obj.data[i].coupon_id});
+                    recoveryCoupon(id_array);
+                    break;
+            }
+        });
+    });
+
+    function recoveryCoupon(data) {
+        layer.confirm('回收将会收回会员领取的待使用的优惠券，已使用的将无法回收，确定要回收所选优惠券吗？', function() {
+            $.ajax({
+                url: ns.url("coupon://shop/coupon/recoverycoupon"),
+                data: {
+                    coupon_list: JSON.stringify(data)
+                },
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    layer.msg(res.message);
+                    if (res.code == 0) {
+                        table.reload();
+                    }
+                }
+            });
+        })
+    }
+</script>
+{/block}

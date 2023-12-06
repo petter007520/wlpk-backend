@@ -1,0 +1,202 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+.layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+.layui-layout-admin.admin-style-2 .table-tab .layui-tab-title{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">会员昵称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="username" placeholder="请输入会员昵称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">订单编号：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="order_no" placeholder="请输入订单编号" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">奖励时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button type="button" class="layui-btn" lay-filter="search" lay-submit>筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab table-tab"  lay-filter="activity_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		{foreach $event_list as $k => $v}
+		<li lay-id="{$v['name']}">{$v['title']}</li>
+		{/foreach}
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="activity_list" lay-filter="activity_list"></table>
+	</div>
+</div>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 0 ? '已下架' : '已上架' }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="detail">查看订单</a>
+	</div>
+</script>
+
+<script type="text/html" id="member_info">
+	<div class="table-title">
+		<div class="title-pic">
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' "/>
+		</div>
+		<div class="title-content">
+			<a href="javascript:;" class="multi-line-hiding text-color"
+			   title="{{d.nickname}}">{{d.nickname}}</a>
+		</div>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form','element','laydate'], function() {
+		var table,
+			form = layui.form,
+			element = layui.element,
+            laydate = layui.laydate,
+			repeat_flag = false; //防重复标识
+
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(activity_tab)', function(){
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where:{
+                    'status':this.getAttribute('lay-id')
+                }
+            });
+		});
+
+			table = new Table({
+				elem: '#activity_list',
+				url: ns.url("memberconsume://shop/config/lists"),
+				cols: [
+					[{
+						title: '会员信息',
+						unresize: 'false',
+						width: '20%',
+						templet: '#member_info'
+					}, {
+						field: 'remark',
+						title: '内容',
+						unresize: 'false',
+						width: '30%'
+					}, {
+						title: '奖励类型',
+						unresize: 'false',
+						width: '20%',
+						align: 'left',
+						templet: function(data) {
+							if(data.type == 'point'){
+								return '积分';
+							}
+							if(data.type == 'growth'){
+								return '成长值';
+							}
+							if(data.type == 'coupon'){
+								return '优惠券';
+							}
+						}
+					}, {
+						field: 'create_time',
+						title: '奖励时间',
+						unresize: 'false',
+						width: '20%',
+						templet: function(data) {
+							return ns.time_to_date(data.create_time);
+						}
+					}, {
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						align:'right'
+					}]
+				]
+			});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'detail': //详情
+					location.href = ns.url("shop/order/detail", {"order_id": data.order_id});
+					break;
+			}
+		});
+
+        //开始时间
+        laydate.render({
+            elem: '#start_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                start_time = ns.date_to_time(value);
+
+            }
+        });
+        //结束时间
+        laydate.render({
+            elem: '#end_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                end_time = ns.date_to_time(value);
+            }
+        });
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	function add() {
+		location.href = ns.url("bundling://shop/bundling/add");
+	}
+</script>
+{/block}

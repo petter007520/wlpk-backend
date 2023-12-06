@@ -1,0 +1,122 @@
+{block name="resources"}
+<style type="text/css">
+.new-version-tips{margin-top: 10px;border:1px dashed;padding: 5px 10px;font-weight: bold;}
+.weapp .all-content{text-align: center;margin-top: 0;}
+.qrcode {width: 100px;height: 100px;margin: 20px auto;}
+.not-config{line-height: 110px;}
+.weapp .word-aux{font-size: 14px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form all-box-item all-shop-information weapp" {notempty name="$config"}style="height:300px;"{/notempty}>
+	<div class="all-top">
+		<div class="title">微信小程序设置<a href="{:addon_url('weapp://shop/weapp/config')}" target="_blank" class="text-color">配置</a></div>
+		{notempty name="$config"}
+		<span class="edit text-color" onclick="editOpenWeapp()">编辑</span>
+		{/notempty}
+	</div>
+	{notempty name="$config"}
+	<div class="all-content">
+		<img src="{:img($config.qrcode)}" class="qrcode">
+		<div class="all-item">
+			<p>小程序名称：</p>
+			<a>{$config.weapp_name}</a>
+		</div>
+		<div class="all-item">
+			<p>小程序ID：</p>
+			<a>{$config.appid}</a>
+		</div>
+		<div class="all-item">
+			<p>小程序原始ID：</p>
+			<a>{$config.weapp_original}</a>
+		</div>
+	</div>
+	{else/}
+	<p class="not-config">小程序尚未配置，请先配置您的小程序，<a href="{:addon_url('weapp://shop/weapp/config')}" target="_blank" class="text-color">去配置</a></p>
+	{/notempty}
+</div>
+
+{notempty name="$config"}
+<script type="text/html" id="contentWeapp">
+	<div class="layui-collapse tips-wrap">
+		<div class="layui-colla-item">
+			<h2 class="layui-colla-title">操作提示</h2>
+			<ul class="layui-colla-content layui-show">
+				<li>下载之后需使用微信开发者工具上传代码，微信开发者工具下载地址: <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html" target="_blank" class="text-color">https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html</a></li>
+				<li>上传之后登录<a href="https://mp.weixin.qq.com" target="_blank" class="text-color">微信公众平台</a>，在版本管理中选择刚上传的版本提交审核，审核通过之后即可发布小程序。</li>
+				<li>UNIAPP源码包授权后可下载，可很好的进行二次开发，可通过<a href="https://www.dcloud.io/hbuilderx.html" target="_blank" class="text-color">HBuilder X</a>编译为H5、微信小程序、支付宝小程序、头条小程序等</li>
+				<li>小程序代码包是由UNIAPP源码包编译出来的微信小程序版下载后可直接通过微信开发者工具上传使用，但是无法进行二次开发。</li>
+			</ul>
+		</div>
+	</div>
+	<div class="layui-form form-wrap weapp">
+		<div class="layui-form-item">
+			<label class="layui-form-label"></label>
+			<div class="layui-input-block">
+				<img src="{:img($config.qrcode)}" class="qrcode" style="margin: 0;">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">小程序名称：</label>
+			<div class="layui-input-block">
+				<span>{$config.weapp_name}</span>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">小程序ID：</label>
+			<div class="layui-input-block">
+				<span>{$config.appid}</span>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">小程序原始ID：</label>
+			<div class="layui-input-block">
+				<span>{$config.weapp_original}</span>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">源码下载：</label>
+			<div class="layui-input-block">
+				<button class="layui-btn" onclick="window.open(ns.url('weapp://shop/weapp/download'));">下载小程序代码包</button>
+				{if $is_auth}
+				<button class="layui-btn" onclick="window.open(ns.url('weapp://shop/weapp/downloaduniapp'));">下载UNIAPP源码包</button>
+				{else/}
+				<button class="layui-btn" onclick="authLayer()">下载UNIAPP源码包</button>
+				{/if}
+			</div>
+			{if $is_new_version}
+			<div class="word-aux new-version-tips text-color bg-color-diaphaneity border-color">小程序已更新，为了不影响您的使用请尽快下载小程序上传更新。</div>
+			{/if}
+			<div class="word-aux text-color">下载完成之后，使用微信开发工具进行上传代码。</div>
+			<div class="word-aux text-color">上传之后提交审核，审核通过发布小程序。</div>
+		</div>
+	</div>
+</script>
+{/notempty}
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	//打开手机端编辑弹窗
+	function editOpenWeapp(){
+		pcPopup = layer.open({
+			title:'微信小程序设置',
+			type:1,
+			area: 'auto',
+			maxWidth:700,
+			content:$('#contentWeapp').html(),
+			success:function(res){
+				form.render()
+			}
+		});
+	}
+	function authLayer(){
+		layer.confirm('当前为免费版，授权后才可以下载UNIAPP源码包！是否立即授权？', {
+		  btn: ['立即授权','暂不需要'] //按钮
+		}, function(){
+		  	window.open('https://www.niushop.com');
+		}, function(){
+		  	layer.closeAll();
+		});
+	}
+</script>
+{/block}

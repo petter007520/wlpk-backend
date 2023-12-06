@@ -1,0 +1,310 @@
+@CHARSET "UTF-8";
+
+/*快捷导航组件*/
+.quick-navigation .preview-draggable .preview-box {
+	padding: 8px 0;
+	margin: 0 15px;
+	border-radius: 5px;
+}
+
+.quick-navigation .preview-draggable ul {
+	overflow: hidden;
+	list-style: none;
+}
+
+.quick-navigation .preview-draggable li {
+	width: 50%;
+	text-align: center;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.quick-navigation .preview-draggable li img {
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.quick-navigation .preview-draggable li:last-child {
+	border: 0;
+}
+
+.quick-navigation .preview-draggable li span {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	height: 20px;
+	display: block;
+	line-height: 20px;
+}
+
+/*.quick-navigation .preview-draggable .quick-nav{visibility: hidden;}*/
+.quick-navigation .preview-draggable .quick-nav > .wrap {
+	/* overflow-x: hidden;white-space: nowrap; background: #ffffff; */
+	display: flex;
+	/* justify-content: space-around; */
+	flex-wrap: wrap;
+	padding: 0 5px;
+}
+
+.quick-navigation .quick-nav-list .template-list .template-item {
+	float: left;
+	text-align: center;
+	border: 1px solid #e5e5e5;
+	margin-right: 20px;
+	padding: 5px;
+	background: #ffffff;
+	cursor: pointer;
+}
+
+.quick-navigation .quick-nav-list .template-list .template-item img {
+	display: block;
+}
+
+.quick-navigation .add-item {
+	padding: 10px;
+	border: 1px dashed #e5e5e5;
+	margin: 16px 0 10px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.quick-navigation .add-item i {
+	display: inline-block;
+	height: 24px;
+	line-height: 24px;
+	font-size: 18px;
+	margin-right: 10px;
+	font-style: normal;
+}
+
+.quick-navigation .add-item span {
+	display: inline-block;
+	height: 24px;
+	line-height: 24px;
+}
+
+.quick-navigation .quick-nav {
+	display: flex;
+	/*overflow-x: auto;*/
+	overflow: hidden;
+	padding:5px 0;
+}
+
+.quick-navigation .quick-nav::-webkit-scrollbar {
+	height: 0;
+}
+
+.quick-navigation .quick-nav::-webkit-scrollbar-track {
+	background-color: #e4e4e4;
+}
+
+.quick-navigation .quick-nav::-webkit-scrollbar-thumb {
+	background-color: #999;
+}
+
+.quick-navigation .quick-nav .quick-nav-item {
+	flex-shrink: 0;
+}
+
+.quick-navigation .quick-nav .quick-nav-item {
+	display: flex;
+	align-items: center;
+	padding: 5px 10px;
+	border-radius: 20px;
+	box-sizing: border-box;
+	margin-right: 10px;
+}
+
+.quick-navigation .quick-nav .quick-nav-item:last-child {
+	margin-right: 0;
+}
+
+.quick-navigation .quick-nav .quick-nav-item .quick-img {
+	margin-right: 5px;
+}
+
+.quick-navigation .quick-nav .quick-nav-item .quick-img img {
+	height: 20px;
+}
+
+.quick-navigation .quick-nav .quick-nav-item .quick-img .icon-wrap {
+	font-size: 30px;
+}
+
+.quick-navigation .quick-nav .quick-nav-item .quick-img i {
+	font-size: 30px;
+	color: #666;
+}
+
+.quick-navigation .quick-nav .quick-nav-item .quick-text {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	width: 100%;
+	height:20px;
+	line-height: 20px;
+	font-size:12px;
+}
+
+.quick-navigation .quick-nav-list > ul {
+}
+
+.quick-navigation .quick-nav-list > ul > li {
+	padding: 10px 10px 10px 0px;
+	background: #ffffff;
+	border: 1px dashed #e5e5e5;
+	position: relative;
+	margin-top: 16px;
+}
+
+.quick-navigation .quick-nav-list > ul > li > .iconfont {
+	position: absolute;
+	top: 16px;
+	left: 10px;
+	cursor: move;
+	font-size: 20px;
+}
+
+.quick-navigation .quick-nav-list > ul > li:first-child {
+	margin-top: 0;
+}
+
+.quick-navigation .quick-nav-list > ul > li:hover .del {
+	display: block;
+}
+
+.quick-navigation .edit-attribute .attr-wrap .restore-wrap .img-block, .quick-navigation .edit-attribute .attr-wrap .restore-wrap .img-block.has-choose-image > div {
+	width: 50px;
+	height: 50px;
+	line-height: 50px;
+}
+
+.quick-navigation .edit-attribute .attr-wrap .restore-wrap .img-block.has-choose-image img {
+	width: 35px;
+	height: 35px;
+}
+
+.quick-navigation .edit-attribute .icon-box {
+	width: 60px;
+	height: 60px;
+	font-size: 60px;
+	border: 1px dashed #ddd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 !important;
+	cursor: pointer;
+	position: relative;
+}
+
+.quick-navigation .edit-attribute .icon-box .select-icon {
+	width: inherit;
+	height: inherit;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.quick-navigation .edit-attribute .icon-box .select-icon .add {
+	font-size: 26px;
+	color: var(--base-color);
+}
+
+.quick-navigation .edit-attribute .icon-box .operation {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, .6);
+	flex-direction: column;
+	display: none;
+}
+
+.quick-navigation .edit-attribute .icon-box:hover .operation {
+	display: flex;
+}
+
+.quick-navigation .edit-attribute .icon-box .operation-warp {
+	flex: 1;
+	height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+}
+
+.quick-navigation .edit-attribute .icon-box .iconfont {
+	margin: 0 3px;
+	font-size: 16px !important;
+}
+
+.quick-navigation .edit-attribute .icon-box .operation .js-replace {
+	line-height: 1;
+	color: #fff;
+	text-align: center;
+	padding: 5px 0;
+	background: rgba(0, 0, 0, .7);
+	font-size: 12px;
+	height: unset;
+}
+
+.quick-navigation .edit-attribute .quick-nav-list .icon-box .icon-wrap:hover .operation {
+	display: block;
+}
+
+.quick-navigation .edit-attribute .quick-nav-list .img-upload .upload-img-box:hover .operation {
+	display: block;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list li {
+
+}
+
+.quick-navigation .edit-attribute .navigation-set-list li .layui-form-item:last-of-type {
+	margin-bottom: 0;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list li .layui-form-label.sm {
+	width: 75px !important;
+}
+
+
+.quick-navigation .edit-attribute .navigation-set-list .img-upload {
+	display: flex;
+	align-items: center;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list .img-upload img {
+	width: 100%;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list .action-box {
+	display: flex;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list .action {
+	margin-right: 3px;
+	width: 42px;
+	height: 28px;
+	line-height: 28px;
+	text-align: center;
+	border: 1px solid #EEEEEE;
+	cursor: pointer;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list .iconfont {
+	font-size: 20px;
+}
+
+.quick-navigation .edit-attribute .navigation-set-list .action:hover {
+	border-color: var(--base-color);
+	color: var(--base-color);
+}
+
+.quick-navigation .img-icon-box {
+	display: flex;
+	align-items: center;
+}

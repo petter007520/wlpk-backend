@@ -1,0 +1,289 @@
+{extend name="app/shop/view/base.html"/}
+
+{block name="resources"}
+<style>
+  .progress-layer {width:400px;background:#fff;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:1px 1px 50px rgba(0,0,0,.3);padding:20px 20px;z-index:100;display:none;}
+  .progress-layer h3 {line-height:1;margin-bottom:15px;text-align:center;font-size:14px;}
+  .progress-layer .layui-progress-big,.progress-layer .layui-progress-big .layui-progress-bar {height:14px;line-height:14px;}
+  .progress-layer .layui-progress-text {line-height:14px;}
+  .goods-info {padding: 5px 0;align-items: center;flex-wrap:unset!important;}
+  .goods-info .room-name {padding-left: 5px;line-height: 1}
+  .goods-info img {width:50px;height: 50px;}
+  .single-filter-box{justify-content: end}
+  .add-good-form .layui-input-block {width: 450px;}
+  .add-good-form .layui-form-item {position: relative;}
+  .add-good-form .category-wrap {position: absolute; left: 150px; top: 40px; z-index: 9; background-color: #FFFFFF; border: 1px solid #EEEEEE;}
+  .add-good-form .category-wrap .category-list {display: flex;}
+  .add-good-form .category-wrap ul {width: 151px; height: 300px; overflow: auto; background-color: #FFFFFF; border-right: 1px solid #EEEEEE; box-sizing: border-box;}
+  .add-good-form .category-wrap ul:last-child {border-right: 1px solid #EEEEEE;}
+  .add-good-form .category-wrap ul li {line-height: 26px; padding: 0 15px; cursor: pointer;}
+  .add-good-form .category-wrap .category-btn {width: 100%; padding: 10px 15px; box-sizing: border-box; border-top: 1px solid #EEEEEE;}
+  .layui-layer-page .layui-layer-content {overflow: auto !important; position: relative;}
+  .goods-category-mask {width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: 9;}
+  .selected-style {color: #FFFFFF;}
+  .reject-reason {height: 100%;padding-bottom: 20px;}
+  .reason .layui-layer-content {overflow: unset!important}
+  .layui-layout-admin .screen .layui-colla-content{margin-bottom: 15px;}
+
+  .layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline {
+    background-color: #fff;
+  }
+</style>
+{/block}
+{block name="main"}
+<div class="single-filter-box">
+  <a href="{:addon_url('shop/goods/import')}"><button class="layui-btn">导入商品</button></a>
+</div>
+<!-- 筛选面板 -->
+<div class="screen layui-collapse" lay-filter="selection_panel">
+  <div class="layui-colla-item">
+<form class="layui-colla-content layui-form layui-show">
+<div class="layui-form">
+  <div class="layui-form-item">
+      <div class="layui-inline">
+        <label class="layui-form-label">导入时间：</label>
+        <div class="layui-input-inline">
+          <input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+          <i class=" iconrili iconfont calendar"></i>
+        </div>
+        <div class="layui-input-inline">
+          <input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+          <i class=" iconrili iconfont calendar"></i>
+        </div>
+        <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-seven" onclick="datePick(7, this);return false;">近7天</button>
+        <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-thirty" onclick="datePick(30, this);return false;">近30天</button>
+      </div>
+
+    <div class="form-row">
+      <button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+</div>
+</form>
+  </div>
+</div>
+<table id="record_list" lay-filter="record_list"></table>
+<!-- 直播间信息 -->
+<script type="text/html" id="goodsinfo">
+  <div class="table-btn goods-info">
+    <img src="{{ ns.img(d.cover_img) }}">
+    <span class="room-name" title="{{ d.goods_name }}">{{ d.goods_name }}</span>
+  </div>
+</script>
+
+<script type="text/html" id="reason">
+  <div class="reject-reason">
+    {{d.reject_reason}}
+  </div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+  <div class="table-btn">
+    {{# if(d.fail_num > 0){ }}
+    <a class="layui-btn" href="/shop/goods/download?id={{ d.id }}">下载失败数据</a>
+    {{# } }}
+  </div>
+</script>
+<div class="progress-layer">
+  <h3>正在同步中...</h3>
+  <div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="progress">
+    <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+  </div>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+  var form, table, element, laytpl,
+          save_flag = false,
+          download_flag = false,
+          goodsId = [], selectedGoodsId = [], goods_list = [],out_product_id='';
+
+  reLoad();
+  function reLoad() {
+    layui.use(['form', 'element', 'laytpl','laydate'], function () {
+      form = layui.form;
+      element = layui.element;
+      laytpl = layui.laytpl;
+      var laydate = layui.laydate;
+      form.render();
+
+      //渲染时间
+      laydate.render({
+        elem: '#start_time'
+        ,type: 'datetime'
+        ,change: function(value, date, endDate){
+          $(".date-picker-btn").removeClass("selected");
+        }
+      });
+      laydate.render({
+        elem: '#end_time'
+        ,type: 'datetime'
+        ,change: function(value, date, endDate){
+          $(".date-picker-btn").removeClass("selected");
+        }
+      });
+
+      // 搜索功能
+      form.on('submit(search)', function (data) {
+        table.reload({
+          page: {
+            curr: 1
+          },
+          where: data.field
+        });
+        return false;
+      });
+
+      table = new Table({
+        elem: '#record_list',
+        url: ns.url("/shop/goods/importrecordlist"),
+        where: {
+          "start_time": $("#start_time").val(),
+          "end_time": $("#end_time").val(),
+      },
+        cols: [
+          [
+          {
+            title: '导入文件名称',
+            unresize: 'false',
+            width: '15%',
+            field: 'record_name'
+          },{
+            title: '站点',
+            unresize: 'false',
+            width: '15%',
+            field: 'site_id'
+          }, {
+            title: '导入时间',
+            unresize: 'false',
+            width: '15%',
+            field: 'import_time'
+
+          }, {
+            title: '成功数量',
+            unresize: 'false',
+            width: '15%',
+            field: 'success_num'
+          }, {
+            field: 'fail_num',
+            title: '失败数量',
+            unresize: 'false',
+            width: '15%'
+          }, {
+            title: '操作',
+            toolbar: '#operation',
+            unresize: 'false',
+				    align:'right'
+          }]
+        ]
+      });
+
+      table.tool(function (obj) {
+        var data = obj.data;
+        switch (obj.event) {
+          case 'download': //下载文件
+            download(data.id);
+            break;
+        }
+      })
+
+
+      // 批量操作
+      table.bottomToolbar(function (obj) {
+        if (obj.data.length < 1) {
+          layer.msg('请选择要操作的数据');
+          return;
+        }
+        var id_array = new Array();
+        for (i in obj.data) id_array.push(obj.data[i].out_product_id);
+        switch (obj.event) {
+          case "delete":
+            deleteGoods(id_array.toString());
+            break;
+          case "listing":
+            listingGoods(id_array.toString());
+            break;
+          case "dellisting":
+            dellistingGoods(id_array.toString());
+            break;
+        }
+      });
+
+      function download(id){
+        layer.confirm('是否确定要下载该文件？', {title: '提示'}, function () {
+          if (download_flag) return;
+          download_flag = true;
+
+          $.ajax({
+            url: ns.url("/shop/goods/download"),
+            data: {id: id},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+              layer.msg(res.message);
+              download_flag = false;
+              table.reload();
+            }
+          });
+        });
+      }
+    });
+  }
+
+  /**
+   * 七天时间
+   */
+  function datePick(date_num,event_obj){
+    $(".date-picker-btn").removeClass("selected");
+    $(event_obj).addClass('selected');
+    // alert(new Date().format("yyyy-MM-dd hh:mm"));
+    var now_date = new Date();
+
+    Date.prototype.Format = function (fmt,date_num) { //author: meizz
+      this.setDate(this.getDate()-date_num);
+      var o = {
+        "M+": this.getMonth() + 1, //月份
+        "d+": this.getDate(), //日
+        "H+": this.getHours(), //小时
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+        "S": this.getMilliseconds() //毫秒
+      };
+      if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+      for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+      return fmt;
+    };
+    // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+    var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+    var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+    $("input[name=start_time]").val(before_time,0);
+    $("input[name=end_time]").val(now_time,date_num-1);
+
+  }
+</script>
+
+<script type="text/html" id="table_goods_list">
+  {{#  layui.each(d, function(index, item) {  }}
+  <tr>
+    <td>
+      <div class="table-title">
+        <div class="title-pic">
+          {{#  if(item.goods_image){  }}
+          <img layer-src src="{{ns.img(item.goods_image.split(',')[0],'small')}}"/>
+          {{#  }  }}
+        </div>
+        <div class="title-content">
+          <a href="javascript:;" class="multi-line-hiding text-color-sub" title="{{item.goods_name}}">{{item.goods_name}}</a>
+        </div>
+      </div>
+    </td>
+  </tr>
+  {{#  })  }}
+</script>
+
+{/block}

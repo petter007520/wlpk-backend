@@ -1,0 +1,54 @@
+<nc-component :data="data[index]" class="goods-category">
+	
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="real-image-box" data-disabled="1"> 
+			<img :src="'{$resource_path}/img/category_style_' + nc.template + ((nc.template == 1 && nc.level == 2 || nc.template != 1 && nc.goodsLevel ==1) ? '_1' : '') + ((nc.template == 1 && nc.level == 3 || nc.template != 1 && nc.goodsLevel == 2) ? '_2' : '') + (nc.quickBuy ? '_quickBuy' : '') + (nc.search ? '_search' : '') +'.jpg'">
+		</div>
+	</template>
+	
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+
+		<template v-if="nc.lazyLoad">
+			<goods-category></goods-category>
+		</template>
+
+		<div class="goods-category-popup-wrap">
+			<div class="goods-classification-style layui-form">
+				<ul class="style-content">
+					<li>
+						<div  :class="{'style-img-box':true,'selected border-color': nc.template == 1}">
+							<img src="{$resource_path}/img/category_style_1_1_search.jpg" alt="">
+						</div>
+						<div  :class="{'style-img-box':true,'selected border-color': nc.template == 2}">
+							<img src="{$resource_path}/img/category_style_2_1_quickBuy_search.jpg" alt="">
+						</div>
+						<div :class="{'style-img-box':true,'selected border-color': nc.template == 3}">
+							<img src="{$resource_path}/img/category_style_3_1_search.jpg" alt="">
+						</div>
+						<div :class="{'style-img-box':true,'selected border-color': nc.template == 4}">
+							<img src="{$resource_path}/img/category_style_4_1_quickBuy_search.jpg" alt="">
+						</div>
+					</li>
+				</ul>
+				<input type="hidden" class="layui-input" name="level">
+				<input type="hidden" class="layui-input" name="template">
+			</div>
+		</div>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style"></template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var goodsCategoryResourcePath = "{$resource_path}"; // http路径
+			var goodsCategoryRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

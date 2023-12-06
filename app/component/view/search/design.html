@@ -1,0 +1,139 @@
+<nc-component :data="data[index]" class="top-search">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<template v-if="nc.lazyLoad">
+			<div :class="['preview-box',('preview-box-'+nc.searchStyle)]" :style="{background: nc.componentBgColor}">
+				<div class="top-search-form" v-if="[1,2].includes(nc.searchStyle)">
+					<template v-if="nc.searchStyle == 2">
+						<img v-if="nc.iconType == 'img'" :src="changeImgUrl(nc.imageUrl)"/>
+						<div v-if="nc.iconType == 'icon'" class="icon-box">
+							<iconfont :icon="nc.icon" v-if="nc.icon" :value="nc.style ? nc.style : ''"></iconfont>
+						</div>
+					</template>
+
+					<div class="top-search-box" :class="{'border-circle': nc.borderType == 2}" :style="{background: nc.elementBgColor, textAlign: nc.textAlign}">
+						<span class="top-search-intro" :style="{color: nc.textColor ? nc.textColor : 'rgba(0,0,0,0)'}">{{ nc.title }}</span>
+						<span class="top-search-icon"><i class="iconfont iconsousuo" :style="{color: nc.textColor ? nc.textColor : 'rgba(0,0,0,0)'}"></i></span>
+					</div>
+				</div>
+				<div class="top-search-form" v-if="nc.searchStyle == 3">
+					<div :class="[{'border-circle': nc.borderType == 2},'top-search-box']" :style="{background: nc.elementBgColor, textAlign: nc.textAlign}">
+						<span class="top-search-icon"><i class="iconfont iconsousuo" :style="{color: nc.textColor ? nc.textColor : 'rgba(0,0,0,0)'}"></i></span>
+						<span class="top-search-intro" :style="{color: nc.textColor ? nc.textColor : 'rgba(0,0,0,0)'}">{{ nc.title }}</span>
+						<span class="top-search-btn" :style="{background: nc.pageBgColor}">搜索</span>
+					</div>
+
+					<img v-if="nc.iconType == 'img'" :src="changeImgUrl(nc.imageUrl)"/>
+					<div v-if="nc.iconType == 'icon'" class="icon-box">
+						<iconfont :icon="nc.icon" v-if="nc.icon" :value="nc.style ? nc.style : ''"></iconfont>
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+
+			<div class="template-edit-title">
+				<h3>搜索风格</h3>
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">搜索风格</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.styleList" v-if="nc.searchStyle==item.value">{{item.label}}</span>
+						<ul class="icon-wrap">
+							<li v-for="(item) in nc.tempData.styleList" class="search_type_left" @click="nc.searchStyle=item.value" :class="{'text-color border-color':nc.searchStyle==item.value}">
+								<i class="iconfont" :class="[{'text-color': nc.searchStyle==item.value}, item.icon_img]"></i>
+							</li>
+						</ul>
+					</div>
+
+					<div class="search_logo" v-show="[2,3].includes(nc.searchStyle)">
+						<img-icon-upload :data="{data : nc}"></img-icon-upload>
+						<div class="right-wrap">
+							<div class="action-box" v-show="nc.iconType == 'icon'">
+								<div class="action" @click="nc.tempData.methods.iconStyle($event)"><i class="iconfont iconpifu"></i></div>
+								<div class="action" :id="'search-color-' + nc.index"><i class="iconfont iconyanse"></i></div>
+							</div>
+							<div class="desc">宽度自适应（最大85px），高度38px</div>
+						</div>
+					</div>
+					<nc-link v-show="nc.searchStyle == 3" :data="{ field : nc.searchLink }"></nc-link>
+				</div>
+
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">文本位置</label>
+					<div class="layui-input-block">
+						<span v-for="(item) in nc.tempData.textAlignList" v-if="nc.textAlign==item.value">{{item.label}}</span>
+						<ul class="icon-wrap">
+							<li v-for="(item) in nc.tempData.textAlignList" @click="nc.textAlign=item.value" :class="{'text-color border-color':nc.textAlign==item.value}">
+								<i class="iconfont" :class="[{'text-color': nc.textAlign==item.value}, item.icon_img]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">显示位置</label>
+					<div class="layui-input-block">
+						<div v-for="(item) in nc.tempData.positionWayList" @click="nc.positionWay=item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.positionWay==item.value) }">
+							<i class="layui-anim layui-icon">{{ nc.positionWay==item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.label}}</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="template-edit-title">
+				<h3>搜索内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">搜索内容</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.title" :id="'title_' + index" placeholder="请输入搜索内容" class="layui-input" maxlength="20">
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+
+		<template v-if="nc.lazyLoad">
+			<search-resource></search-resource>
+
+			<div class="template-edit-title">
+				<h3>搜索样式</h3>
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">框体样式</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.borderList" v-if="nc.borderType==item.value">{{item.label}}</span>
+						<ul class="icon-wrap">
+							<li v-for="(item) in nc.tempData.borderList" @click="nc.borderType=item.value" :class="{'text-color border-color':nc.borderType==item.value}">
+								<i class="iconfont" :class="[{'text-color': nc.borderType==item.value}, item.icon_img]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<color :data="{ field : 'textColor', 'label' : '文本颜色','defaultColor': '#303133' }"></color>
+				<color :data="{ field : 'elementBgColor', 'label' : '背景颜色' }"></color>
+
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var searchResourcePath = "{$resource_path}"; // http路径
+			var searchRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

@@ -1,0 +1,519 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin .layui-body .body-content{min-height: initial;padding-top: 0;padding-bottom: 0;margin: 0;}
+	.layui-form-label.mid{width: 100px;}
+	.layui-form-label.mid+.layui-input-block{margin-left: 100px;}
+	.new-mid{margin-left: -20px !important;}
+	.poster-form{display: flex;background: #eee;}
+	.poster-left{width: 400px;height: 800px;background: #FFFFFF;padding: 10px 30px 10px 10px;}
+	.poster-left-header{font-size: 18px;border-bottom: 1px solid #eee;padding: 0 0 10px 0;margin: 0 0 10px 0;}
+	.poster-left-header1{font-size: 18px;padding: 0 0 10px 0;}
+	.poster-left-header2{font-size: 18px;padding: 0 0 10px 0;}
+	.layui-input-block{margin-left: 0;}
+	.poster-headimg,.poster-name{display: flex;}
+	.poster-right{width: 360px;height: 640px;opacity: 0.9;margin: 20px 0 0 271px;background-color: #fff;}
+	.tips{width: 153px;height: 16px;font-size: 12px;font-family: Microsoft YaHei;font-weight: 400;color: #909399;padding-left: 100px;}
+	.album-img-select{height: 30px;line-height: 30px;margin: 0 0 5px 20px;}
+	.upload-img-block{width: 300px;height: 100px;}
+	.upload{top: 50% !important;height: 100px;}
+	.form-row{padding-top: 20px;}
+	.poster-tips{background: #fff;width: 280px;margin-left: 320px;padding: 20px 20px;border: 1px solid #e8e8e8;border-right: none;}
+	.set-tips{font-size: 16px;font-family: Microsoft YaHei;font-weight: bolder;color: #303133;line-height: 22px;}
+	.content{font-size: 12px;font-family: Microsoft YaHei;font-weight: 400;color: #909399;line-height: 22px;margin-top: 10px;}
+	.goods-info{width: 340px;height: 354px;border-radius: 10px;margin: 50px 15px 20px;}
+	.goods_name{/*border-radius: 15px;*/font-family: Microsoft YaHei;font-weight: 400;line-height: 26px;text-align: left;margin: 30px 25px;}
+	.goods_img{border-radius: 5px;}
+	.goods_price-info{width: 310px;height: 80px;border-radius: 10px;margin: 0 15px;padding: 15px;}
+	.goods_price{font-size: 18px;font-family: Microsoft YaHei;font-weight: 400;color: #FF4544;display: inline-block;width: 75px;height: 20px;}
+	.goods_market_price{font-size: 12px;font-family: Microsoft YaHei;font-weight: 400;text-decoration: line-through;color: #999999;display: inline-block;margin-top: 6px;}
+	.layui-nav-more1{width: 7px;height: 7px;border-width: 1px;border-color: #333 #333 transparent transparent;border-style: solid;transform: rotate(135deg);top: 16px;right: 16px;margin-top: 7px;}
+	.layui-nav-more2{width: 7px;height: 7px;border-width: 1px;border-color: #333 #333 transparent transparent;border-style: solid;transform: rotate(135deg);top: 16px;right: 16px;margin-top: 7px;}
+	.layui-new-more1{transform: rotate(45deg);}
+	.layui-new-more2{transform: rotate(45deg);}
+	.layui-colorpicker{margin-left: 15px;}
+	.form-row{position: fixed;bottom: 0px;left: 180px;width: 89.7%;background: #fff;padding: 10px 0;}
+	.layui-colorpicker-main-input .layui-btn{padding: 0 10px;}
+	.circle{border-radius: 50%;}
+	.upload img{margin-top: 20px;}
+	.img_prev{margin-top: 0 !important;}
+	.layui-layout-admin.admin-style-2 .form-row{text-align: center;}
+	.layui-layout-admin.admin-style-2 .layui-body .body-content{padding: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form add-poster">
+	<div class="poster-form">
+		<div id="view" style="display: flex;"></div>
+		<div class="poster-tips">
+			<div class="set-tips">海报设置说明</div>
+			<div class="content">
+				1. 用户头像,用户昵称这两个元素需要空出<br>
+				2. 裂变海报其他部分皆可自定义设计<br>
+				3. 可自行拖拉设置相应元素的大小
+			</div>
+		</div>
+	</div>
+
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save_poster">保存</button>
+		<input type="hidden" name="template_id" value='{notempty name="$template_data"}{$template_data.template_id}{/notempty}'>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+
+<script type="text/html" id="poster_left">
+	<div class="poster-left">
+		<div class="poster-left-header">基础设置</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>海报名称</label>
+			<div class="layui-input-block mid">
+				<input type="text" class="layui-input" lay-verify="required" placeholder="请输入海报名称" name="poster_name" value="{{d.poster_name || ''}}"/>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label short-label mid"><span class="required">*</span>上传海报</label>
+			<div class="layui-input-block mid">
+				<div class="upload-img-block icon">
+					<div class="upload-img-box {{d.background ? 'hover' : ''}}" >
+					<div class="upload-default" id="posterImg">
+						{{# if (d.background) {  }}
+						<div id="preview_posterImg" class="preview_img">
+							<img layer-src src='{{ ns.img(d.background) }}' class="img_prev" data-id="qr_img"/>
+							<p style="width: 300px;"></p>
+						</div>
+						{{# } else {  }}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{{# }  }}
+					</div>
+					<div class="operation">
+						<div style="position: absolute; top: -10px; left: 110px;">
+							<i title="图片预览" class="iconfont iconreview js-preview"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" lay-verify="background" name="background" value='{{d.background}}' />
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tips">建议图片尺寸：720*1280px</div>
+
+	<div class="layui-form-item poster-headimg">
+		<div class="layui-form album-img-select">
+			<input type="checkbox" name="switch" lay-filter="headimg" value="" lay-skin="primary" {{d.headimg_is_show == '1' ? 'checked' : ''}}>
+		</div>
+		<label class="layui-form-label mid" style="text-align: left;">用户头像</label>
+		<div class="layui-input-block mid new-mid">
+			<div class="layui-input-block">
+				<input type="radio" lay-filter="headimg" name="shop_status" value="circle" title="圆形" {{d.headimg_shape == 'circle' ? 'checked' : ''}}>
+				<input type="radio" lay-filter="headimg" name="shop_status" value="square" title="方形" {{d.headimg_shape == 'square' ? 'checked' : ''}}>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item poster-name">
+		<div class="layui-form album-img-select">
+			<input type="checkbox" name="check[]" lay-filter="nickname" value="" lay-skin="primary" {{d.nickname_is_show == '1' ? 'checked' : ''}}>
+		</div>
+		<label class="layui-form-label mid" style="text-align: left;">用户昵称</label>
+		<div class="layui-input-block mid new-mid">
+			<div class="poster-name-box">
+				<div class="layui-form poster-select len-short" lay-filter="poster-select">
+					<select name=""  lay-filter="nickname">
+						{{# for (var font_index = 14; font_index <= 36; font_index++) {  }}
+						{{# if (font_index == d.nickname_font_size) {  }}
+						<option value="{{font_index}}" selected>{{font_index}}px</option>
+						{{# } else {  }}
+						<option value="{{font_index}}">{{font_index}}px</option>
+						{{# }  }}
+						{{# }  }}
+					</select>
+				</div>
+			</div>
+		</div>
+		<div class="layui-form poster_color_nickname">
+			颜色：
+			<div>
+				<input type="hidden" name="color" id="friendfission-all-input">
+				<div class="friendfission-all"></div>
+			</div>
+		</div>
+	</div>
+
+	<div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee;">
+		<div class="poster-left-header1">商品信息设置</div>
+		<div class="layui-nav-more1"></div>
+	</div>
+
+	<div class="layer-form">
+		<div class="layui-form-item poster-headimg">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" lay-filter="goods_img" value="" lay-skin="primary" {{d.goods_img_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">商品图</label>
+		</div>
+
+		<div class="layui-form-item poster-name">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" lay-filter="goods_name" value="" lay-skin="primary" {{d.goods_name_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">商品名称</label>
+			<div class="layui-input-block mid new-mid">
+				<div class="poster-name-box">
+					<div class="layui-form poster-select len-short" lay-filter="poster-select">
+						<select name=""  lay-filter="goods_name">
+							{{# for (var font_index = 14; font_index <= 36; font_index++) {  }}
+							{{# if (font_index == d.goods_name_font_size) {  }}
+							<option value="{{font_index}}" selected>{{font_index}}px</option>
+							{{# } else {  }}
+							<option value="{{font_index}}">{{font_index}}px</option>
+							{{# }  }}
+							{{# }  }}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form poster_color_goods_name">
+				颜色：
+				<div>
+					<input type="hidden" name="color" id="friendfission-all-input">
+					<div class="friendfission-all"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="layui-form-item poster-name">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" value="" lay-filter="goods_price" lay-skin="primary" {{d.goods_price_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">商品价格</label>
+			<div class="layui-input-block mid new-mid">
+				<div class="poster-name-box">
+					<div class="layui-form poster-select len-short" lay-filter="poster-select">
+						<select name="" lay-filter="goods_price">
+							{{# for (var font_index = 14; font_index <= 36; font_index++) {  }}
+							{{# if (font_index == d.goods_price_font_size) {  }}
+							<option value="{{font_index}}" selected>{{font_index}}px</option>
+							{{# } else {  }}
+							<option value="{{font_index}}">{{font_index}}px</option>
+							{{# }  }}
+							{{# }  }}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form poster_color_goods_price">
+				颜色：
+				<div>
+					<input type="hidden" name="color" id="friendfission-all-input">
+					<div class="friendfission-all"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="layui-form-item poster-name">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" value="" lay-filter="goods_market_price" lay-skin="primary" {{d.goods_market_price_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">商品划线价</label>
+			<div class="layui-input-block mid new-mid">
+				<div class="poster-name-box">
+					<div class="layui-form poster-select len-short" lay-filter="poster-select">
+						<select name=""  lay-filter="goods_market_price">
+							{{# for (var font_index = 14; font_index <= 36; font_index++) {  }}
+							{{# if (font_index == d.goods_market_price_font_size) {  }}
+							<option value="{{font_index}}" selected>{{font_index}}px</option>
+							{{# } else {  }}
+							<option value="{{font_index}}">{{font_index}}px</option>
+							{{# }  }}
+							{{# }  }}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form poster_color_goods_market_price">
+				颜色：
+				<div>
+					<input type="hidden" name="color" id="friendfission-all-input">
+					<div class="friendfission-all"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee;">
+		<div class="poster-left-header2">店铺信息设置</div>
+		<div class="layui-nav-more2"></div>
+	</div>
+
+	<div class="layer-form2">
+		<div class="layui-form-item poster-headimg">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" lay-filter="store_logo" value="" lay-skin="primary" {{d.store_logo_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">店铺logo</label>
+		</div>
+
+		<div class="layui-form-item poster-name">
+			<div class="layui-form album-img-select">
+				<input type="checkbox" name="check[]" value="" lay-filter="store_name" lay-skin="primary" {{d.store_name_is_show == '1' ? 'checked' : ''}}>
+			</div>
+			<label class="layui-form-label mid" style="text-align: left;">店铺名称</label>
+			<div class="layui-input-block mid new-mid">
+				<div class="poster-name-box">
+					<div class="layui-form poster-select len-short" lay-filter="poster-select">
+						<select name=""  lay-filter="store_name">
+							{{# for (var font_index = 14; font_index <= 36; font_index++) {  }}
+							{{# if (font_index == d.store_name_font_size) {  }}
+							<option value="{{font_index}}" selected>{{font_index}}px</option>
+							{{# } else {  }}
+							<option value="{{font_index}}">{{font_index}}px</option>
+							{{# }  }}
+							{{# }  }}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form poster_color_store_name">
+				颜色：
+				<div>
+					<input type="hidden" name="color" id="friendfission-all-input">
+					<div class="friendfission-all"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<div class="poster-right design-sketch" style="position: relative;border: 1px solid #d6d6d6;
+	 {notempty name='$template_data.background'}background-image:url({:img($template_data.background)}); background-size: 100%; background-repeat: no-repeat;{/notempty}
+	{{# if (d.background) { }}background-image:url(/{{ d.background }});background-size: 100%;background-repeat: no-repeat;{{# } }}
+	">
+		<div class="headimg {{d.headimg_is_show == '1' ? '' : 'layui-hide'}}" style="position:absolute;top: {{d.headimg_top}}px; left: {{d.headimg_left}}px; width: {{d.headimg_width}}px; height: {{d.headimg_height}}px;">
+			<img alt="" class="{{d.headimg_shape == 'circle' ? 'circle' : ''}}" src="__STATIC__/img/caner1.png" width="100%" />
+		</div>
+
+		<div class="nickname {{d.nickname_is_show == '1' ? '' : 'layui-hide'}}" style="position:absolute;top: {{d.nickname_top}}px; left: {{d.nickname_left}}px; width: {{d.nickname_width}}px; color: {{d.nickname_color}}; font-size: {{d.nickname_font_size}}px;">
+			<span class="design-text">用户昵称</span>
+		</div>
+
+		<div style="margin: 10px;">
+			<div class="store_logo {{d.store_logo_is_show == '1' ? '' : 'layui-hide'}}" style="position:absolute;top: {{d.store_logo_top}}px; left: {{d.store_logo_left}}px; width: {{d.store_logo_width}}px; height: {{d.store_logo_height}}px;">
+				<img src='{:img($site_data.logo)}' width="100%" />
+			</div>
+			<div class="store_name {{d.store_name_is_show == '1' ? '' : 'layui-hide'}}" style="position:absolute;top: {{d.store_name_top}}px; color: {{d.store_name_color}}; left: {{d.store_name_left}}px; width: {{d.store_name_width}}px; height: {{d.store_name_height}}px; font-size: {{d.store_name_font_size}}px;">
+				<span class="design-text">{$site_data.site_name}</span>
+			</div>
+		</div>
+
+		<div class="goods-info">
+			<div class="goods_name {{d.goods_name_is_show == '1' ? '' : 'layui-hide'}}" style="top: {{d.goods_name_top}}px; color: {{d.goods_name_color}}; left: {{d.goods_name_left}}px; width: {{d.goods_name_width}}px; height: {{d.goods_name_height}}px; font-size:  {{d.goods_name_font_size}}px;">
+				<p>商品名称-商品名称-商品名称</p>
+			</div>
+			<div class="goods_img {{d.goods_img_is_show == '1' ? '' : 'layui-hide'}}" style="top: {{d.goods_img_top}}px; left: {{d.goods_img_left}}px; width: {{d.goods_img_width}}px; height: {{d.goods_img_height}}px;">
+				<img src="__STATIC__/img/goods_template.png">
+			</div>
+		</div>
+
+		<div class="price-info" style="display: flex; justify-content: space-between;">
+			<div>
+				<div class="goods_price {{d.goods_price_is_show == '1' ? '' : 'layui-hide'}}" style="top: {{d.goods_price_top}}px; left: {{d.goods_price_left}}px; width: {{d.goods_price_width}}px; height: {{d.goods_price_height}}px; color: {{d.goods_price_color}}; font-size: {{d.goods_price_font_size}}px;">
+					<p>￥100.00</p>
+				</div>
+				<span class="goods_market_price poster_lineprice {{d.goods_market_price_is_show == '1' ? '' : 'layui-hide'}}" style="top: {{d.goods_market_price_top}}px; left: {{d.goods_market_price_left}}px; width: {{d.goods_market_price_width}}px; height: {{d.goods_market_price_height}}px; color: {{d.goods_market_price_color}}; font-size: {{d.goods_market_price_font_size}}px;">
+					<p>￥199.00</p>
+				</span>
+			</div>
+
+			<div class="qrcode" style="top: {{d.qrcode_top}}px; left: {{d.qrcode_left}}px; height: {{d.qrcode_height}}px; width: {{d.qrcode_width}}px;">
+				<img alt="" src="__STATIC__/img/caner_erweima.png" width="100%" />
+			</div>
+		</div>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/tdrag.js"></script>
+<script>
+	var form, laytpl, laypage, laydate, colorpicker, repeat_flag = false;
+	var poster_detail = JSON.parse('{:json_encode($template_info)}');
+
+	layui.use(['form', 'laytpl', 'colorpicker'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		colorpicker = layui.colorpicker;
+		form.render();
+
+		laytpl($("#poster_left").html()).render(poster_detail, function(html) {
+			$('#view').html(html);
+			form.render();
+			new Upload({
+				elem: '#posterImg',
+				data: {},
+				callback: function(res) {
+					if (res.code >= 0) {
+						$('.poster-right').css({
+							"background-image": `url('${ns.img(res.data.pic_path)}')`,
+							"background-size": "100%",
+							"background-repeat": "no-repeat"
+						});
+						poster_detail.background = res.data.pic_path;
+						$("input[name='background']").val(res.data.pic_path);
+					}
+				},
+				deleteCallback: function() {
+					poster_detail.background = '';
+					$("input[name='background']").val('')
+				}
+			});
+		});
+
+		//是否显示的控制
+		var checkbox_field_arr = ['headimg', 'nickname', 'goods_img', 'goods_name', 'goods_price', 'goods_market_price', 'store_name', 'store_logo'];
+		checkbox_field_arr.forEach(function(field_name, index){
+			form.on('checkbox('+ field_name +')', function(data) {
+				poster_detail[field_name + '_is_show'] = data.elem.checked ? '1' : '0';
+				if (data.elem.checked) {
+					$("."+ field_name).removeClass("layui-hide");
+				} else {
+					$("."+ field_name).addClass("layui-hide");
+				}
+			})
+		});
+
+		//字体大小控制
+		var font_field_arr = ['nickname', 'goods_name', 'goods_price', 'goods_market_price', 'store_name'];
+		font_field_arr.forEach(function(field_name, index){
+			form.on('select('+ field_name +')', function(data) {
+				poster_detail[field_name + '_font_size'] = data.value;
+				$("."+ field_name).css("font-size", data.value + "px")
+			});
+		});
+
+		//字体颜色控制
+		var color_field_arr = ['nickname', 'goods_name', 'goods_price', 'goods_market_price', 'store_name'];
+		color_field_arr.forEach(function(field_name, index){
+			colorpicker.render({
+				elem: '.poster_color_' + field_name, //绑定元素
+				color: poster_detail[field_name + '_color'],
+				done: function(color) {
+					$("."+ field_name).css("color", color);
+					poster_detail[field_name + '_color'] = color;
+				}
+			});
+		});
+
+		//圆角控制
+		var shape_field_arr = ['headimg'];
+		shape_field_arr.forEach(function(field_name, index){
+			form.on('radio('+ field_name +')', function(data) {
+				let shape = data.value;
+				poster_detail[field_name + '_shape'] = shape;
+				if(shape == 'circle'){
+					$("."+ field_name +" img").addClass('circle');
+				}else{
+					$("."+ field_name +" img").removeClass('circle');
+				}
+			})
+		});
+
+		//拖拽控制
+		var drag_field_arr = ['headimg', 'nickname', 'qrcode', 'goods_img', 'goods_name', 'goods_price', 'goods_market_price','store_name', 'store_logo'];
+		drag_field_arr.forEach((field_name, index) => {
+			$(`.${field_name}`).Tdrag({
+				scope: '.design-sketch',
+				cbChange: function(obj, self) {
+					poster_detail[field_name + '_top'] = parseFloat($(self.$element).css('top'));
+					poster_detail[field_name + '_left'] =parseFloat($(self.$element).css('left'));
+					poster_detail[field_name + '_width'] = parseFloat($(self.$element).css('width'));
+					poster_detail[field_name + '_height'] = parseFloat($(self.$element).css('height'));
+				},
+				cbEnd: function (obj, self) {
+					poster_detail[field_name + '_top'] = parseFloat($(self.$element).css('top'));
+					poster_detail[field_name + '_left'] =parseFloat($(self.$element).css('left'));
+					poster_detail[field_name + '_width'] = parseFloat($(self.$element).css('width'));
+					poster_detail[field_name + '_height'] = parseFloat($(self.$element).css('height'));
+				}
+			});
+		});
+
+		form.verify({
+			background: function(value){
+				if(!value){
+					return '请上传海报背景';
+				}
+			}
+		});
+		
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save_poster)', function(data) {
+			poster_detail.poster_name = data.field.poster_name;
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			$.ajax({
+				url: ns.url("postertemplate://shop/postertemplate/"+ (poster_detail['template_id'] ? 'edit' : 'add') +"postertemplate"),
+				data:poster_detail,
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					repeat_flag = false;
+					if(res.code == 0){
+						layer.confirm(poster_detail['template_id'] ? '编辑成功' : '添加成功',{
+							title: '操作提示',
+							btn: ['返回列表',poster_detail['template_id'] ? '继续编辑' : '继续添加'],
+							closeBtn: 0,
+							yes: function() {
+								location.href = ns.url("postertemplate://shop/postertemplate/lists");
+							},btn2: function() {
+								location.reload();
+							}
+						})
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+	function back() {
+		location.href = ns.url("postertemplate://shop/postertemplate/lists");
+		localStorage.removeItem("poster_data");
+	}
+
+	$('body').on('click', '.layui-nav-more1', function() {
+		$(this).addClass('layui-new-more1');
+		$('.layer-form').css("display", 'none');
+	});
+	
+	$('body').on('click', '.layui-new-more1', function() {
+		$(this).removeClass('layui-new-more1');
+		$('.layer-form').css("display", 'block');
+	});
+
+	$('body').on('click', '.layui-nav-more2', function() {
+		$(this).addClass('layui-new-more2');
+		$('.layer-form2').css("display", 'none');
+	});
+	
+	$('body').on('click', '.layui-new-more2', function() {
+		$(this).removeClass('layui-new-more2');
+		$('.layer-form2').css("display", 'block');
+	});
+	
+	$('body').on('click', '.js-delete', function() {
+		$('.poster-right').css("background-image", 'none');
+	})
+
+</script>
+{/block}
+{block name="copyright"}{/block}

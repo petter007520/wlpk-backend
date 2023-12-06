@@ -1,0 +1,58 @@
+<nc-component :data="data[index]" class="hot-area">
+
+	<!-- 预览 -->
+	<template slot="preview">
+
+		<template v-if="nc.lazyLoad">
+			<hot-area-carouse></hot-area-carouse>
+			<div class="hot-area-warp" :style="{
+				backgroundColor: nc.componentBgColor,
+				borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0)
+			}">
+				<div class="hot-area-content">
+					<div v-if="nc.imageUrl" :style="{backgroundImage: 'url('+ changeImgUrl(nc.imageUrl) +')',height: nc.tempData.swiperHeight + 'px'}" class="hot-area-item"></div>
+                    <div v-else :style="{backgroundImage: 'url(' + changeImgUrl('public/static/img/default_img/figure.png')  + ')',height: nc.tempData.swiperHeight + 'px'}" class="hot-area-item"></div>
+				</div>
+			</div>
+		</template>
+
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<hot-area-list></hot-area-list>
+
+			<div class="template-edit-title">
+				<h3>图片设置</h3>
+				<div class="hot-area-wrap">
+					<p class="word-aux">推荐尺寸750*350</p>
+					<img-upload :data="{ data: nc }" data-disabled="1"></img-upload>
+					<div class="selected-style" :class="{'text-color' : nc.heatMapData }" @click="nc.tempData.methods.setHeatMap()">
+						<span>热区设置</span>
+						<i class="layui-icon layui-icon-right"></i>
+					</div>
+					<div class="error-msg"></div>
+				</div>
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var hotAreaResourcePath = "{$resource_path}"; // http路径
+			var hotAreaRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+/* 商品品牌组件 */
+.goods-brand .title-wrap{text-align: center;padding: 10px 0 5px;}
+.goods-brand ul{display: flex;flex-wrap: wrap;align-items: center;padding: 10px;}
+.goods-brand ul li{width: 22.59%;margin-top: 10px;text-align: center;margin-right: 10px;}
+.goods-brand ul li:nth-of-type(1),.goods-brand ul li:nth-of-type(2),.goods-brand ul li:nth-of-type(3),.goods-brand ul li:nth-of-type(4){margin-top: 0;}
+.goods-brand ul li:nth-of-type(4n){margin-right: 0;}
+.goods-brand ul li img{max-width: 100%;}
+.goods-brand ul li span{display: block;height: 40px;background: #c7c7c7;line-height: 40px;color: #fff;padding: 5px;}

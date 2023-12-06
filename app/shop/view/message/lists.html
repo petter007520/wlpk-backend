@@ -1,0 +1,219 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.layui-field-box {display:flex;flex-wrap:wrap;}
+	/* 一行4个卡片时的排布 */
+	@media screen and (min-width:1670px) {.block-list {width:24%;margin-right:1.3%;margin-bottom:25px;}
+		.block-list:nth-child(4n) {margin-right:0;}
+	}
+	/* 一行3个卡片时的排布 */
+	@media screen and (max-width:1669px) {.block-list {width:32%;margin-right:2%;margin-bottom:25px;}
+		.block-list:nth-child(3n) {margin-right:0;}
+	}
+	.block-list {box-sizing:border-box;border:1px solid #F1F1F1;}
+	.block-list .block-title {height:52px;line-height:52px;font-size:14px;color:#333;background-color:#F7F8FA;padding-left:25px;}
+	.block-list .block-content {padding:20px 25px 0;display:flex;flex-wrap:wrap;}
+	.block-list .block-content a {height:25px;line-height:25px;width:33.3%;margin-bottom:20px;color:#454545;font-size:12px;display:flex;align-items:center;white-space:nowrap;}
+	.block-list .block-content a i {display:inline-block;margin-right:2px;color:#999;font-weight:600;}
+	.block-list .block-title .config {float:right;padding-left:100px;cursor:pointer;color:#FA5B14 !important;}
+	.word-aux {margin-left:200px;display:block;margin-top:5px;color:#999;font-size:14px;line-height:1.6;}
+	.prompt-block {position:absolute;top:18px;right:20px;font-size:12px;cursor:pointer;}
+	.prompt-block .prompt {width:auto;height:auto;line-height:unset;}
+	.prompt-block .prompt-box {top:46px;left:-69px;text-align:center;}
+	.prompt-block .prompt .iconfont {margin-left:-3px;}
+	.block-list .block-title {display:flex;align-items:center;}
+	.prompt-block {position:static;margin-left:10px;}
+	.layui-layout-admin .layui-body .body-content {padding: 0;background: #f8f8f8}
+	.sms-tips,.three-tips {padding:15px;margin:0;border:none;background:#FFEDD9;border-bottom:1px solid #f5f5f5;}
+	.sms-tips *,.three-tips * {margin-right:10px;}
+	.three-tips {background:#fff;}
+	.message-tips .tips:last-child {margin-bottom:20px;}
+	.message-tips {margin-bottom:15px}
+</style>
+{/block}
+{block name="main"}
+<div class="message-tips">
+	{if isset($sms_num) && $sms_num < 500}
+	<div class="tips sms-tips">
+		<i class="iconfont icongantanhao text-color"></i>
+		当前短信条数就剩{$sms_num}条了，赶快去充值吧！
+		<a href="{:addon_url('niusms://shop/sms/index', ['buy' => 1])}" class="text-color" target="_blank">立即充值</a>
+	</div>
+	{/if}
+
+	{empty name="wechat_config"}
+	<div class="tips three-tips">
+		<i class="iconfont icongantanhao text-color"></i>
+		您还未配置公众号，不能通过公众号发送模板消息
+		<a href="{:addon_url('wechat://shop/wechat/config')}" class="text-color" target="_blank">立即配置</a>
+	</div>
+	{/empty}
+
+	{empty name="weapp_config"}
+	<div class="tips three-tips">
+		<i class="iconfont icongantanhao text-color"></i>
+		您还未配置微信小程序，无法使用小程序订阅消息
+		<a href="{:addon_url('weapp://shop/weapp/config')}" class="text-color" target="_blank">立即配置</a>
+	</div>
+	{/empty}
+</div>
+
+<!-- 买家消息 -->
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">买家消息</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		{foreach $member_message_list as $member_message_k => $member_message_v}
+		<div class="block-list">
+			<div class="block-title">
+				{$member_message_v.title}
+				<div class="prompt-block" style="left: 130px;top: 20px;">
+					<div class="prompt">
+						<i class="iconfont iconwenhao1 required growth"></i>
+						<div class="growth-box reason-box reason-growth prompt-box" >
+							<div class="prompt-con">
+								<p>{$member_message_v.remark ?? ''}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				{if $member_message_v.keywords == 'ORDER_VERIFY_OUT_TIME'}<span class="config text-color" onclick="messageSetting()">配置</span>{/if}
+			</div>
+			<div class="block-content">
+				{if in_array('sms',$member_message_v['support_type'])}
+				<a href="{:addon_url('shop/message/editSmsMessage',['keywords' => $member_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $member_message_v.sms_is_open == 1}text-color{/if}"></i>短信
+				</a>
+				{/if}
+
+				{if in_array('wechat',$member_message_v['support_type'])}
+				<a href="{:addon_url('wechat://shop/message/edit',['keywords' => $member_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $member_message_v.wechat_is_open == 1}text-color{/if}"></i>微信公众号
+				</a>
+				{/if}
+
+				{if in_array('weapp',$member_message_v['support_type'])}
+				<a href="{:addon_url('weapp://shop/message/edit',['keywords' => $member_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $member_message_v.weapp_is_open == 1}text-color{/if}"></i>微信小程序
+				</a>
+				{/if}
+			</div>
+		</div>
+		{/foreach}
+	</div>
+</div>
+
+<!-- 卖家通知 -->
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">卖家通知  <a style="margin-left:20px;color:#FF6A00" href="{:addon_url('shop/shopacceptmessage/lists')}">消息接收设置>>></a></span>
+
+	</div>
+	<div class="layui-card-body layui-field-box">
+		{foreach $shop_message_list as $shop_message_k => $shop_message_v}
+		<div class="block-list">
+			<div class="block-title">
+				{$shop_message_v.title}
+				<div class="prompt-block" style="left: 130px;top: 20px;">
+					<div class="prompt">
+						<i class="iconfont iconwenhao1 required growth"></i>
+						<div class="growth-box reason-box reason-growth prompt-box" style="top: 45px;left: -64px;">
+							<div class="prompt-con">
+								<p>{$shop_message_v.remark}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="block-content">
+				{if in_array('sms',$shop_message_v['support_type'])}
+				<a href="{:addon_url('shop/message/editsmsmessage',['keywords' => $shop_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $shop_message_v.sms_is_open == 1}text-color{/if}"></i>短信
+				</a>
+				{/if}
+				{if in_array('wechat',$shop_message_v['support_type'])}
+				<a href="{:addon_url('wechat://shop/message/edit',['keywords' => $shop_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $shop_message_v.wechat_is_open == 1}text-color{/if}"></i>微信公众号
+				</a>
+				{/if}
+
+				{if in_array('weapp',$shop_message_v['support_type'])}
+				<a href="{:addon_url('weapp://shop/message/edit',['keywords' => $shop_message_v.keywords])}">
+					<i class="iconfont iconseleted {if $shop_message_v.weapp_is_open == 1}text-color{/if}"></i>微信小程序
+				</a>
+				{/if}
+			</div>
+		</div>
+		{/foreach}
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="settingLayer">
+	<div class="layui-form-item">
+		<label class="layui-form-label">过期前提醒：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="remind_time" value="{{ d.value }}" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">小时</span>
+		</div>
+		<div class="word-aux">核销码过期前多少时间发送提醒</div>
+	</div>
+</script>
+<script>
+	var form,laytpl;
+	layui.use(['laytpl', 'form'], function() {
+		form = layui.form, laytpl = layui.laytpl;
+        form.render();
+	});
+	function messageSetting() {
+		var config = {:json_encode($verify_config)};
+		var keywords = 'order_verify_time_out';
+		var value = config[keywords] == undefined ? 24 : config[keywords];
+		laytpl($('#settingLayer').html()).render({
+			value: value
+		}, function(string){
+			layer.open({
+				type: 1,
+				title: '配置',
+				content: string,
+				area: ['590px'],
+				btn: ['保存', '取消'],
+				yes: function () {
+					var remind_time = parseInt($('[name="remind_time"]').val());
+					if (isNaN(remind_time)) {
+						layer.msg('提醒时间格式不正确', {icon: 5})
+						return;
+					}
+					if (remind_time < 1) {
+						layer.msg('提醒时间最少不能小于1小时', {icon: 5})
+						return;
+					}
+
+					$.ajax({
+						dataType: 'JSON',
+						type: 'POST',
+						url: ns.url("shop/message/remindTimeSetting"),
+						data: {
+							"hour": remind_time,
+							"keyword": keywords
+						},
+						success: function(res){
+							if (res.code == 0) {
+								layer.msg('设置成功');
+								setTimeout(function () {
+									location.reload()
+								}, 1000)
+							} else {
+								layer.msg(res.message);
+							}
+						}
+					})
+				}
+			})
+		});
+	}
+</script>
+{/block}

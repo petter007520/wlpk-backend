@@ -1,0 +1,38 @@
+<nc-component :data="data[index]" :class="['auxiliary-blank']">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		
+		<div class="preview-box">
+			<div :style="{ height : nc.height+'px',  backgroundColor : nc.componentBgColor,
+		     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		     borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0)
+		     }"></div>
+		</div>
+	
+	</template>
+	
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<div class="template-edit-title">
+			<h3>高度设置</h3>
+			<slide :data="{ field : 'height', label : '空白高度' }"></slide>
+		</div>
+	</template>
+	
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<horz-blank-set></horz-blank-set>
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+	
+</nc-component>

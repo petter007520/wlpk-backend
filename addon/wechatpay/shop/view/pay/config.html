@@ -1,0 +1,162 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.input-text span{margin-right: 15px;}
+	.form-wrap {margin-top: 0;}
+	.file-upload {display: inline-block; margin-right: 5px;}
+	.api-type-config {display: none}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+	<div class="layui-form-item">
+		<label class="layui-form-label">支付API：</label>
+		<div class="layui-input-block">
+			<input name="api" type="text" value="{$info.value.api ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[API]</span>支付API</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">商户名：</label>
+		<div class="layui-input-block">
+			<input name="mch_id" type="text" value="{$info.value.mch_id ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[MCHID]</span>Yipay商户名</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">商户私钥：</label>
+		<div class="layui-input-block">
+			<input name="app_secrect" type="text" value="{$info.value.app_secrect ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[SERCERT]</span>商户私钥</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">回调URL：</label>
+		<div class="layui-input-block">
+			<input name="callback_url" type="text" value="{$info.value.callback_url ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[CALLBACKURL]</span>回调URL</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用支付：</label>
+		<div class="layui-input-inline">
+			<input type="checkbox" name="pay_status" value="1" lay-skin="switch" {if condition="$info.value && $info.value.pay_status == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('switch(transfer_status)', function (data) {
+			if ($(data.elem).is(':checked')) {
+				$('.transfer-config').show()
+			} else {
+				$('.transfer-config').hide()
+			}
+		})
+
+		form.on('radio(api_type)', function (data) {
+			$('.api-type-config').hide();
+			$('.' + data.value + '-config').show();
+			$('.' + $('[name="transfer_type"]:checked').val() + '-config').show();
+		})
+
+		form.on('radio(transfer_type)', function (data) {
+			$('.api-type-config').hide();
+			$('.' + data.value + '-config').show()
+			$('.' + $('[name="api_type"]:checked').val() + '-config').show();
+		})
+
+		new Upload({
+			elem: '#cert_upload',
+			url: ns.url("wechatpay://shop/pay/uploadwechatcert"),
+			accept: 'file',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$("input[name='apiclient_cert']").val(res.data.path);
+					$("input[name='apiclient_cert']").siblings(".file-upload").text("已上传");
+				}
+			}
+		});
+
+		new Upload({
+			elem: '#key_upload',
+			url: ns.url("wechatpay://shop/pay/uploadwechatcert"),
+			accept: 'file',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$("input[name='apiclient_key']").val(res.data.path);
+					$("input[name='apiclient_key']").siblings(".file-upload").text("已上传");
+				}
+			}
+		});
+
+		form.verify({
+			pay_signkey: function(value){
+				if (!$('.v2-config').is(':hidden') && !/[\S]+/.test(value)) return '请设置微信APIv2密钥';
+			},
+			v3_pay_signkey: function(value){
+				if (!$('.v3-config').is(':hidden') && !/[\S]+/.test(value)) return '请设置微信APIv3密钥';
+			},
+			apiclient_cert: function(value){
+				if (!/[\S]+/.test(value)) return '请上传apiclient_cert.pem文件';
+			},
+			apiclient_key: function(value){
+				if (!/[\S]+/.test(value)) return '请上传apiclient_key.pem文件';
+			}
+		})
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("wechatpay://shop/pay/config"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/config/pay")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+	function back() {
+		location.href = ns.url("shop/config/pay");
+	}
+</script>
+{/block}

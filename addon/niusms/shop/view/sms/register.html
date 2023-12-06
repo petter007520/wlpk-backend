@@ -1,0 +1,261 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .form-wrap {
+        margin-top: 0;
+    }
+
+    .tips {
+        padding: 10px;
+        margin-bottom: 15px;
+        background: #ffe1d2;
+        color: #ff8143;
+    }
+
+    .btn-tel-code {
+        width: 115px;
+    }
+
+    .btn-code {
+        width: 115px;
+        padding: 0 0px;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+
+    <p class="tips">已有账号，<a href="{:addon_url('niusms://shop/sms/login')}">去登录</a></p>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名：</label>
+        <div class="layui-input-block">
+            <input type="text" name="username" lay-verify="username" placeholder="请输入用户名" autocomplete="off" class="layui-input len-long">
+            <span class="layui-word-aux">仅支持6~50位英文+数字组合，不支持下划线</span>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码：</label>
+        <div class="layui-input-block">
+            <input type="text" name="password" lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input len-long">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">公司名称：</label>
+        <div class="layui-input-block">
+            <input type="text" name="company" lay-verify="required" placeholder="请输入公司名称" autocomplete="off" class="layui-input len-long">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机号：</label>
+        <div class="layui-input-block">
+            <div class="layui-input-inline">
+                <input type="text" name="mobiles" lay-verify="required" placeholder="请输入手机号" autocomplete="off" class="layui-input len-long">
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">验证码：</label>
+        <div class="layui-input-block">
+            <div class="layui-input-inline">
+                <input type="text" name="captcha_code" lay-verify="required" placeholder="请输入验证码" autocomplete="off" class="layui-input len-mid">
+            </div>
+            <img class="layui-btn layui-btn-primary btn-code" onclick="captcha()" src='{notempty name="$captcha.img"}{$captcha.img}{/notempty}' id="captcha_img">
+            <input type="hidden" name="captcha_id" value='{notempty name="$captcha.id"}{$captcha.id}{/notempty}'>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">动态码：</label>
+        <div class="layui-input-inline">
+            <input type="text" name="code" lay-verify="required" placeholder="请输入手机动态码" autocomplete="off" class="layui-input len-mid">
+        </div>
+        <button class="layui-btn layui-btn-primary btn-tel-code" onclick="mobileCode()">获取动态码</button>
+        <input type="hidden" name="key" value="">
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机端网址：</label>
+        <div class="layui-input-block">
+            <input type="text" name="domain" lay-verify="required" placeholder="请输入手机端网址" autocomplete="off" class="layui-input len-long">
+            <span class="layui-word-aux">请输入手机端网址，方便审核。网址错误，可能导致短信签名、模板审核不通过</span>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <button class="layui-btn" lay-submit lay-filter="save">注册</button>
+    </div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use('form', function () {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        form.verify({
+            username: function (value) {
+                if (value.length == 0) {
+                    return "请输入用户名";
+                }
+                if (value.indexOf("_") != -1) {
+                    return "不支持下划线";
+                }
+                if (!/^[0-9a-zA-z]{6,50}$/.test(value)) {
+                    return "仅支持6~50位英文+数字组合";
+                }
+            },
+            mobiles: function (value) {
+                if (!value.trim()) {
+                    return "手机号不能为空";
+                }
+            },
+            captcha_code: function (value) {
+                if (!value.trim()) {
+                    return "验证码不能为空";
+                }
+            },
+            code: function (value) {
+                if (!value.trim()) {
+                    return "动态码不能为空";
+                }
+            }
+
+        });
+
+        form.on('submit(save)', function (data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("niusms://shop/sms/register"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (res) {
+                    repeat_flag = false;
+                    if (res.code == 0) {
+                        layer.msg("注册成功");
+                        location.href = ns.url("niusms://shop/sms/index");
+                    } else {
+                        layer.msg(res.message);
+                    }
+                }
+            });
+        });
+    });
+
+    // 手机动态码
+    function mobileCode() {
+        var mobiles = $("input[name='mobiles']").val();
+        var captcha_id = $("input[name='captcha_id']").val();
+        var captcha_code = $("input[name='captcha_code']").val();
+        if (mobiles == "") {
+            layer.msg("手机号不能为空");
+            return false;
+        }
+        if (captcha_id == "") {
+            layer.msg("重新获取验证码");
+            return false;
+        }
+        if (captcha_code == "") {
+            layer.msg("验证码不能为空");
+            return false;
+        }
+        var pattern = /^1[345789]\d{9}$/;
+        if (pattern.test(mobiles) == false) {
+            layer.msg("请输入正确的手机号");
+            return false;
+        }
+
+        $.ajax({
+            url: ns.url("niusms://shop/sms/mobileCode"),
+            data: {mobiles: mobiles, captcha_id: captcha_id, captcha_code: captcha_code},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                $(".btn-tel-code").attr("disabled", "disabled");
+                $(".btn-tel-code").css("background-color", "#bdbcbc");
+                //倒计时
+                var d = new Date();
+                d.setSeconds(d.getSeconds() + 59);
+                var m = d.getMonth() + 1;
+                var time = d.getFullYear() + '-' + m + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+
+                var id = ".btn-tel-code";
+                var end_time = new Date(Date.parse(time.replace(/-/g, "/"))).getTime(),
+                    //月份是实际月份-1
+                    sys_second = (end_time - new Date().getTime()) / 1000;
+                var timer = setInterval(function () {
+                        if (sys_second > 1) {
+                            sys_second -= 1;
+                            var day = Math.floor((sys_second / 3600) / 24);
+                            var hour = Math.floor((sys_second / 3600) % 24);
+                            var minute = Math.floor((sys_second / 60) % 60);
+                            var second = Math.floor(sys_second % 60);
+                            var time_text = '';
+                            if (day > 0) {
+                                time_text += day + '天';
+                            }
+                            if (hour > 0) {
+                                if (hour < 10) {
+                                    hour = '0' + hour;
+                                }
+                                time_text += hour + '小时';
+                            }
+                            if (minute > 0) {
+                                if (minute < 10) {
+                                    minute = '0' + minute;
+                                }
+                                time_text += minute + '分';
+                            }
+                            if (second > 0) {
+                                if (second < 10) {
+                                    second = '0' + second;
+                                }
+                                time_text += second + '秒';
+                            }
+                            $(id).text(time_text);
+                        } else {
+                            clearInterval(timer);
+                            $(".btn-tel-code").attr("disabled", false);
+                            $(".btn-tel-code").text('获取动态码');
+                            $(".btn-tel-code").css("background-color", "#ffffff");
+                        }
+                    },
+                    1000);
+                if (res.code >= 0) {
+                    $("input[name='key']").attr("value", res.data.key);
+                    layer.msg("发送成功");
+                } else {
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+
+    // 验证码
+    function captcha() {
+        $.ajax({
+            url: ns.url("niusms://shop/sms/captcha"),
+            data: {},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                if (res.code >= 0) {
+                    $('#captcha_img').attr('src', res.data.img);
+                    $("input[name='captcha_id']").attr("value", res.data.id);
+                } else {
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+</script>
+{/block}

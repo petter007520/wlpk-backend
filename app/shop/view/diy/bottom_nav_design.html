@@ -1,0 +1,62 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css" />
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/diyview.css" />
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/bottom_nav_design.css" />
+{/block}
+{block name="main"}
+<div id="bottomNav" class="layui-form">
+	
+	<div class="preview">
+		
+		<div class="preview-head">
+			<span>底部导航</span>
+		</div>
+		
+		<div class="preview-block">
+			<ul v-show="data.list.length>0" :style="{ backgroundColor : data.backgroundColor }">
+				<li v-for="(item,index) in data.list" @mouseover="mouseOver(index)" @mouseout="mouseOut()" :key="item.id">
+					<div v-show="data.type == 1 || data.type == 2">
+						<template v-if="selected == index">
+							<img v-if="item.selected_icon_type == 'img'" :src="(selected == index ? (item.selectedIconPath? changeImgUrl(item.selectedIconPath) : changeImgUrl('public/static/img/default_img/square.png')) :  (item.iconPath? changeImgUrl(item.iconPath) : changeImgUrl('public/static/img/default_img/square.png')) )"/>
+							<iconfont v-else :icon="selected == index ? item.selectedIconPath : item.iconPath" :value="selected == index ? (item.selected_style ? item.selected_style : null) :(item.style ? item.style : null)"></iconfont>
+						</template>
+						<template v-else>
+							<img v-if="item.icon_type == 'img'" :src="(selected == index ? (item.selectedIconPath? changeImgUrl(item.selectedIconPath) : changeImgUrl('public/static/img/default_img/square.png')) :  (item.iconPath? changeImgUrl(item.iconPath) : changeImgUrl('public/static/img/default_img/square.png')) )"/>
+							<iconfont v-else :icon="selected == index ? item.selectedIconPath : item.iconPath" :value="selected == index ? (item.selected_style ? item.selected_style : null) :(item.style ? item.style : null)"></iconfont>
+						</template>
+					</div>
+					<span :style="{ fontSize : ( data.fontSize + 'px'), color : (selected == index ? data.textHoverColor :  data.textColor ) }" v-show="data.type == 1 || data.type == 3">{{ item.text }}</span>
+				</li>
+			</ul>
+		</div>
+		<div class="custom-save">
+			<button class="layui-btn save">保存</button>
+		</div>
+	</div>
+	
+	<div class="edit-attribute">
+		<bottom-menu></bottom-menu>
+	</div>
+
+</div>
+
+{if condition="$bottom_nav_info"}
+<input type="hidden" id="info" value='{:json_encode($bottom_nav_info)}' />
+{/if}
+{/block}
+{block name="script"}
+<script>
+	{if condition="$bottom_nav_info"}
+		var bottomNavInfo = JSON.parse($("#info").val().toString());
+	{else/}
+		var bottomNavInfo = null;
+	{/if}
+</script>
+<script src="STATIC_JS/vue.js"></script>
+{include file="diy/iconfont_component"/}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/diyview/js/ddsort.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+<script src="STATIC_EXT/diyview/js/shop_bottom_nav.js"></script>
+{/block}

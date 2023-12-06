@@ -1,0 +1,32 @@
+<nc-component :data="data[index]" class="video-box">
+
+	<!-- 预览 -->
+	<template slot="preview" >
+		<div class="video-wrap">
+			<video :src="changeImgUrl(nc.videoUrl)" controls :poster="changeImgUrl(nc.imageUrl)"
+		       :style="{
+			     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+			     borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0) }"></video>
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<video-edit></video-edit>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style"></template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js></js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

@@ -1,0 +1,140 @@
+.screen{
+	margin-top: 15px;
+}
+.evaluate-table {
+	border-width: 0 !important;
+}
+
+.evaluate-table[lay-size=lg] th,
+.evaluate-table[lay-size=lg] td {
+	padding: 13px 15px;
+}
+.evaluate-table[lay-size=lg] .operate{
+	text-align: right;
+}
+.evaluate-title {
+	display: flex;
+}
+
+.evaluate-title p {
+	margin-right: 30px;
+}
+
+.evaluate-title p:last-child {
+	margin-right: 0;
+}
+
+/* 评价等级 */
+.evaluate-box {
+	position: relative;
+	padding-left: 70px;
+}
+
+.evaluate-title img {
+	margin-right: 5px;
+}
+
+.evaluate-box p {
+	line-height: 24px;
+}
+
+.evaluate-level-good span {
+	color: #FFCA10;
+}
+
+.evaluate-level-middel span {
+	color: #F35C21;
+}
+
+.evaluate-level-bad span {
+	color: #FF0000;
+}
+
+
+/* 追加评价 */
+.evaluate-again {
+	margin-top: 10px;
+}
+
+.again-evaluate {
+	display: inline-block;
+	margin-right: 5px;
+	float: left;
+}
+
+/* 操作 */
+.btn-box {
+	text-align: center;
+}
+
+.btn-box .layui-btn {
+	display: inline-block;
+	min-width: 54px;
+	height: 23px;
+	line-height: 23px;
+	border-radius: 50px;
+	background-color: #F3F3F3;
+	font-size: 13px;
+	color: #5A5A5A;
+	text-align: center;
+	padding: 2px 8px;
+	margin: 5px;
+}
+
+.btn-box .layui-btn:hover {
+	color: #fff;
+	background-color: #f38421;
+}
+
+.btn-box a:last-child {
+	margin-right: 0;
+}
+
+.font-box {
+	line-height: 25px;
+	text-align: left;
+}
+
+/* 分页 */
+#layui-laypage-1{
+	float: right;
+}
+#laypage {
+	overflow: hidden;
+}
+
+.evaluate-explain, .evaluate-box, .evaluate-again {
+	overflow: hidden;
+}
+
+.evaluate-img .title-pic {
+	margin-right: 5px;
+	margin-bottom: 5px;
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	line-height: 50px;
+}
+
+.evaluate-img .title-pic img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.evaluate p, .evaluate-explain p, .evaluate-again p, .evaluate-again-explain p {
+	width: 100%;
+	height: auto;
+	word-wrap: break-word;
+	word-break: break-all;
+}
+
+.evaluate-img p{height:30px; line-height: 30px}
+.evaluate-img p img{margin-right: 8px}
+
+.evaluate-img{padding: 5px 0px}
+.evaluate-explain{font-size: 12px;background-color: #fff3eb}
+.evaluate-explain .again-evaluate{margin-left: 8px}
+.required{color:#FF6A00}
+.order-list-top-line{justify-content:flex-end;}
+.order-list-top-line a{padding-right: 0px}

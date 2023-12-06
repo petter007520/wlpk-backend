@@ -1,0 +1,93 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style>
+    html,body {
+        width: 100%;
+        height: 100%;
+        background: #fff;
+    }
+    .icon-style-wrap {
+        padding: 15px;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .icon-style-wrap .title {
+        margin-bottom: 10px;
+    }
+    .icon-style-wrap .icon-list {
+        flex: 1;
+        height: 0;
+        display: flex;
+        overflow-y: scroll;
+        flex-wrap: wrap;
+    }
+    .icon-style-wrap .icon-list::-webkit-scrollbar {
+        display: none;
+    }
+    .icon-style-wrap .icon-list .icon-block {
+        width: 56px;
+        height: 56px;
+        font-size: 60px;
+        border: 1px dashed #eee;
+        margin: 0 5px 5px 0;
+        cursor: pointer;
+    }
+    .icon-style-wrap .icon-list .icon-block:nth-child(5n+5) {
+        margin-right: 0;
+    }
+    .icon-style-wrap .icon-list .icon-block:hover {
+        border-color: var(--base-color);
+    }
+    .icon-style-wrap .icon-list .custom {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{/block}
+
+{block name="body"}
+    <div class="icon-style-wrap" id="app">
+        <div class="title">图标风格</div>
+        <div class="icon-list">
+            <div class="icon-block" v-for="(item, index) in styleList" :key="index" @click="selectStyle(index)">
+                <iconfont icon="{$icon}" :value="item"></iconfont>
+            </div>
+            <div class="icon-block custom" @click="custom">
+                <p>自定义</p>
+            </div>
+        </div>
+    </div>
+{/block}
+
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+{include file="diy/iconfont_component"/}
+<script>
+    vue = new Vue({
+        el: "#app",
+        data: {
+            styleList: {:json_encode($icon_style)}
+        },
+        methods: {
+            selectStyle(index){
+                window.parent.postMessage({
+                    event: 'selectIconStyle',
+                    data: this.styleList[index],
+                }, location.origin);
+            },
+            custom(){
+                window.parent.postMessage({
+                    event: 'selectIconStyle',
+                    data: null,
+                }, location.origin);
+            }
+        }
+    })
+</script>
+{/block}

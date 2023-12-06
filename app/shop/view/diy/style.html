@@ -1,0 +1,80 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .exchange-type{display: inline-block;min-width: 140px;height: 60px;line-height: 60px;border: 1px solid #ededed;border-radius: 4px;margin-right: 10px;position: relative;cursor: pointer;margin-bottom: 15px;}
+    .style{display: flex;-webkit-box-align: center;align-items: center;-webkit-box-pack: center;justify-content: center;padding: 0 10px;}
+    .style div{width: 50px;height: 16px;}
+    .style p{margin-left: 10px;font-size: 12px;color: #333;}
+    .preview-style img{margin-right: 64px; margin-bottom: 50px; height: 595px;width: 275px;-webkit-box-shadow: 5px 5px 20px #f5f5f5;box-shadow: 5px 5px 20px #f5f5f5;}
+</style>
+{/block}
+{block name="main"}
+{notempty name="$theme_list"}
+<div class="layui-form form-wrap">
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            {foreach $theme_list as $k=>$v}
+            <div class="exchange-type" data-id="{$v['id']}" data-title="{$v['title']}" data-name="{$v['name']}" data-main-color="{$v['main_color']}" data-aux-color="{$v['aux_color']}">
+                <div class="style">
+                    <div style="background: url('{:img($v['color_img'])}') no-repeat;"></div>
+                    <p>{$v['title']}</p>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+    </div>
+    <div class="layui-input-block">
+        <div class="preview-style">
+            {foreach $theme_list as $k=>$v}
+                {foreach $v['preview'] as $ck=>$cv}
+                <img src="{:img($cv)}" data-name="{$v['name']}" {if $k!=0}style="display:none;"{/if}>
+                {/foreach}
+            {/foreach}
+        </div>
+    </div>
+    <div class="form-row">
+        <input type="hidden" name="style_theme" value="{$style|json_encode}">
+        <button class="layui-btn" lay-submit lay-filter="save">保存</button>
+    </div>
+</div>
+{/notempty}
+{/block}
+{block name="script"}
+<script>
+	var theme = JSON.parse($("input[name='style_theme']").val());
+    $(".exchange-type").click(function() {
+        $(this).addClass("border-color").siblings("div").removeClass("border-color");
+        var obj = {
+            id: $(this).attr('data-id'),
+            title: $(this).attr('data-title'),
+            name: $(this).attr('data-name'),
+            main_color: $(this).attr('data-main-color'),
+            aux_color: $(this).attr('data-aux-color'),
+        };
+        $("input[name='style_theme']").val(JSON.stringify(obj));
+        $('.preview-style img').hide();
+        $('.preview-style img[data-name="' + obj.name + '"]').show();
+    });
+	$('.exchange-type[data-name="' + theme.name + '"]').click();
+
+    layui.use('form', function() {
+        var form = layui.form, repeat_flag = false; //防重复标识
+        form.on('submit(save)', function(data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+			data.field = JSON.parse(data.field.style_theme);
+            $.ajax({
+                url: ns.url("shop/diy/style"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    repeat_flag = false;
+                    layer.msg(res.message);
+                }
+            });
+
+        });
+    });
+</script>
+{/block}

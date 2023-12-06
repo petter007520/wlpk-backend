@@ -1,0 +1,54 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+.icon-img-box{
+	width: 48px;
+	height: 48px;
+	margin: 0 auto;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+.icon-img-box img{
+	width: 40px;
+	max-height: 40px;
+}
+</style>
+{/block}
+
+{block name="body"}
+<div id="{$id}">
+	<div class="icon-img-box" v-if="myData.iconType == 'img'">
+		<img :src="changeImgUrl(myData.imageUrl) || changeImgUrl('public/static/img/default_img/square.png')" alt="">
+	</div>
+	<div class="icon-img-box" v-if="myData.iconType == 'icon'" style="font-size: 36px">
+		<iconfont v-if="myData.icon" :icon="myData.icon" :value="(myData.style ? myData.style : null)"></iconfont>
+	</div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_JS/vue.js"></script>
+{include file="diy/iconfont_component"/}
+<script>
+	var vue,data;
+	data = {:json_encode($data)};
+	data = JSON.parse(data);
+	vue = new Vue({
+		el: "#{$id}",
+		data: {
+			myData:{}
+		},
+		created(){
+			this.myData = data;
+		},
+		methods: {
+			changeImgUrl: function (url) {
+				if (url == null || url === "") return '';
+				if (url.indexOf("static/img/") > -1) return ns.img(ns_url.staticImg + "/" + url.replace("public/static/img/", ""));
+				else return ns.img(url);
+			},
+		}
+	})
+</script>
+{/block}

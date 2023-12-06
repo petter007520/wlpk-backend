@@ -1,0 +1,175 @@
+@charset "utf-8";
+body { color: #666; background-color: #F9F9F9;}
+html,body{ height:100%;}
+h2 { font: 24px/40px "microsoft yahei"; color: #27A9E3;}
+h1, h2, h3, h4, h5, h6 { font-family:  "microsoft yahei"; font-weight: normal;}
+h1 { font-size: 32px;}
+h2 { font-size: 25px;}
+h3 { font-size: 22px;}
+h5 { font-size: 15px;}
+h6 { font-size: 13px;}
+.lighter { font-weight: lighter;}
+.bolder { font-weight: bolder;}
+h1.block, h2.block, h3.block, h4.block, h5.block, h6.block { margin-bottom: 16px;}
+i { font-size: 1.2em;}
+a:focus, a:active { text-decoration: none;}
+a { color: #0579C6; text-decoration: none; -webkit-transition-property:color;  -webkit-transition-duration:0.3s; -webkit-transition-timing-function: ease;}
+a:hover { text-decoration: underline; color: #F60;}
+.hidden { display: none;}
+.center { text-align: center;}
+.dark { color: #333333 !important;}
+.white { color: #FFFFFF !important;}
+.red { color: #DD5A43 !important;}
+.light-red { color: #FF7777 !important;}
+.blue { color: #27A9E3 !important;}
+.light-blue { color: #93CBF9 !important;}
+.green { color: #69AA46 !important;}
+.light-green { color: #B6E07F !important;}
+.orange { color: #FF892A !important;}
+.pink { color: #C6699F !important;}
+.pink2 { color: #D6487E !important;}
+.brown { color: #A52A2A !important;}
+.grey { color: #777777 !important;}
+/* ---------------------------------------- */
+/* 常用宽度、高度、边距、边框属性				*/
+/* ---------------------------------------- */
+.fl { float: left;}
+.fr { float: right;}
+/* 表单项属性
+------------------------------------------- */
+input[type="text"], input[type="password"], input.text, input.password { font: 12px/20px Arial; color: #777; background-color: #FFF; vertical-align: top; display: inline-block; height: 20px; padding: 4px; border: solid 1px #CCC; outline: 0 none;}
+input[type="text"]:focus, input[type="password"]:focus, input.text:focus, input.password:focus, textarea:focus { color: #333; border-color: #75B9F0; box-shadow: 0 0 0 2px rgba(82, 168, 236, 0.15); outline: 0 none;}
+input[type="text"].error, input[type="password"].error, textarea.error { border-color: #ED6C4F; box-shadow: 0 0 0 2px rgba(232, 71, 35, 0.15); outline: 0 none;}
+textarea, .textarea { font: 12px/20px Arial; color: #777; background-color: #FFF; vertical-align: top; display: inline-block; height: 60px; padding: 4px; border: solid 1px #CCC; outline: 0 none;}
+select { color: #777; background-color: #FFF; height: 30px; vertical-align: middle; *display: inline; padding: 4px; border: solid 1px #CCC; *zoom:1;}
+select option { line-height: 20px; display: block; height: 20px; padding: 4px;}
+input[type="file"] { line-height:20px; background-color:#FBFBFB; height: 20px; border: solid 1px #D8D8D8; cursor: default;}
+.add-on { line-height: 28px; background-color: #E6E6E6; vertical-align: top; display: inline-block; text-align: center; width: 28px; height: 28px; border: solid #CCC; border-width: 1px 1px 1px 0}
+.add-on { *display: inline/*IE6,7*/; zoom:1;}
+.add-on i { font-size: 14px; color: #666; text-shadow: 1px 1px 0 #FFFFFF; *margin-top: 8px/*IE7*/;}
+/*表单验证错误提示文字*/
+label.error { font-size: 12px; color: #E84723; margin-left: 8px;}
+label.error i { margin-right: 4px;}
+.hint { font-size: 12px; line-height: 16px; color: #BBB; margin-top: 10px; }
+/* 按钮样式 */
+a.ncsc-btn { font: normal 12px/20px "microsoft yahei"; text-decoration: none; color: #777; background-color: #F5F5F5; text-align: center; vertical-align: middle; display: inline-block; height: 20px; padding: 4px 10px; border: solid 1px; border-color: #DCDCDC #DCDCDC #B3B3B3 #DCDCDC; cursor: pointer;}
+a:hover.ncsc-btn { text-decoration: none; color: #333; background-color: #E6E6E6; border-color: #CFCFCF #CFCFCF #B3B3B3 #CFCFCF;}
+input[type="submit"], input.submit, a.submit { font-size: 12px; font-weight: bold; color: #FFF; text-shadow: 0 -1px 0 rgba(0,0,0,0.1); background-color: #5BB75B; display: block; height: 30px; padding: 0 20px 2px 20px; border: 0; cursor: pointer; }
+input[type="submit"]:hover, input.submit:hover, a.submit:hover { text-decoration: none; color: #FFF; background-color: #51A351;}
+
+.order .buyer { color: #555; position:relative; display:block; }
+.order .buyer-info { display:none; }
+.order .buyer:hover .buyer-info { *width:250px/*IE7*/; display:block; position:absolute; z-index:8; top:-40px; left: 90px; border: solid 1px #FEC500; background-color:#FFF9D4; padding:4px; border-radius:5px;}
+.order .buyer-info .con { display:block; overflow:hidden; background: #FFF; padding:5px;}
+.order .buyer-info h3 { font-size:1em; font-weight:700; color: #C33700; padding: 5px 0; overflow:hidden;}
+.order .buyer-info h3  span { float:left;}
+.order .buyer-info dl { color: #777; padding:2px 0; width:220px; overflow:hidden; clear:both;}
+.order .buyer-info dt { float:left; width:50px; text-align:right;}
+.order .buyer-info dd { float:left; width:140px; text-align:left;}
+
+/*商品列表页-SKU值显示部分*/
+td.trigger i { color: #C8C8C8; cursor: pointer; }
+td.trigger i:hover { color: #27A9E3;}
+
+/* 商品发布页面相关样式
+------------------------------------------- */
+/* 发布商品第一步-选择分类 */
+.bottom .submit { font: 14px/36px "microsoft yahei"; text-align: center; min-width: 100px; *min-width: auto; height: 36px;}
+.bottom a.submit { width: 100px; margin: 0 auto;}
+.bottom .submit[disabled="disabled"] { color: #999; text-shadow: none; background-color: #F5F5F5; border: solid 1px; border-color: #DCDCDC #DCDCDC #B3B3B3 #DCDCDC; cursor: default;}
+
+
+/*商品添加步骤二运费模板样式 by hou*/
+/* 发布商品-属性 */
+.spec { font-size: 0; *word-spacing:-1px/*IE6、7*/; }
+.spec li { font-size: 12px; vertical-align: top; letter-spacing: normal; word-spacing: normal; display: inline-block; *display: inline/*IE6,7*/; width:25%; margin-bottom: 6px; zoom: 1;}
+.spec li span { line-height: 30px; vertical-align: middle; margin-right:6px;}
+.spec li span .text { vertical-align: middle; width: 130px;}
+
+/* 发布商品-上传主图 */
+.sticky #uploadHelp { width: 178px; position: fixed; z-index: 10; top: 75px;}
+/* 发布与编辑商品-AJAX图片上传及控制删除 */
+.ncsc-select-album { background-color: #FFF; border-top: solid 1px #E6E6E6; padding: 10px;}
+
+/*运费*/
+form .red { color:red; border:0px; }
+form label.error { color:red; margin-left:5px; }
+form input.error { border:red 1px dotted; }
+.select_add { float:left; width: 8%;}
+
+/* E 提示的样式*/
+.add_link{ margin:0 3px 0 10px;}
+
+/* 从图片空间选择图片 */
+#demo, #des_demo { line-height: 0; text-align: center; width: 100%}
+#demo .ajaxload,
+#des_demo .ajaxload { width: 16px; height: 16px; margin: 80px auto;}
+
+/* 发货 */
+.step-title { margin: 12px 0; font-size: 14px; font-weight: 600; color: #555;}
+.step-title em { font-weight:600; color:#F60; margin-right:12px;}
+
+
+/* 店铺
+------------------------------------------- */
+/* 店铺幻灯片设置 */
+.slides{ padding: 0; margin: 0; list-style: none;}
+.slides:after { line-height: 0; content: "."; display: block; height: 0; clear: both; visibility: hidden;}
+html[xmlns] .slides { display: block;}
+*html .slides { height: 1%;}
+.no-js .slides > li:first-child { display: block;}
+
+/* 店铺装修
+------------------------------------------- */
+/*商家入驻表单*/
+table.type { width: 700px; border: solid 1px #E6E6E6;}
+table.type thead th { color: #555; background-color: #F7F7F7; text-align: center; padding: 4px; border-color: #E6E6E6; }
+table.type tbody td { color: #777; text-align: center; padding: 4px; border-color: #E6E6E6;}
+table.type tbody td input { width: 60px; padding: 0;}
+
+/* 发货单打印页面 */
+.print-layout { font-size:12px; background:#FAFAFA; border: solid 1px #CCC; position:relative;height:297mm; padding:5mm 50mm 5mm 5mm ; margin: 20px auto; box-shadow: 2px 2px 2px rgba(204,204,204,0.5); }
+.print-layout .print-btn {background:#FFF; border:  solid 1px #ccc;  position: absolute; z-index: 3; top:10mm; right:10mm; line-height:32px; padding:5px 10px; border-radius: 5px; box-shadow: 2px 2px 0 rgba(153,153,153,0.2); cursor: pointer;}
+.print-layout .print-btn:hover {  background: #555; box-shadow: none; border-color: #555;}
+.print-layout .print-btn i { background: url(../img/ncsc_bg_img.png)scroll no-repeat 0 -460px; vertical-align: middle; display: inline-block; width: 32px; height: 32px;}
+.print-layout .print-btn a { font-family:"microsoft yahei"; font-size: 20px;padding: 0 0 0 10px; color: #555; font-weight:600; display:inline-block; vertical-align: middle;}
+.print-layout .print-btn:hover a, .print-layout .print-btn a:hover { color: #FFF;  text-decoration:none;}
+.print-layout .a5-size, .print-layout .a4-size { background:#FFF; border: dashed 1px #ccc; width: 210mm; position:absolute; top:5mm; left:5mm; padding:1px;}
+.print-layout .a5-size { height:148mm;  z-index:2;}
+.print-layout .a4-size { height:297mm; z-index:1;}
+.print-layout .a5-tip, .print-layout .a4-tip{ color:#333; width:37mm; position: absolute; z-index:2; right:8mm;}
+.print-layout .a5-tip { top:50mm;}
+.print-layout .a4-tip { top:160mm;}
+.print-layout dl dt h1 { font-family:"Arial Black", Gadget, sans-serif; font-size:72px; line-height:72px;}
+.print-layout dl dt em { font-family: Arial; font-size:11px; line-height:20px; background: #333; color: #FFF; padding: 0 8px; height:20px; border-radius:10px; -webkit-text-size-adjust:none;}
+.print-layout .a5-tip dd, .print-layout .a4-tip dd { line-height:24px;}
+.print-layout .print-page { width: 210mm; height:297mm; position:absolute; z-index:3; top:5mm; left:5mm; margin:1px;  overflow:auto;}
+.orderprint { background: #FFF; width: 190mm; height:100%; margin-bottom:20px;padding:10mm 10mm 8mm 10mm; color:#000000; position:relative;}
+.orderprint .top { font-family:"microsoft yahei"; line-height:60px; width:190mm; height:60px; overflow:hidden; font-size:24px;}
+.orderprint .top .logo { width:200px; height:60px; float:left;}
+.orderprint .top .logo-title { text-align: left; width:450px; height: 60px; float:left; margin-left:10px; overflow:hidden;}
+.orderprint .top .full-title { width:100%; text-align:center;}
+.orderprint .explain { color: #555; line-height: 20px; width:100%;}
+.orderprint .seal {  position: absolute; top:120px; right:50px; }
+.orderprint .page { line-height:18px; color:#999; position: absolute; bottom:0px; left:50%; margin-left:-30px;}
+.orderprint table { font-family:Arial, Helvetica, sans-serif;  font-size:12px; line-height:18px; width:100%; border-collapse: collapse;}
+.buyer-info { margin: 15px 0;}
+.order-info thead th { font-weight:normal;background: #E7E7E7; text-align:center; border-bottom: solid 2px #000; border-top: solid 2px #000; padding:2px 0;}
+.order-info thead tr td {}
+.order-info tbody tr th {  background: #F7F7F7; text-align:left; padding:8px 0; text-align:center; font-weight:600;  border-bottom: solid 2px #000; border-top: solid 2px #000;}
+.order-info tbody tr td { padding: 8px 0; text-align: center;}
+.order-info tfoot tr th { border-bottom: solid 2px #000; padding: 6px 0;text-align:left;font-weight:normal;}
+.order-info tfoot tr th span { line-height:20px; white-space:nowrap; display:inline-block; width: 24%; height: 20px; padding:0; margin:0; border:0; overflow:hidden; text-overflow:ellipsis; }
+.orderprint th{ font-variant:normal; text-align:left}
+.w200 {
+	width: 200px !important;
+}
+.tl {
+	text-align: left !important;
+}
+.w70 {
+	width: 70px !important;
+}
+.w40 {
+	width: 40px !important;
+}

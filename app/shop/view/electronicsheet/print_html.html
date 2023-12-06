@@ -1,0 +1,103 @@
+<script type="text/html" id="express_sheet_html">
+    <div class="layui-form express-sheet">
+        <div class="layui-form-item express-mode">
+            <label class="layui-form-label"><span class="required">*</span>面单模版：</label>
+            <div class="layui-input-block len-mid">
+                <select name="template_id" lay-search lay-filter="express_company" lay-verify="required">
+                    <option value="">请选择面单模版</option>
+                    {{#  layui.each(d, function(index, item){ }}
+                        <option value="{{ item.id }}"  {{#  if(item.is_default === 1){ }} selected {{#  } }} >{{ item.template_name }}</option>
+                    {{#  }); }}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否发货</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="is_delivery" lay-skin="switch" value="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <button type="button" class="layui-btn" lay-submit lay-filter="express_sheet_save">点击确定</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var expresselectronicsheetlist = [];
+
+    //获取物流公司
+    $.ajax({
+        type: "post",
+        url: ns.url("shop/delivery/getexpresselectronicsheetlist"),
+        dataType: 'json',
+        success: function (res) {
+            if (res.code == 0) {
+                expresselectronicsheetlist = res.data;
+            }
+        }
+    });
+
+    //打印电子面单
+    function printElectronicsheetAction(order_id_list){
+        var getTpl = $("#express_sheet_html").html();
+        laytpl(getTpl).render(expresselectronicsheetlist, function(html) {
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                shade: 0.3,
+                fixed: false,
+                scrollbar: false,
+                title: "打印电子面单",
+                area: '550px',
+                content: html,
+                success: function (layero, index) {
+                    form.render();
+                    form.on('submit(express_sheet_save)', function (data) {
+
+                        $.each(order_id_list, function(index, value) {
+                            data.field.order_id = value;
+
+                            $.ajax({
+                                type: 'post',
+                                url: ns.url("shop/delivery/printelectronicsheet"),
+                                dataType: 'JSON',
+                                data: data.field,
+                                success: function (res) {
+                                    layer.msg(res.message);
+                                    if (res.code >= 0) {
+                                        expressSheet(res.data.PrintTemplate);
+                                        location.reload();
+                                    }
+                                }
+                            });
+                        });
+
+                    });
+                }
+
+            });
+        })
+    }
+
+    /**
+     * 批量打印电子面单
+     */
+    function CreateTwoFormPage(html){
+        LODOP=getLodop();
+        if(LODOP) {
+            LODOP.PRINT_INIT("打印电子面单");
+            LODOP.ADD_PRINT_HTM(0, 10, "95%", "100%", html);
+        }
+    }
+
+    function expressSheet(html) {
+        CreateTwoFormPage(html);
+        // LODOP.PREVIEW(); //预览
+        LODOP.PRINT();  //直接打印
+    }
+
+    function orderPrintElectronicsheet(order_id){
+        printElectronicsheetAction([order_id]);
+    }
+</script>

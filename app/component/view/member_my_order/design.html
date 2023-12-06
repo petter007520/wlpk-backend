@@ -1,0 +1,111 @@
+<nc-component :data="data[index]" class="diy-member-my-order">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div :style="{ backgroundColor: nc.componentBgColor,
+		borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		}">
+			<div class="order-wrap" v-if="nc.lazyLoad">
+				<div class="status-wrap">
+					<div class="item-wrap">
+						<div class="icon-block">
+							<template v-if="nc.style == 3">
+								<img src="__PUBLIC__/uniapp/member/order/wait_pay.png" alt="">
+								<div class="icon-shade" :style="{ background : nc.tempData.systemColor ? nc.tempData.systemColor.main_color : '' }" style="-webkit-mask-image: url(__PUBLIC__/uniapp/member/order/wait_pay_shade.png);"></div>
+							</template>
+							<template v-else>
+								<iconfont :icon="nc.icon.waitPay.icon" v-if="nc.icon.waitPay" :value="nc.icon.waitPay.style && nc.tempData.methods ? nc.tempData.methods.handleIconStyle(nc.icon.waitPay.style) : null"></iconfont>
+							</template>
+						</div>
+						<div class="title" v-if="nc.icon.waitPay">{{ nc.icon.waitPay.title}}</div>
+					</div>
+					<div class="item-wrap">
+						<div class="icon-block">
+							<template v-if="nc.style == 3">
+								<img src="__PUBLIC__/uniapp/member/order/wait_send.png" alt="">
+								<div class="icon-shade" :style="{ background : nc.tempData.systemColor ? nc.tempData.systemColor.main_color : '' }" style="-webkit-mask-image: url(__PUBLIC__/uniapp/member/order/wait_send_shade.png);"></div>
+							</template>
+							<template v-else>
+								<iconfont :icon="nc.icon.waitSend.icon" v-if="nc.icon.waitSend" :value="nc.icon.waitSend.style && nc.tempData.methods ? nc.tempData.methods.handleIconStyle(nc.icon.waitSend.style) : null"></iconfont>
+							</template>
+						</div>
+						<div class="title" v-if="nc.icon.waitSend">{{ nc.icon.waitSend.title}}</div>
+					</div>
+					<div class="item-wrap">
+						<div class="icon-block">
+							<template v-if="nc.style == 3">
+								<img src="__PUBLIC__/uniapp/member/order/wait_confirm.png" alt="">
+								<div class="icon-shade" :style="{ background : nc.tempData.systemColor ? nc.tempData.systemColor.main_color : '' }" style="-webkit-mask-image: url(__PUBLIC__/uniapp/member/order/wait_confirm_shade.png);"></div>
+							</template>
+							<template v-else>
+								<iconfont :icon="nc.icon.waitConfirm.icon" v-if="nc.icon.waitConfirm" :value="nc.icon.waitConfirm.style && nc.tempData.methods ? nc.tempData.methods.handleIconStyle(nc.icon.waitConfirm.style) : null"></iconfont>
+							</template>
+						</div>
+						<div class="title" v-if="nc.icon.waitConfirm">{{ nc.icon.waitConfirm.title}}</div>
+					</div>
+					<div class="item-wrap">
+						<div class="icon-block">
+							<template v-if="nc.style == 3">
+								<img src="__PUBLIC__/uniapp/member/order/wait_use.png" alt="">
+								<div class="icon-shade" :style="{ background : nc.tempData.systemColor ? nc.tempData.systemColor.main_color : '' }" style="-webkit-mask-image: url(__PUBLIC__/uniapp/member/order/wait_rate_shade.png);"></div>
+							</template>
+							<template v-else>
+								<iconfont :icon="nc.icon.waitUse.icon" v-if="nc.icon.waitUse" :value="nc.icon.waitUse.style && nc.tempData.methods ? nc.tempData.methods.handleIconStyle(nc.icon.waitUse.style) : null"></iconfont>
+							</template>
+						</div>
+						<div class="title" v-if="nc.icon.waitUse">{{ nc.icon.waitUse.title}}</div>
+					</div>
+					<div class="item-wrap">
+						<div class="icon-block">
+							<template v-if="nc.style == 3">
+								<img src="__PUBLIC__/uniapp/member/order/refunding.png" alt="">
+								<div class="icon-shade" :style="{ background : nc.tempData.systemColor ? nc.tempData.systemColor.main_color : '' }" style="-webkit-mask-image: url(__PUBLIC__/uniapp/member/order/refunding_shade.png);"></div>
+							</template>
+							<template v-else>
+								<iconfont :icon="nc.icon.refunding.icon" v-if="nc.icon.refunding" :value="nc.icon.refunding.style && nc.tempData.methods ? nc.tempData.methods.handleIconStyle(nc.icon.refunding.style) : null"></iconfont>
+							</template>
+						</div>
+						<div class="title" v-if="nc.icon.refunding">{{ nc.icon.refunding.title}}</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<diy-member-my-order-sources></diy-member-my-order-sources>
+
+			<div class="layui-form-item" v-if="nc.tempData.styleList">
+				<label class="layui-form-label sm">风格</label>
+				<div class="layui-input-block">
+					<div v-for="(item,styleIndex) in nc.tempData.styleList" :key="styleIndex" @click="nc.tempData.methods.switchIconStyle(styleIndex)" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.style==item.value) }">
+						<i class="layui-anim layui-icon">{{ nc.style == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+						<div>{{item.text}}</div>
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var diyMemberMyOrderSystemColor = {:json_encode($system_color)};
+			var memberMyOrderResourcePath = "{$resource_path}"; // http路径
+			var memberMyOrderRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

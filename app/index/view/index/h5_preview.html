@@ -1,0 +1,93 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .head-block{
+        display: none;
+    }
+    .page-content{
+        height: 100vh;
+        padding: 10px 0;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    .content{
+        width: 375px;
+        background-color: #f9f9f9;
+        height: 100%;
+        margin: 0 auto;
+
+        position: relative;
+    }
+    .content #iframe{
+        width: 100%;
+        height: 100%;
+    }
+    .content .empty{
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        color: #666;
+        justify-content: center;
+    }
+    .content .qrcode-wrap {
+        background: #f4f6f8;
+        display: inline-block;
+        padding: 10px;
+        text-align: center;
+        position: absolute;
+        right: -240px;
+        top: 20%;
+        max-width: 130px;
+        max-height: 130px;
+        overflow: hidden;
+    }
+
+    .content .qrcode-wrap img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .content .qrcode-wrap .tips {
+        font-size: 12px;
+        margin: 10px 0 0 0;
+        padding: 0;
+        border: none;
+    }
+
+    .content .qrcode-wrap input {
+        margin-top: 30px;
+    }
+
+</style>
+{/block}
+{block name="main"}
+{if !$is_mobile}
+<div class="page-content">
+    <div class="content">
+        {if $h5_data && $h5_data['status']}
+        <iframe id="iframe" src="{$h5_data['url']}" frameborder="0"></iframe>
+        {else /}
+        <div class="empty">手机端未开启，请联系管理员。</div>
+<!--        <p>当前手机页面无法访问</p>-->
+<!--        <a href="https://www.kancloud.cn/niucloud/niushop_b2c_v4/1842146" class="text-color" target="_blank">请检查手机端域名配置以及伪静态</a>-->
+        {/if}
+        {if $h5_data && $h5_data['status']}
+        <div class="qrcode-wrap">
+            <img src="{:img($h5_data['img'])}" alt="推广二维码">
+            <p class="tips text-color">扫码访问店铺&nbsp;&nbsp;<a class="text-color" href="javascript:ns.copy('h5_preview_1');">复制链接</a></p>
+            <input type="text" id="h5_preview_1" value="{$h5_data['url']}" readonly="">
+        </div>
+        {/if}
+    </div>
+</div>
+{/if}
+{/block}
+
+{block name="script"}
+<script>
+    {if $is_mobile}
+    window.location.href = "{$h5_data['url']}";
+    {/if}
+</script>
+{/block}

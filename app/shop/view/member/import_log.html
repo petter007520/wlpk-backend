@@ -1,0 +1,81 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .layui-layout-admin .tips-wrap{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+<div class="detail-card tips-wrap">
+    <div class="detail-con">
+        <p class="detail-line">
+            <span class="goods-name">会员导入</span>
+            <span class="text-color">{$info.data.status_name}</span>
+        </p>
+        <p class="detail-line">导入时间：{:date('Y-m-d H:i:s', $info.data.create_time)}</p>
+    </div>
+</div>
+
+<!-- 列表 -->
+<table id="member_import_log_list" lay-filter="member_import_log_list"></table>
+<!-- 工具栏操作 -->
+<input id="record_id" type="hidden" value="{$id}" />
+{/block}
+
+{block name="script"}
+<script>
+    var table,repeat_flag = false;
+    layui.use(['form','laytpl'], function() {
+        var form = layui.form,
+            record_id = $("#record_id").val();
+        form.render();
+        /**
+         * 表格加载
+         */
+        table = new Table({
+            elem: '#member_import_log_list',
+            url: ns.url("shop/member/memberimportlist"),
+            where : {
+              "id" : record_id
+            },
+            cols: [
+                [{
+                    field: 'username',
+                    title: '用户名',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'mobile',
+                    title: '手机号',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'nickname',
+                    title: '昵称',
+                    width: '15%',
+                    unresize: 'false',
+                }, {
+                    field: 'wx_openid',
+                    title: '微信公众号openid',
+                    width: '20%',
+                    unresize: 'false',
+                }, {
+                    field: 'weapp_openid',
+                    title: '小程序openid',
+                    width: '20%',
+                    unresize: 'false',
+                }, {
+                    field: 'password',
+                    title: '密码',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'content',
+                    title: '内容',
+                    width: '21%',
+                    unresize: 'false',
+                }]
+            ]
+        });
+    });
+</script>
+{/block}

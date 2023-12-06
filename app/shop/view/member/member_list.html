@@ -1,0 +1,1262 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.reason-box{display: none;width: 350px;box-sizing: border-box;padding: 20px;border: 1px solid #aaa;border-radius: 5px;background-color: #FFF;position: absolute;top: 50px;z-index: 999;color: #666;line-height: 30px;left: 0px;font-weight: normal;}
+	.reason-box:before, .reason-box:after{content: "";border: solid transparent;height: 0;position: absolute;width: 0;}
+	.reason-box:before{border-width: 12px;border-bottom-color: #aaa;top: -12px;left: 43px;border-top: none;}
+	.reason-growth:before{left: 56px;}
+	.reason-box:after{border-width: 10px;border-bottom-color: #FFF;top: -20px;left: 45px;}
+	.reason-growth:after{left: 58px;}
+	.reason-box p{white-space: normal;line-height: 1.5;}
+	.layui-table-header{overflow: inherit;}
+	.layui-table-header .layui-table-cell{overflow: inherit;}
+	.prompt-block.balance, .prompt-block.growth {justify-content: flex-end;}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {margin-top: 0;}
+	.blacklist{background: #333;color: #fff;line-height: 1;padding: 3px 6px;border-radius: 3px;font-size: 12px;}
+	.vip_style{background: #333;color: #fff5a0;line-height: 1;padding: 3px 6px;border-radius: 3px;font-size: 12px;}
+	.layui-form-select dl dt {color: #333; font-weight: bold;}
+    .title-content{overflow:visible !important;}
+	.member-form .layui-form-item{margin-bottom: 0}
+    .member-form .layui-form-item .layui-inline{margin-bottom: 10px}
+	.title-pic {position: relative;}
+	.title-pic .channel {position: absolute;right: 0;bottom: 0;color: var(--base-color);width: 20px;height: 20px;display: flex;align-items: center;justify-content: center;border-radius: 50%;font-size: 14px;}
+	.title-content .member-level {display: inline-block;white-space: nowrap;background: #eee;color: #999;font-size: 12px;padding: 3px 5px; line-height: 1;border-radius: 4px;}
+    .iconxiaochengxu {font-size: 12px}
+    .layui-unselect[data-field="balance"]>div, .layui-unselect[data-field="point"]>div{
+        display: flex;
+        align-items: center;
+    }
+	.layer-member .member-head{
+		display: flex;
+		align-items: center;
+	}
+	.layer-member .member-head .member-img{
+		flex-shrink: 0;
+		display: inline-block;
+		width: 60px;
+		height: 60px;
+		text-align: center;
+		line-height: 50px;
+		margin-left: 5px;
+	}
+	.layer-member .member-head .member-img img{
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.layer-member .member-head .member-name{
+		margin-left: 15px;
+		line-height: 2;
+	}
+	.layer-member .member-head .member-sex{
+		margin-left: 20%;
+		line-height: 1.7;
+	}
+	.layer-member .member-account{
+		background: #f2f3f5;
+		padding: 20px 15px;
+		margin: 20px 0;
+		display: table;
+		box-sizing: border-box;
+		display: flex;
+	}
+	.layer-member .member-account .account-item{
+		width: 25%;
+		display: inline-block;
+		line-height: 2;
+	}
+</style>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member.css" />
+{/block}
+{block name="main"}
+<!-- 添加会员 -->
+<div class="single-filter-box" style="display: block ">
+	<button class="layui-btn" onclick="window.location.href='{:addon_url("shop/member/addMember")}'">添加会员</button>
+</div>
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show member-form">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="mobile">手机号</option>
+							<option value="nickname">昵称</option>
+							<option value="member_code">会员码</option>
+						</select>
+					</div>
+					<div class="layui-input-inline split">&nbsp;</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="手机号/昵称" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">成交次数</label>
+					<div class="layui-input-inline input-append">
+						<input type="text" class="layui-input" name="start_order_complete_num" id="start_order_complete_num" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">次</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time input-append">
+						<input type="text" class="layui-input" name="end_order_complete_num" id="end_order_complete_num" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">次</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">会员等级</label>
+					<div class="layui-input-inline">
+						<select name="level_id">
+							<option value="">请选择</option>
+							{if $supermember_is_exit}
+							<optgroup label="超级会员卡">
+								{foreach $member_level_list as $member_level_list_k=> $member_level_list_v}
+								{if $member_level_list_v.level_type eq 1}<option value="{$member_level_list_v.level_id}">{$member_level_list_v.level_name}</option>{/if}
+								{/foreach}
+							</optgroup>
+							<optgroup label="会员级别">
+								{foreach $member_level_list as $member_level_list_k=> $member_level_list_v}
+								{if $member_level_list_v.level_type eq 0}<option value="{$member_level_list_v.level_id}">{$member_level_list_v.level_name}</option>{/if}
+								{/foreach}
+							</optgroup>
+							{else/}
+							{foreach $member_level_list as $member_level_list_k=> $member_level_list_v}
+							<option value="{$member_level_list_v.level_id}">{$member_level_list_v.level_name}</option>
+							{/foreach}
+							{/if}
+						</select>
+					</div>
+				</div>
+
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">注册时间</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="reg_start_date" id="reg_start_date" placeholder="请输入开始时间" autocomplete="off" readonly>
+					</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间" autocomplete="off" readonly>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">上次访问时间</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="last_login_time_start" id="last_login_time_start" placeholder="请输入开始时间" autocomplete="off" readonly>
+					</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="last_login_time_end" id="last_login_time_end" placeholder="请输入结束时间" autocomplete="off" readonly>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">会员群体</label>
+					<div class="layui-input-inline">
+						<select name="cluster_id">
+							<option value="">请选择</option>
+							{foreach $member_cluster_list as $member_cluster_list_k=> $member_cluster_list_v}
+							<option value="{$member_cluster_list_v.cluster_id}" {if $member_cluster_list_v.cluster_id == $cluster_id}selected{/if}>{$member_cluster_list_v.cluster_name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">积分</label>
+					<div class="layui-input-inline input-append">
+						<input type="text" class="layui-input" name="start_point" id="start_point" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">分</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline input-append">
+						<input type="text" class="layui-input" name="end_point" id="end_point" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">分</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">余额</label>
+					<div class="layui-input-inline input-append">
+						<input type="text" class="layui-input len-short" name="start_balance" id="start_balance" autocomplete="off">
+					</div>
+
+					<div class="layui-form-mid">元</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time input-append">
+						<input type="text" class="layui-input len-short" name="end_balance" id="end_balance" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">元</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">会员标签</label>
+					<div class="layui-input-inline">
+						<select name="label_id">
+							<option value="">请选择</option>
+							{foreach $member_label_list as $member_label_list_k=> $member_label_list_v}
+							<option value="{$member_label_list_v.label_id}">{$member_label_list_v.label_name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">消费金额</label>
+					<div class="layui-input-inline input-append">
+						<input type="text" class="layui-input" name="start_order_complete_money" id="start_order_complete_money" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">元</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time input-append">
+						<input type="text" class="layui-input" name="end_order_complete_money" id="end_order_complete_money" autocomplete="off">
+					</div>
+					<div class="layui-form-mid">元</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">成长值</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_growth" id="start_growth" autocomplete="off">
+					</div>
+					<div class="layui-input-inline split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="end_growth" id="end_growth" autocomplete="off">
+					</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">来源渠道</label>
+					<div class="layui-input-inline">
+						<select name="login_type">
+							<option value="">全部</option>
+							{foreach $order_from_list as $order_from_k => $order_from_v}
+							<option value="{$order_from_k}">{$order_from_v['name']}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">黑名单</label>
+					<div class="layui-input-inline">
+						<select name="status">
+							<option value="">请选择</option>
+							<option value="0">是</option>
+							<option value="1">否</option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">是否是会员</label>
+					<div class="layui-input-inline">
+						<select name="is_member">
+							<option value="">请选择</option>
+							<option value="1">是</option>
+							<option value="0">否</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button class="layui-btn" lay-submit lay-filter="export">批量导出</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 用户信息 -->
+<script type="text/html" id="userdetail">
+	<div class='table-title'>
+		<div class='title-pic'>
+			{{# if(d.headimg){ }}
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+			{{# }else{ }}
+			<img layer-src src="{:img('public/static/img/default_img/head.png')}">
+			{{# } }}
+			<span class="channel {{ channelImg(d.login_type) }}" title="{{ d.login_type_name }}"></span>
+		</div>
+		<div class='title-content'>
+			<p class="layui-elip">{{d.nickname}}</p>
+			<div>
+				<span title="{{ d.mobile }}">{{ d.mobile }}</span>
+				{{# if (d.status == 0 || d.member_level_type == 1){ }}
+					{{# if (d.status == 0){ }}
+					<span class="blacklist">黑名单</span>
+					{{# } }}
+					{{# if (d.member_level_type == 1){ }}
+					<span class="vip_style">SVIP</span>
+					{{# } }}
+				{{# } }}
+			</div>
+		</div>
+	</div>
+</script>
+
+<!-- 会员标签 -->
+<script id="member_label" type="text/html">
+	{{# if (d.member_label_name != null) { }}
+	{{# var arr = d.member_label_name.split(",") }}
+	<div id="member_label_dl">
+		{{# for (var index in arr) { }}
+		{{#  if (arr[index]){  }}
+		{{'<span>' + arr[index] + '</span>'}}
+		{{#  }  }}
+		{{# } }}
+	</div>
+	{{# } }}
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 1 ? '正常' : '锁定' }}
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn" align="right">
+		<a class="layui-btn" lay-event="info">详情</a>
+		{{# if(d.is_member == 0){ }}<a class="layui-btn" lay-event="member">办理会员</a>{{# } }}
+		<a class="layui-btn" lay-event="more">更多</a>
+		<div class="more-operation">
+			{if $is_exit_fenxiao == 1}
+			<a class="operation" lay-event="change">上级分销商变更</a>
+			{/if}
+			<a class="operation" lay-event="set_label">设置标签</a>
+			<a class="operation" lay-event="reset_pass">重置密码</a>
+			<a class="operation" lay-event="recive_coupon">发放优惠券</a>
+			<a class="operation" lay-event="adjust_balance">调整余额</a>
+			<a class="operation" lay-event="adjust_integral">调整积分</a>
+			<a class="operation" lay-event="blacklist">黑名单</a>
+		</div>
+	</div>
+</script>
+
+<!-- 积分弹框html -->
+<script type="text/html" id="point">
+	<div class="layui-form integral-bounced">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前积分：</label>
+			<div class="layui-input-block account-value">{{ parseInt(d.point) }}</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block amount">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input len-short">
+			</div>
+			<span class="word-aux">调整数额与当前积分数相加不能小于0</span>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注" maxlength="150"></textarea>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<button class="layui-btn" lay-submit lay-filter="savePoint">确定</button>
+		</div>
+
+		<input type="hidden" name="member_id" value="{{d.member_id}}" />
+		<input type="hidden" name="point" value="{{ d.point }}" />
+	</div>
+</script>
+
+<!-- 余额弹框html -->
+<script type="text/html" id="balance">
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前储值余额：</label>
+			<div class="layui-input-block account-value">{{ d.balance }}</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input len-short">
+			</div>
+			<span class="word-aux">调整数额与当前储值余额相加不能小于0</span>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注" maxlength="150"></textarea>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<button class="layui-btn" lay-submit lay-filter="saveBalance">确定</button>
+		</div>
+
+		<input type="hidden" name="member_id" value="{{d.member_id}}" />
+		<input type="hidden" name="balance" value="{{ d.balance }}" />
+	</div>
+</script>
+
+<!-- 办理会员 -->
+<script type="text/html" id="set_member">
+	<div class="layer-member">
+		<div class="member-head">
+			<div class="member-img">
+				<img src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+			</div>
+			<div class="member-name">
+				<div>昵称：{{d.nickname ? d.nickname : ''}}</div>
+				<div>手机号：{{d.mobile ? d.mobile : '--'}}</div>
+			</div>
+			<div class="member-sex">
+				<div>性别：{{d.sex == 0 ? '未知' : d.sex == 1 ? '男' : '女'}}</div>
+				<div>生日：{{d.birthday ? ns.time_to_date(d.birthday) : '--'}}</div>
+			</div>
+		</div>
+
+		<div class="member-account">
+			<div class="account-item">可用积分：{{d.point}}</div>
+			<div class="account-item">现金金额：{{d.balance_money}}</div>
+			<div class="account-item">储值余额：{{d.balance}}</div>
+			<div class="account-item">成长值：{{d.growth}}</div>
+
+		</div>
+
+	</div>
+	<div class="layui-form main-wrap add_level" lay-filter="form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">会员等级：</label>
+			<div class="layui-input-inline len-mid">
+				<select name="level_id"  class="len-mid" lay-verify="required">
+					<option value="">请选择</option>
+					{foreach $member_level_list as $k=> $v}
+					{if $v['status']}
+					<option value="{$v.level_id}">{$v.level_name}</option>
+					{/if}
+					{/foreach}
+				</select>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">会员卡号：</label>
+			<div class="layui-input-block">
+				{{# if(d.member_code){ }}
+				<input type="text" class="layui-input len-mid" value="{{d.member_code}}" name="member_code" placeholder="" disabled>
+				{{# }else{ }}
+				<input type="text" class="layui-input len-mid" value="{{d.member_code}}" name="member_code" placeholder="">
+				{{# } }}
+			</div>
+			<div class="word-aux">会员卡号为会员唯一编号，若不设置将会自动生成</div>
+		</div>
+
+		<input type="hidden" value="{{d.member_id}}" name="member_id">
+		<div class="form-row">
+			<button class="layui-btn  bg-color " lay-submit="" lay-filter="savemember">保存</button>
+		</div>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type='text/javascript' src='SHOP_JS/member_list.js'></script>
+<script type="text/javascript">
+	function getQueryString(name) {
+	    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+	    var r = window.location.search.substr(1).match(reg);
+	    if (r != null) {
+	        return unescape(r[2]);
+	    }
+	    return null;
+	}
+	let levelId = getQueryString("levelId");
+	$('select[name="level_id"]').val(levelId);
+    var table, form, laytpl, laydate,
+        repeat_flag = false,
+        currentDate = new Date(),
+        minDate = "",
+        layer_pass,
+        upload,
+        layer_label;
+
+    layui.use(['form', 'laytpl', 'laydate', 'upload'], function() {
+        form = layui.form;
+        laytpl = layui.laytpl;
+        laydate = layui.laydate;
+        upload = layui.upload;
+        currentDate.setDate(currentDate.getDate() - 7);
+        form.render();
+
+        //注册开始时间
+        laydate.render({
+            elem: '#reg_start_date',
+            type: 'datetime'
+        });
+
+        //注册结束时间
+        laydate.render({
+            elem: '#reg_end_date',
+            type: 'datetime'
+        });
+
+        //上次访问开始时间
+        laydate.render({
+            elem: '#last_login_time_start',
+            type: 'datetime'
+        });
+
+        //上次访问结束时间
+        laydate.render({
+            elem: '#last_login_time_end',
+            type: 'datetime'
+        });
+
+        //允许上传的文件后缀
+        upload.render({
+            elem: '#member_file'
+            ,url: ns.url("shop/member/file"),
+            accept: 'file',
+            exts: 'xlsx',
+            done: function(res){
+                if (res.code >= 0) {
+
+                    $.ajax({
+                        url: ns.url("shop/member/import"),
+                        data: {
+                            filename: res.data.name,
+                            path:res.data.path
+                        },
+                        dataType: 'JSON',
+                        type: 'POST',
+                        success: function (res) {
+                            layer.msg(res.message);
+                            repeat_flag = false;
+                            if (res.code == 0) table.reload();
+                        }
+                    });
+                }else{
+                    layer.msg(res.message);
+                }
+            }
+        });
+        /**
+         * 重新渲染结束时间
+         * */
+        function reRender() {
+            $("#reg_end_date").remove();
+            $(".end-time").html('<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间">');
+            laydate.render({
+                elem: '#reg_end_date',
+                min: minDate
+            });
+        }
+
+        //积分
+        /* $("body").on("mousemove",".point",function() {
+            $("body").find(".point-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".point",function() {
+            $("body").find(".point-box").hide().stop(false, true);
+        }); */
+
+        //余额
+        /* $("body").on("mousemove",".ns-balance",function() {
+            $("body").find(".ns-balance-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".ns-balance",function() {
+            $("body").find(".ns-balance-box").hide().stop(false, true);
+        }); */
+
+        //成长值
+        /* $("body").on("mousemove",".growth",function() {
+            $("body").find(".growth-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".growth",function() {
+            $("body").find(".growth-box").hide().stop(false, true);
+        }); */
+
+        /**
+         * 加载表格
+         */
+        table = new Table({
+            elem: '#member_list',
+            url: ns.url("shop/member/memberList"),
+            where:{"cluster_id" : "{$cluster_id}","level_id": levelId},
+            cols: [
+                [
+                    {
+                        width: "3%",
+                        type: 'checkbox',
+                        unresize: 'false'
+                    }, {
+                    title: '会员信息',
+                    width: '18%',
+                    unresize: 'false',
+                    templet: '#userdetail'
+                }, {
+					field: 'member_level_name',
+					title: `<div class="prompt-block">
+						会员等级
+						<div class="prompt">
+							<i class="iconfont iconwenhao1 required growth"></i>
+							<div class="growth-box reason-box reason-growth prompt-box">
+								<div class="prompt-con">
+									<p>会员等级显示为非会员表示当前客户不是会员可以操作办理会员</p>
+								</div>
+							</div>
+						</div>
+					</div>`,
+					width: '12%',
+					unresize: 'false',
+					templet: function (data) {
+						return data.is_member ? `<span style="color: #000">${data.member_level_name}</span>` : '<span style="color: #666">非会员</span>';
+					},
+				}, {
+                    field: 'parent_fenxiao_name',
+                    title: '上级分销商',
+                    width: '10%',
+                    unresize: 'false',
+                    hide: {$is_exit_fenxiao} ? false : true
+                }, {
+                    field: 'point',
+                    title: $("#tableTitlePoint").html(),
+                    width: '8%',
+                    unresize: 'false',
+                    align: 'left',
+                    templet: function (data) {
+                        return parseInt(data.point);
+                    },
+                    sort: true
+                }, {
+                    field: 'balance',
+                    title: $("#tableTitleBalance").html(),
+                    width: '8%',
+                    unresize: 'false',
+                    align: 'right',
+                    templet: function(data) {
+                        var balance = parseFloat(data.balance) + parseFloat(data.balance_money);
+                        return '<span style="font-weight: bold" title="'+ balance.toFixed(2) +'">￥' + balance.toFixed(2) + '</span>';
+                    },
+                    sort: true
+                }, {
+                    field: 'order_complete_num',
+                    title: '成交订单数',
+                    width: '8%',
+                    unresize: 'false',
+                    align: 'right',
+                    sort: true
+                },  {
+					field: 'order_money',
+					title: '消费总额',
+					width: '8%',
+					unresize: 'false',
+					align: 'right',
+					templet: function(data) {
+						return '￥' + data.order_money;
+					},
+                    sort: true
+				},{
+                    field: 'reg-visit',
+                    title: '最后访问时间',
+                    width: '12%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return ns.time_to_date(data.last_visit_time);
+                    }
+                }, {
+                    title: '操作',
+                    unresize: 'false',
+                    toolbar: '#operation',
+                    align:'right'
+                }
+                ]
+            ],
+            toolbar: '#toolbarOperation',
+            bottomToolbar: "#batchOperation"
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'info': //编辑
+					window.open(ns.url("shop/member/editMember?member_id=" + data.member_id),"_blank");
+                    break;
+                case 'reset_pass': //重置密码
+                    resetPassword(data);
+                    break;
+                case 'adjust_balance': //调整余额
+                    adjustBalance(data);
+                    break;
+                case 'adjust_integral': //调整积分
+                    adjustIntegral(data);
+                    break;
+                case 'set_label': //设置标签
+                    settingLabels({member_id: data.member_id, label: data.member_label});
+                    break;
+                case 'more': //更多
+                    $('.more-operation').css('display', 'none');
+                    $(obj.tr).find('.more-operation').css('display', 'block');
+                    break;
+                case 'change':
+                    var url = ns.url("fenxiao://shop/fenxiao/change", {member_id: data.member_id});
+                    //iframe层-父子操作
+                    var layerIndex = layer.open({
+                        title: "变更上级分销商",
+                        type: 2,
+                        area: ['1200px', '800px'],
+                        // btn: '保存',
+                        content: url,
+                        end: function () {
+                            location.reload();
+                        }
+                    });
+                    break;
+                case 'recive_coupon': //发放优惠券
+                    selectCoupon(data);
+                    break;
+                case 'blacklist': // 黑名单
+                    addBlacklist(data.member_id,data.status);
+                    break;
+				case 'member': // 办理会员
+					setMember(data);
+					break;
+            }
+        });
+
+        $(document).click(function(event) {
+            if ($(event.target).attr('lay-event') != 'more' && $('.more-operation').not(':hidden').length) {
+                $('.more-operation').css('display', 'none');
+            }
+        });
+
+		/**
+		 * 办理会员
+		 */
+		function setMember(data) {
+			laytpl($("#set_member").html()).render(data, function(html) {
+				layer_coupon = layer.open({
+					title: '办理会员',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['700px', '542px'],
+					content: html,
+					success: function () {
+						form.render();
+					}
+				});
+			});
+		}
+
+		form.on('submit(savemember)', function(obj) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/handleMember"),
+				data: obj.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						table.reload();
+						layer.closeAll('page');
+					}
+				}
+			});
+		});
+
+        /**
+         * 批量操作
+         */
+        table.bottomToolbar(function(obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].member_id);
+                    delMember(id_array.toString());
+                    break;
+                case "setlabel":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].member_id);
+                    settingLabels({member_id: id_array.toString()});
+                    break;
+            }
+        });
+
+        /**
+         * 批量操作
+         */
+        table.toolbar(function(obj) {
+
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].member_id);
+                    delMember(id_array.toString());
+                    break;
+                case "setlabel":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].member_id);
+                    settingLabels({member_id: id_array.toString()});
+                    break;
+            }
+        });
+
+
+        /**
+         * 重置密码
+         */
+        function resetPassword(data) {
+            laytpl($("#pass_change").html()).render(data, function(html) {
+                layer_pass = layer.open({
+                    title: '重置密码',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['550px'],
+                    content: html,
+                });
+            });
+        }
+        // 调整余额
+        function adjustBalance(e){
+            laytpl($("#balance").html()).render(e, function(html) {
+                layer.open({
+                    title: '调整储值余额',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['800px'],
+                    content: html
+                });
+            });
+        }
+
+        //调整积分
+        function adjustIntegral(e){
+            laytpl($("#point").html()).render(e, function(html) {
+                layer.open({
+                    title: '调整积分',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['800px'],
+                    content: html
+                });
+            });
+        }
+        var repeat_flag_point = false;
+        form.on('submit(savePoint)', function(data) {
+            if (repeat_flag_point) return false;
+            repeat_flag_point = true;
+            var point = data.field.point;
+            if (data.field.adjust_num == 0) {
+                layer.msg('调整数值不能为0');
+                repeat_flag_point = false;
+                return ;
+            }
+            if (point*1 + data.field.adjust_num*1 < 0) {
+                layer.msg('积分不可以为负数');
+                repeat_flag_point = false;
+                return ;
+            }
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/member/adjustPoint"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag_point = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                        table.reload();
+                    }
+                }
+            });
+        });
+
+        var repeat_flag_balance = false;
+        form.on('submit(saveBalance)', function(data) {
+            if (repeat_flag_balance) return false;
+            repeat_flag_balance = true;
+
+            var balance = data.field.balance;
+            if (data.field.adjust_num == 0) {
+                layer.msg('调整数值不能为0');
+                repeat_flag_balance = false;
+                return ;
+            }
+            if (balance*1 + data.field.adjust_num*1 < 0) {
+                layer.msg('当前储值余额不可以为负数');
+                repeat_flag_balance = false;
+                return ;
+            }
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/member/adjustBalance"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag_balance = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                        table.reload();
+                    }
+                }
+            });
+        });
+
+
+
+        form.on('submit(repass)', function(data) {
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/member/modifyPassword"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                    }
+                }
+            });
+        });
+
+        /**
+         * 设置标签
+         */
+        function settingLabels(data) {
+
+            laytpl($("#label_change").html()).render(data, function(html) {
+                layer_label = layer.open({
+                    title: '设置标签',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['450px'],
+                    content: html,
+                    success: function(){
+                        if (data.label) {
+                            var label = data.label.split(',');
+                            label.forEach(function (i) {
+                                $('#reset_label [name="label_id'+ i +'"]').prop('checked', true);
+                                form.render();
+                            })
+
+                        }
+                    }
+                });
+            });
+
+            form.render();
+        }
+
+        form.on('submit(setlabel)', function(obj) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            var field = obj.field;
+            var arr_id = [];
+
+            for (var prop in field) {
+                if (prop == 'member_ids') {
+                    continue;
+                }
+                arr_id.push(field[prop]);
+            }
+            if (arr_id.length == 0){
+				// repeat_flag = false;
+            	// return layer.msg('会员标签不能为空!');
+			}
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/member/modifyLabel"),
+                data: {
+                    'member_ids': field.member_ids,
+                    'label_ids': arr_id.toString()
+                },
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag = false;
+                    if (res.code == 0) {
+                        table.reload();
+                        layer.closeAll('page');
+                    }
+                }
+            });
+        });
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+            return false;
+        });
+
+        /**
+         *  导出
+         */
+        form.on('submit(export)', function(data) {
+            location.href = ns.url("shop/member/exportMember",data.field);
+            return false;
+        });
+
+        $(".search-form").click(function() {
+            $(".layui-form-search").show();
+            $(this).hide();
+        });
+
+        $(".form-hide-btn").click(function() {
+            $(".layui-form-search").hide();
+            $(".search-form").show();
+        });
+
+        /**
+         * 表单验证
+         */
+        form.verify({
+            repass: function(value) {
+                if (value != $(".new_pass").val()) {
+                    return "输入错误,两次密码不一致!";
+                }
+            }
+        });
+
+
+        /**
+         * 发放优惠券
+         */
+        function selectCoupon(data) {
+            laytpl($("#recive_coupon").html()).render(data, function(html) {
+                layer_coupon = layer.open({
+                    title: '选择优惠券',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['700px', '542px'],
+                    content: html,
+                });
+                renderCoupon("", data.member_id);
+            });
+        }
+
+        function addBlacklist(member_ids,status) {
+        	var tips = '';
+        	if(status == 0){
+				tips = '您确认要将用户取消黑名单吗？';
+				status = 1;
+	        }else{
+				tips = '加入黑名单后用户将强制退出无法登录，您确认要将用户加入黑名单吗？';
+				status = 0;
+	        }
+            layer.confirm(tips, function() {
+                $.ajax({
+                    url: ns.url("shop/member/modifyStatus"),
+                    data: {member_ids,status},
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+            });
+        }
+    });
+
+    function closePass() {
+        layer.close(layer_pass);
+    }
+
+    function closeLabel() {
+        layer.close(layer_label);
+    }
+
+    function downloadMemberFile(){
+        location.href = ns.url("shop/member/downloadMemberFile");
+        return false;
+    }
+
+	/**
+	 * 输出来源渠道logo
+	 * @param type
+	 * @returns {*}
+	 */
+	function channelImg(type) {
+		var appType = {:json_encode($order_from_list)};
+		if(appType[type]) return appType[type].icon;
+	}
+</script>
+
+<!-- 发放优惠券弹框 -->
+<script type="text/html" id="recive_coupon">
+	<div class="recive-coupon">
+		<div class="coupon-modal">
+			<div class="coupon-list all-coupon">
+				<div class="title bg-color-gray">可选优惠券</div>
+				<div class="box"></div>
+			</div>
+			<button class="add">添加</button>
+			<div class="coupon-list selected-coupon">
+				<div class="title bg-color-gray">已选优惠券</div>
+				<div class="box"></div>
+			</div>
+		</div>
+		<div class="modal-operation">
+			<button class="layui-btn save-btn">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 重置密码弹框html -->
+<script type="text/html" id="pass_change">
+	<div class="layui-form" id="reset_pass" lay-filter="form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="required" class="layui-input len-mid new_pass" maxlength="18">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="repass|required" class="layui-input len-mid" maxlength="18">
+			</div>
+			<div class="word-aux mid">请再一次输入密码，两次输入密码须一致</div>
+		</div>
+
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="repass">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+
+		<input class="reset-pass-id" type="hidden" name="member_ids" value="{{d.member_id}}"/>
+	</div>
+</script>
+
+<!-- 设置标签弹框html -->
+<script type="text/html" id="label_change">
+	<div class="layui-form member-form" id="reset_label" lay-filter="form">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">标签：</label>
+			<div class="layui-input-block">
+				{foreach $member_label_list as $member_label_list_k => $member_label_list_v}
+				<input type="checkbox" name="label_id{$member_label_list_v.label_id}" value="{$member_label_list_v.label_id}" title="{$member_label_list_v.label_name}" lay-skin="primary">
+				{/foreach}
+			</div>
+		</div>
+
+		<div class="form-row sm">
+			<button class="layui-btn" lay-submit lay-filter="setlabel">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeLabel()">返回</button>
+		</div>
+
+		<input class="reset-label-id" type="hidden" name="member_ids" value="{{d.member_id}}" />
+	</div>
+</script>
+
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="setlabel">设置标签</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="setlabel">设置标签</button>
+</script>
+
+<script type="text/html" id="tableTitleBalance">
+    {if !empty($balance)}
+        <div class="prompt-block balance">
+            余额
+            <div class="prompt">
+                <i class="iconfont iconwenhao1 required growth"></i>
+                <div class="growth-box reason-box reason-growth prompt-box">
+                    <div class="prompt-con">
+                    {foreach $balance as $k=>$v}
+                    <p>{$k+1}、{$v}</p>
+                    {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {else /} 
+        余额
+    {/if}
+</script>
+<script type="text/html" id="tableTitlePoint">
+    {if !empty($point)} 
+        <div class="prompt-block">
+            积分 
+            <div class="prompt">
+                <i class="iconfont iconwenhao1 required growth"></i>
+                <div class="growth-box reason-box reason-growth prompt-box">
+                    <div class="prompt-con">
+                    {foreach $point as $k=>$v} 
+                        <p>{$k+1}、{$v}</p> 
+                    {/foreach} 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    {else /}  
+    积分 
+    {/if}
+</script>
+<script type="text/html" id="tableTitleGrowth">
+    {if !empty($growth)}
+        <div class="prompt-block growth">
+            成长值
+            <div class="prompt">
+                <i class="iconfont iconwenhao1 required growth"></i>
+                <div class="growth-box reason-box reason-growth prompt-box">
+                    <div class="prompt-con">
+                        {foreach $growth as $k=>$v} 
+                        <p>{$k+1}、{$v}</p> 
+                        {/foreach} 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    {else /}  
+    成长值 
+    {/if}
+</script>
+{/block}

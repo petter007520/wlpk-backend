@@ -1,0 +1,403 @@
+<nc-component :data="data[index]" class="coupon-wrap">
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="coupon-preview" v-if="nc.tempData.methods && Object.keys(nc.tempData.methods).length">
+			<div class="coupon-box coupon-box-1" v-if="nc.style == 1" :style="[nc.couponType == 'img' && {backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<div class="coupon-box-list" v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon" v-for="(item, index) in nc.previewList" v-if="index < 3" :style="{marginRight: (40 - nc.margin.both * 2) / 2 + 'px'}">
+						<img src="{$resource_path}/img/style1-bg.png">
+						<div class="coupon-intro" >
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">￥<span>{{nc.tempData.methods.moneyConduct(item.money)}}</span></p>
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-else><span>{{nc.tempData.methods.moneyConduct(item.discount)}}</span>折</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元使用</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</div>
+				<div class="coupon-box-list" v-else>
+					<div class="coupon" v-for="item in 3" :style="{marginRight: ( 40 - nc.margin.both * 2) / 2 + 'px'}">
+						<img src="{$resource_path}/img/style1-bg.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}">￥<span>500</span></p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}">满3000可用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="coupon-box coupon-box-2" v-else-if="nc.style == 2" :style="[nc.couponType == 'img' && {backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<template v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon"  v-for="(item, index) in nc.previewList" v-if="index <= 3"  :style="{marginRight: ( 41 - nc.margin.both * 2) / 2 + 'px'}">
+						<img src="{$resource_path}/img/coupon_bg.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">￥<span>{{nc.tempData.methods.moneyConduct(item.money)}}</span></p>
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-else><span>{{nc.tempData.methods.moneyConduct(item.discount)}}</span>折</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元使用</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+				<template v-else>
+					<div class="coupon" v-for="item in 3" :style="{marginRight: (41-nc.margin.both*2)/2 + 'px'}">
+						<img src="{$resource_path}/img/coupon_bg.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}">￥<span>500</span></p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}">满3000元可用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+			</div>
+			<div class="coupon-box" :class="'coupon-box-'+ nc.style" v-if="nc.style == 3" :style="[nc.couponType == 'img'&&{backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<div class="coupon-block" v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon" v-for="(item, previewIndex) in nc.previewList" v-if="previewIndex < 3" :style="{marginRight: (46-nc.margin.both*2)/2 + 'px'}">
+						<img src="{$resource_path}/img/style3-bg-2.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">￥<span>{{nc.tempData.methods.moneyConduct(item.money)}}</span></p>
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-else><span>{{nc.tempData.methods.moneyConduct(item.discount)}}</span>折</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元可用</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+							<p class="coupon-info" v-if="item.goods_type == 1">全部商品可用</p>
+							<p class="coupon-info" v-if="item.goods_type == 2">指定商品可用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</div>
+				<div class="coupon-block" v-else>
+					<div class="coupon" v-for="item in 3" :style="{marginRight: (46-nc.margin.both*2)/2 + 'px'}">
+						<img src="{$resource_path}/img/style3-bg-2.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}">￥<span>500</span></p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}">满3000元可用</p>
+							<p class="coupon-info">指定商品可用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="coupon-box" :class="'coupon-box-'+ nc.style" v-else-if="nc.style == 4" :style="[nc.couponType == 'img'&&{backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<template v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon" v-for="(item, previewIndex) in nc.previewList" v-if="previewIndex < 3" :style="{marginRight: (44-nc.margin.both*2)/2 + 'px'}">
+						<img src="{$resource_path}/img/style4-bg-1.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">￥<span>{{nc.tempData.methods.moneyConduct(item.money)}}</span></p>
+							<p class="coupon-price" :style="{color: nc.moneyColor}" v-else><span>{{nc.tempData.methods.moneyConduct(item.discount)}}</span>折</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元使用</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+				<template v-else>
+					<div class="coupon" v-for="item in 3" :style="{marginRight: (44-nc.margin.both*2)/2 + 'px'}">
+						<img src="{$resource_path}/img/style4-bg-1.png">
+						<div class="coupon-intro">
+							<p class="coupon-price" :style="{color: nc.moneyColor}">￥<span>100</span></p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}">满1000可用</p>
+						</div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+			</div>
+
+			<div class="coupon-box" :class="'coupon-box-'+ nc.style" v-else-if="nc.style == 5" :style="[nc.couponType == 'img'&&{backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<template v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon" v-for="item in nc.previewList">
+						<img src="{$resource_path}/img/style5-bg-1.png">
+						<div class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">{{nc.tempData.methods.moneyConduct(item.money)}}<span>元</span>
+						</div>
+						<div class="coupon-price" :style="{color: nc.moneyColor}" v-else>{{nc.tempData.methods.moneyConduct(item.discount)}}<span>折</span>
+						</div>
+						<div class="coupon-line"></div>
+						<div class="coupon-content">
+							<div class="coupon-intro">
+								<p class="coupon-name" :style="{color: nc.nameColor}">{{item.coupon_name}}</p>
+								<p class="coupon-desc" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元使用</p>
+								<p class="coupon-desc" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+							</div>
+							<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+						</div>
+					</div>
+				</template>
+				<template v-else>
+					<div class="coupon" v-for="item in 2">
+						<img src="{$resource_path}/img/style5-bg-1.png">
+						<div class="coupon-price" :style="{color: nc.moneyColor}">
+							100<span>元</span>
+						</div>
+						<div class="coupon-line"></div>
+						<div class="coupon-content">
+							<div class="coupon-intro">
+								<p :style="{color: nc.nameColor}" class="coupon-name">全场优惠抵用券</p>
+								<p :style="{color: nc.limitColor}" class="coupon-desc">满1000可用</p>
+							</div>
+							<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+						</div>
+					</div>
+				</template>
+			</div>
+
+			<div class="coupon-box" :class="'coupon-box-'+ nc.style" v-else-if="nc.style == 6" :style="[nc.couponType == 'img'&&{backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<template v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<template v-for="(item, previewIndex) in nc.previewList">
+						<div class="coupon" v-if="previewIndex < 3" :style="{color: nc.moneyColor,backgroundImage: 'url({$resource_path}/img/style6-bg-1.png)', marginRight: (43-nc.margin.both*2)/2 + 'px'}">
+							<div class="coupon-content" :style="{color: nc.moneyColor}">
+								<div class="price-wrap">
+									<span class="price">{{ nc.tempData.methods.moneyConduct(item.type == 'reward' ? item.money : item.discount)}}</span>
+									<span class="unit">{{item.type == 'reward' ? "元" : "折"}}</span>
+								</div>
+								<span class="text">优惠券</span>
+							</div>
+							<span class="btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderTopLeftRadius: (nc.btnStyle.aroundRadius+'px'), borderBottomLeftRadius: (nc.btnStyle.aroundRadius+'px')}"><span>{{nc.btnStyle.text}}</span></span>
+							<span class="limit" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}使用</span>
+							<span class="limit" :style="{color: nc.limitColor}" v-else>无门槛使用</span>
+						</div>
+					</template>
+
+					<div v-if="nc.previewList.length <= 2" class="coupon coupon-null" :style="{color: nc.moneyColor,backgroundImage: 'url({$resource_path}/img/style6-bg-2.png)'}">
+						<div class="coupon-content" :style="{color: nc.moneyColor}">
+							<span class="price">+</span>
+							<span class="text">暂无优惠券</span>
+						</div>
+						<span class="limit">去逛逛</span>
+					</div>
+				</template>
+				<template v-else>
+					<div class="coupon" v-for="item in 2" :style="{color: nc.moneyColor,backgroundImage: 'url({$resource_path}/img/style6-bg-1.png)', marginRight: (43-nc.margin.both*2)/2 + 'px'}" >
+						<div class="coupon-content" :style="{color: nc.moneyColor}">
+							<div class="price-wrap">
+								<span class="price">10</span>
+								<span class="unit">元</span>
+							</div>
+							<span class="text">优惠券</span>
+						</div>
+						<span class="btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderTopLeftRadius: (nc.btnStyle.aroundRadius+'px'), borderBottomLeftRadius: (nc.btnStyle.aroundRadius+'px')}"><span>{{nc.btnStyle.text}}</span></span>
+						<span class="limit" :style="{color: nc.limitColor}">满129使用</span>
+					</div>
+					<div class="coupon coupon-null" :style="{color: nc.moneyColor,backgroundImage: 'url({$resource_path}/img/style6-bg-2.png)'}">
+						<div class="coupon-content" :style="{color: nc.moneyColor}">
+							<span class="price">+</span>
+							<span class="text">暂无优惠券</span>
+						</div>
+						<span class="limit">去逛逛</span>
+					</div>
+				</template>
+			</div>
+
+			<div class="coupon-box" :class="'coupon-box-'+ nc.style" v-else-if="nc.style == 7" :style="[nc.couponType == 'img'&&{backgroundImage: 'url('+ changeImgUrl(nc.couponBgUrl) + ')'},nc.couponType == 'color'&&{backgroundColor: nc.couponBgColor}]">
+				<template v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+					<div class="coupon" v-for="item in nc.previewList">
+						<img src="{$resource_path}/img/style7-bg-1.png">
+						<div class="coupon-price" :style="{color: nc.moneyColor}" v-if="item.type == 'reward'">{{nc.tempData.methods.moneyConduct(item.money)}}<span>元</span>
+						</div>
+						<div class="coupon-price" :style="{color: nc.moneyColor}" v-else>{{nc.tempData.methods.moneyConduct(item.discount)}}<span>折</span>
+						</div>
+						<div class="coupon-intro">
+							<p class="coupon-name" :style="{color: nc.limitColor}" v-if="parseFloat(item.at_least) > 0">满{{item.at_least.split('.')[0]}}元可用</p>
+							<p class="coupon-name" :style="{color: nc.limitColor}" v-else>无门槛使用</p>
+							<p class="coupon-desc" :style="{color: nc.limitColor}">有效期至2022-12-31</p>
+						</div>
+						<div class="coupon-line"></div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+				<template v-else>
+					<div class="coupon" v-for="item in 2">
+						<img src="{$resource_path}/img/style7-bg-1.png">
+						<div class="coupon-price" :style="{color: nc.moneyColor}">
+							100<span>元</span>
+						</div>
+						<div class="coupon-intro">
+							<p :style="{color: nc.limitColor}" class="coupon-name">满1000元可用</p>
+							<p :style="{color: nc.limitColor}" class="coupon-desc">有效期至2022-12-31</p>
+						</div>
+						<div class="coupon-line"></div>
+						<div class="coupon-btn" :style="{color: nc.btnStyle.textColor,backgroundColor: nc.btnStyle.bgColor, borderRadius: (nc.btnStyle.aroundRadius+'px')}">{{nc.btnStyle.text}}</div>
+					</div>
+				</template>
+			</div>
+
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		
+		<template v-if="nc.lazyLoad">
+			<coupon-set></coupon-set>
+			<div class="goods-list-edit layui-form">
+				<div class="template-edit-title">
+					<h3>风格设置</h3>
+					<div class="layui-form-item">
+						<label class="layui-form-label sm">选择风格</label>
+						<div class="layui-input-block">
+							<div v-if="nc.styleName" class="input-text text-color selected-style" @click="nc.tempData.methods.selectCouponStyle()">{{nc.styleName}} <i class="layui-icon layui-icon-right"></i></div>
+							<div v-else class="input-text selected-style" @click="nc.tempData.methods.selectCouponStyle()">选择 <i class="layui-icon layui-icon-right"></i></div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="template-edit-title">
+					<h3>优惠券数据</h3>
+					<div class="layui-form-item icon-radio" v-if="nc.tempData.goodsSources">
+						<label class="layui-form-label sm">优惠券来源</label>
+						<div class="layui-input-block">
+							<span>{{nc.tempData.goodsSources[nc.sources].text}}</span>
+							<ul class="icon-wrap">
+								<li v-for="(value, name) in nc.tempData.goodsSources" :class="[name == nc.sources ? 'text-color border-color' : '']" @click="nc.sources=name">
+									<i class="iconfont" :class="[{'text-color': name == nc.sources}, value.src]"></i>
+								</li>
+							</ul>
+						</div>
+					</div>
+		
+					<div class="layui-form-item" v-if="nc.sources == 'diy'">
+						<label class="layui-form-label sm">手动选择</label>
+						<div class="layui-input-block">
+							<div class="selected-style" @click="nc.tempData.methods.addCoupon()">
+								<span v-if="nc.couponIds.length == 0">请选择</span>
+								<span v-if="nc.couponIds.length > 0" class="text-color">已选{{ nc.couponIds.length}}个</span>
+								<i class="iconfont iconyoujiantou"></i>
+							</div>
+						</div>
+					</div>
+		
+					<div class="layui-form-item" v-if="nc.sources == 'diy' && nc.couponIds.length > 0">
+						<div class="select-coupon-list">
+							<div class="select-coupon-item" v-for="(item, previewIndex) in nc.previewList">
+								<div class="coupon-content">
+									<div class="coupon-label-name">名称</div>
+									<div class="coupon-label-value">{{item.coupon_name}}</div>
+								</div>
+								<div class="coupon-content">
+									<div class="coupon-label-name">优惠金额/折扣</div>
+									<div class="coupon-label-value" v-if="item.type == 'reward'">￥{{item.money}}</div>
+									<div class="coupon-label-value" v-else>{{item.discount}}折</div>
+								</div>
+								<div class="coupon-content">
+									<div class="coupon-label-name">使用条件</div>
+									<div class="coupon-label-value" v-if="parseFloat(item.at_least) > 0">满{{item.at_least}}元使用</div>
+									<div class="coupon-label-value" v-else>无门槛使用</div>
+								</div>
+								<div class="close del" @click="nc.tempData.methods.delCoupon(previewIndex)">x</div>
+							</div>
+						</div>
+					</div>
+					<slide v-if="nc.sources == 'initial'" :data="{ field : 'count', label : '优惠券数量', max: 9, min: 1 }"></slide>
+				</div>
+			</div>
+
+			<div class="template-edit-title">
+				<h3>按钮内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">按钮文字</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.btnStyle.text" :maxlength="nc.btnStyle.maxLen" placeholder="请输入按钮文字" class="layui-input">
+					</div>
+				</div>
+			</div>
+		</template>
+		
+		<!-- 弹框 -->
+		<div class="coupon-list-style">
+			<div class="style-list-coupon layui-form">
+				<div class="style-list-con-coupon">
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 1}">
+						<img src="{$resource_path}/img/style1.png" />
+						<span class="layui-hide">风格一</span>
+					</div>
+					
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 2}">
+						<img src="{$resource_path}/img/style2.png" />
+						<span class="layui-hide">风格二</span>
+					</div>
+					
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 3}">
+						<img src="{$resource_path}/img/style3.png" />
+						<span class="layui-hide">风格三</span>
+					</div>
+					
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 4}">
+						<img src="{$resource_path}/img/style4.png" />
+						<span class="layui-hide">风格四</span>
+					</div>
+
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 5}">
+						<img src="{$resource_path}/img/style5.png" />
+						<span class="layui-hide">风格五</span>
+					</div>
+
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 6}">
+						<img src="{$resource_path}/img/style6.png" />
+						<span class="layui-hide">风格六</span>
+					</div>
+					<div class="style-li-coupon" :class="{'selected border-color': nc.style == 7}">
+						<img src="{$resource_path}/img/style7.png" />
+						<span class="layui-hide">风格七</span>
+					</div>
+
+				</div>
+
+				<input type="hidden" name="style">
+				<input type="hidden" name="style_name">
+			</div>
+		</div>
+	
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>优惠券样式</h3>
+				<color v-show="nc.isName" :data="{ field : 'nameColor', 'label' : '名称颜色', defaultColor : '#FFFFFF' }"></color>
+				<color :data="{ field : 'moneyColor', 'label' : '面额颜色', defaultColor : '#FFFFFF' }"></color>
+				<color :data="{ field : 'limitColor', 'label' : '门槛颜色', defaultColor : '#FFFFFF' }"></color>
+			</div>
+			<div class="template-edit-title">
+				<h3>按钮样式</h3>
+				<color v-show="nc.btnStyle.isBgColor"  :data="{ field : 'bgColor', 'label' : '背景颜色', parent: 'btnStyle', defaultColor : '#FFFFFF' }"></color>
+				<color :data="{ field: 'textColor', 'label': '文字颜色', parent: 'btnStyle',defaultColor : '#FFFFFF' }"></color>
+				<slide v-if="nc.btnStyle.isAroundRadius" :data="{ field : 'aroundRadius', label: '按钮圆角', max: 20, parent:'btnStyle' }"></slide>
+			</div>
+			<div class="template-edit-title" v-show="nc.ifNeedBg">
+				<h3>背景设置</h3>
+				<div class="layui-form-item tag-wrap">
+					<label class="layui-form-label sm">组件背景</label>
+					<div class="layui-input-block">
+						<div  @click="nc.couponType = 'color'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : nc.couponType == 'color' }">
+							<i class="layui-anim layui-icon">{{ nc.couponType == 'color' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>背景色</div>
+						</div>
+						<div  @click="nc.couponType = 'img'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : nc.couponType == 'img' }">
+							<i class="layui-anim layui-icon">{{ nc.couponType == 'img' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>背景图片</div>
+						</div>
+					</div>
+				</div>
+				<color v-show="nc.couponType == 'color'" :data="{ field : 'couponBgColor', 'label' : '背景颜色',defaultColor : '#FFFFFF'}"></color>
+				<div v-show="nc.couponType == 'img'" class="layui-form-item">
+					<label class="layui-form-label sm">背景图片</label>
+					<div class="layui-input-block">
+						<img-upload :data="{ data: nc,field:'couponBgUrl'}" data-disabled="1"></img-upload>
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var couponResourcePath = "{$resource_path}"; // http路径
+			var couponRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

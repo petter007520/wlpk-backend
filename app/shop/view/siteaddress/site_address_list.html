@@ -1,0 +1,152 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.defa-btn{
+		color: #fff;
+		font-size: 12px;
+		margin-left: 5px;
+		padding: 2px 4px;
+		border-radius: 2px;
+	}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="single-filter-box top">
+	<button class="layui-btn" onclick="add()">新增地址</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="搜索地址/联系人" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<table id="site_address_list" lay-filter="site_address_list"></table>
+
+<!-- 状态 -->
+<script type="text/html" id="ress_type">
+	<div style="line-height: 25px;">
+		{{# if(d.is_return == 1){ }}
+			<span>退货地址</span>
+			{{# if(d.is_return_default == 1){ }}
+				<span class="defa-btn bg-color">默认</span>
+			{{# } }}
+		{{# } }}
+		{{# if(d.is_delivery == 1){ }}
+			<p>发货地址</p>
+		{{# } }}
+	</div>
+</script>
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+		var table;
+	layui.use('form', function() {
+			var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#site_address_list',
+			url: ns.url("shop/siteaddress/siteAddress"), //数据接口
+			cols: [
+				[{
+					field: 'contact_name',
+					title: '联系人',
+					width: '15%',
+				}, {
+					field: 'mobile',
+					title: '联系方式',
+					width: '25%',
+				},{
+					field: 'full_address',
+					title: '地址',
+					width: '30%',
+				},{
+					title: '地址类型',
+					width: '15%',
+					templet: '#ress_type'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					width: '15%',
+					align: 'right',
+				}]
+			]
+		});
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					window.open(ns.url("shop/siteaddress/editSiteAddress", {"id": data.id}));
+					break;
+				case 'delete': //删除
+					deleteAddress(data.id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteAddress(id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除该地址吗?', function() {
+				$.ajax({
+					dataType: 'JSON',
+					type: 'POST',
+					url: ns.url("shop/siteaddress/deleteSiteAddress"),
+					data: {id},
+					success: function(res) {
+						if (res.code >= 0) {
+							layer.msg(res.message);
+							table.reload({},function(){
+								repeat_flag = false;
+							});
+						}else if(res.code == -10062){
+                            layer.msg(res.message);
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	function add() {
+		location.href = ns.url("shop/siteaddress/addSiteAddress");
+	}
+</script>
+{/block}

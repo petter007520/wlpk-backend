@@ -1,0 +1,225 @@
+<nc-component :data="data[index]" class="graphic-navigation">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<template v-if="nc.lazyLoad">
+			<div :class="['graphic-nav',nc.showStyle] " :style="{
+				backgroundColor: nc.componentBgColor,
+				borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				boxShadow:  nc.ornament.type == 'shadow' ? ('0 0 5px ' + nc.ornament.color) : '',
+				border: nc.ornament.type == 'stroke' ?  '1px solid ' + nc.ornament.color : ''
+			}">
+				<template v-if="nc.showStyle == 'pageSlide'">
+					<div class="graphic-nav-wrap" v-for="(numItem,numIndex) in Math.ceil(nc.list.length / (nc.pageCount * nc.rowCount))">
+						<div :class="['graphic-nav-item',{'layui-hide': nc.tempData.carouselIndex != numIndex}]"
+							 v-for="(item,previewIndex) in nc.list" :key="previewIndex"
+							 v-if="previewIndex >= [(numItem-1) * (nc.pageCount * nc.rowCount)] && previewIndex < [numItem * (nc.pageCount * nc.rowCount)]"
+							 :style="{width: (100 / nc.rowCount + '%')}"
+						>
+							<div class="graphic-img" v-show="nc.mode != 'text'" :style="{'font-size' : nc.imageSize + 'px'}">
+								<img v-if="item.iconType == 'img' && item.imageUrl" :src="changeImgUrl(item.imageUrl)" alt="" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px', borderRadius: nc.aroundRadius + 'px'}">
+								<iconfont v-if="item.iconType == 'icon' && item.icon" :icon="item.icon" :value="(item.style ? item.style : null)" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px'}"></iconfont>
+								<img v-if="!item.icon && !item.imageUrl" :src="changeImgUrl('public/static/img/default_img/square.png')" alt="" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px', borderRadius: nc.aroundRadius + 'px'}">
+
+								<span class="tag" v-if="item.label.control" :style="{color: item.label.textColor,backgroundImage: 'linear-gradient(' + item.label.bgColorStart + ',' + item.label.bgColorEnd + ')'}">{{item.label.text}}</span>
+							</div>
+							<span v-show="nc.mode != 'img'" class="graphic-text" :style="{fontSize: nc.font.size + 'px',fontWeight: nc.font.weight, color: nc.font.color}">{{item.title}}</span>
+						</div>
+					</div>
+
+					<div class="carousel-btn" v-if="Math.ceil(nc.list.length / (nc.pageCount * nc.rowCount)) -1">
+						<div class="arrows">
+							<i class="iconfont iconback_light"  @click="nc.tempData.carouselIndex = (nc.tempData.carouselIndex ? nc.tempData.carouselIndex-1 : nc.tempData.carouselIndex)"></i>
+							<i class="iconfont iconyoujiantou" @click="nc.tempData.carouselIndex = [nc.tempData.carouselIndex < Math.ceil(nc.list.length / (nc.pageCount * nc.rowCount))-1  ? + nc.tempData.carouselIndex + 1 : Math.ceil(nc.list.length / (nc.pageCount * nc.rowCount))-1]"></i>
+						</div>
+						<div :class="['dot-wrap',nc.carousel.type]">
+							<i v-for="(numItem,numIndex) in Math.ceil(nc.list.length / (nc.pageCount * nc.rowCount))" :class="{'active': nc.tempData.carouselIndex == numIndex}" @click="nc.tempData.carouselIndex = numIndex"></i>
+						</div>
+					</div>
+				</template>
+				<div v-else class="graphic-nav-item" v-for="(item) in nc.list" :key="item.id" :style="{width: (100 / nc.rowCount + '%')}">
+					<div class="graphic-img" v-show="nc.mode != 'text'" :style="{'font-size' : nc.imageSize + 'px', width: nc.imageSize + 'px', height: nc.imageSize + 'px'}">
+						<img v-if="item.iconType == 'img' && item.imageUrl" :src="changeImgUrl(item.imageUrl)" alt="" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px', borderRadius: nc.aroundRadius + 'px'}">
+						<iconfont v-if="item.iconType == 'icon' && item.icon" :icon="item.icon" :value="(item.style ? item.style : null)" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px'}"></iconfont>
+						<img v-if="!item.icon && !item.imageUrl" :src="changeImgUrl('public/static/img/default_img/square.png')" alt="" :style="{maxWidth: nc.imageSize + 'px', maxHeight: nc.imageSize + 'px', borderRadius: nc.aroundRadius + 'px'}">
+						<span class="tag" v-if="item.label.control" :style="{color: item.label.textColor,backgroundImage: 'linear-gradient(' + item.label.bgColorStart + ',' + item.label.bgColorEnd + ')'}">{{item.label.text}}</span>
+					</div>
+					<span v-show="nc.mode != 'img'" class="graphic-text" :style="{fontSize: nc.font.size+'px',fontWeight: nc.font.weight, color: nc.font.color}">{{item.title}}</span>
+				</div>
+
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<graphic-nav-list></graphic-nav-list>
+			<div class="template-edit-title">
+				<h3>导航模式</h3>
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">选择模式</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.modeList" :class="[item.value == nc.mode ? '' : 'layui-hide']">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="item in nc.tempData.modeList" :class="[item.value == nc.mode ? 'text-color border-color' : '']" @click="nc.mode = item.value">
+								<i :class="['iconfont',item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">展示风格</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.showStyleList" :class="[item.value == nc.showStyle ? '' : 'layui-hide']">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="item in nc.tempData.showStyleList" :class="[item.value == nc.showStyle ? 'text-color border-color' : '']" @click="nc.showStyle = item.value">
+								<i :class="['iconfont',item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">每行数量</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.rowCountList" :class="[{'layui-hide': item.value != nc.rowCount}]">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="item in nc.tempData.rowCountList" :class="[item.value == nc.rowCount ? 'text-color border-color' : '']" @click="nc.rowCount = item.value">
+								<i :class="['iconfont',item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div class="layui-form-item icon-radio" v-show="nc.showStyle == 'pageSlide'">
+					<label class="layui-form-label sm">每页行数</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.pageCountList" :class="[item.value == nc.pageCount ? '' : 'layui-hide']">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="item in nc.tempData.pageCountList" :class="[item.value == nc.pageCount ? 'text-color border-color' : '']" @click="nc.pageCount = item.value">
+								<i :class="['iconfont',item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="template-edit-title">
+				<h3>图文导航项</h3>
+				<div class="graphic-nav-list">
+					<p class="hint">建议上传尺寸相同的图片(60px * 60px)</p>
+					<ul class="navigation-set-list">
+						<li v-for="(item,previewIndex) in nc.list" :key="item.id" class="content-block">
+							<template v-if="['graphic','img'].includes(nc.mode)">
+
+								<div class="layui-form-item">
+									<label class="layui-form-label sm">图片</label>
+									<div class="layui-input-block">
+										<image-upload :data="{ data : item }" :condition="['graphic','img'].includes(nc.mode)" data-disabled="1"></image-upload>
+									</div>
+								</div>
+
+							</template>
+
+							<div class="layui-form-item" v-if="['graphic','text'].includes(nc.mode)">
+								<label class="layui-form-label sm">标题</label>
+								<div class="layui-input-block">
+									<input type="text" name='title' v-model="item.title" maxlength="20" class="layui-input" autocomplete="off" />
+								</div>
+							</div>
+							<nc-link :data="{ field : item.link, label:'链接' }"></nc-link>
+
+							<i class="del" @click="nc.list.splice(previewIndex,1)" data-disabled="1">x</i>
+							<div class="error-msg"></div>
+							<div class="iconfont icontuodong"></div>
+						</li>
+
+						<div class="add-item text-color" @click="nc.tempData.methods.addNav()">
+							<i>+</i>
+							<span>添加一个图文导航</span>
+						</div>
+					</ul>
+				</div>
+			</div>
+		</template>
+
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>图文导航</h3>
+
+				<div class="layui-form-item tag-wrap">
+					<label class="layui-form-label sm">样式</label>
+					<div class="layui-input-block">
+						<div v-for="(item,ornamentIndex) in nc.tempData.ornamentList" :key="ornamentIndex" @click="nc.ornament.type=item.type" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.ornament.type==item.type) }">
+							<i class="layui-anim layui-icon">{{ nc.ornament.type == item.type ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<color v-if="nc.ornament.type != 'default'" :data="{ field : 'color', 'label' : '边框颜色', parent : 'ornament', defaultColor : '#EDEDED' }"></color>
+
+				<div class="layui-form-item icon-radio" v-show="nc.showStyle == 'pageSlide'">
+					<label class="layui-form-label sm">轮播点样式</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.carouselList" :class="[{'layui-hide': item.value != nc.carousel.type}]">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="item in nc.tempData.carouselList" :class="[item.value == nc.carousel.type ? 'text-color border-color' : '']" @click="nc.carousel.type = item.value">
+								<i :class="['iconfont',item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<div class="template-edit-title"  v-show="['graphic','img'].includes(nc.mode) && nc.type == 'img'">
+				<h3>图片设置</h3>
+				<template v-if="nc.type == 'img'">
+					<slide :data="{ field : 'aroundRadius', label : '图片圆角', max : 50 }"></slide>
+					<slide :data="{ field : 'imageSize', label : '图片大小', min: 30, max : 60 }"></slide>
+				</template>
+			</div>
+
+			<div class="template-edit-title" v-if="['graphic','text'].includes(nc.mode)">
+				<h3>文字设置</h3>
+
+				<slide :data="{ field : 'size',parent:'font', label : '文字大小', min: 12, max : 16 }"></slide>
+
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm">文字粗细</label>
+					<div class="layui-input-block">
+						<span v-for="item in nc.tempData.thicknessList" :class="[item.value == nc.font.weight ? '' : 'layui-hide']">{{item.name}}</span>
+						<ul class="icon-wrap">
+							<li v-for="(item, index) in nc.tempData.thicknessList" :class="[item.value == nc.font.weight ? 'text-color border-color' : '']" @click="nc.font.weight = item.value">
+								<i class="iconfont" :class="[{'text-color': item.value == nc.font.weight}, item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<color :data="{ field : 'color', label : '文字颜色',parent:'font',defaultColor: '#303133' }"></color>
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var graphicNavResourcePath = "{$resource_path}"; // http路径
+			var graphicNavRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+
+	</template>
+
+</nc-component>

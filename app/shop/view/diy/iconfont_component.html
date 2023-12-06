@@ -1,0 +1,82 @@
+<template id="iconfont">
+    <div class="icon-wrap" :style="iconBgStyle">
+        <i class="js-icon" :class="iconClass" :style="iconStyle"></i>
+    </div>
+</template>
+
+<style>
+    .icon-wrap {
+        width: inherit;
+        height: inherit;
+        font-size: 100%;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-wrap .js-icon {
+        font-size: 50%;
+        line-height:1;
+    }
+    .icon-wrap .js-icon.gradient {
+        -webkit-background-clip:text!important;
+        -webkit-text-fill-color:transparent;
+    }
+</style>
+
+<script>
+    Vue.component('iconfont', {
+        props: {
+            icon: {
+                type: String,
+                default: ''
+            },
+            value: {
+                type: Object,
+                default: function () {
+                    return null;
+                }
+            }
+        },
+        computed: {
+            iconClass(){
+                var _class = ' ' + this.icon;
+                if (this.value && this.value.iconColor.length > 1) _class += ' gradient';
+                return _class;
+            },
+            iconBgStyle(){
+                if (!this.value) return {};
+
+                var style = {
+                    'border-radius': this.value.bgRadius + '%',
+                    'background': ''
+                };
+
+                if (this.value.iconBgImg) style['background'] += 'url('+ ns.img(this.value.iconBgImg) +') no-repeat bottom / contain'
+                if (this.value.iconBgColor.length) {
+                    if (style.background) style.background += ',';
+                    if (this.value.iconBgColor.length == 1) {
+                        style.background += this.value.iconBgColor[0];
+                    } else {
+                        style['background'] += 'linear-gradient('+ this.value.iconBgColorDeg +'deg, '+ this.value.iconBgColor.join(',') +')';
+                    }
+                }
+                return style;
+            },
+            iconStyle(){
+                if (!this.value) return {};
+
+                var style = {
+                    fontSize: this.value.fontSize + '%'
+                }
+                if (this.value.iconColor.length == 1) {
+                    style.color = this.value.iconColor[0];
+                } else {
+                    style['background'] = 'linear-gradient('+ this.value.iconColorDeg +'deg, '+ this.value.iconColor.join(',') +')';
+                }
+                return style;
+            }
+        },
+        template: '#iconfont'
+    })
+</script>

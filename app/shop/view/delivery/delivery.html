@@ -1,0 +1,405 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin .layui-body .body-content {padding-bottom: 150px;}
+	.layui-form-switch{margin-top: 0;}
+	.layui-card-body{display: flex;justify-content: space-between;align-items: center;}
+	.layui-card-body p{color: #666666;}
+	.btn-box{flex-shrink: 0;margin-left: 20px;}
+	.btn-box a{cursor: pointer;}
+	.card-common:first-child{margin-top: 0;}
+	.card-common{border: 1px solid #f1f1f1;}
+	.single-filter-box {display: block; position: relative;}
+	.deliver-type .layui-card{user-select:none}
+	.layui-card-header .table_move.iconfont.icontuodong{flex: 1; cursor: move;}
+	.layui-card-header .card-title{flex: 60}
+	.layui-card-header .card-icon,.layui-card-header .ziti-icon,.layui-card-header .waimai-icon{margin-left: 10px;cursor:pointer;}
+	.kuaidi-list {display: none;min-width: 150px;height: 25px;line-height: 30px;padding-left: 6px;}
+	.card-list {display: flex;align-items:center;position: absolute;left: 45px;}
+	.layui-layout-admin .tips-wrap{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+<div class="single-filter-box">
+	<div class="layui-form deliver-type">
+		{foreach name="deliver_type" item="vo"}
+			{if $vo eq 'express'}
+			<div class="layui-card card-common" data-type="express">
+				<div class="layui-card-header">
+					<div class="table_move iconfont icontuodong"></div>
+					<!-- <span class="card-title">快递发货</span> -->
+					<div class="card-list">
+						{if count($express_config.value) && $express_config.value.express_name != ''}
+						<input type="text" name="kuaidi-text"  class="kuaidi-list" value="{$express_config.value.express_name}" />
+						<span id="card-title-one" class="card-title kuaidi">{$express_config.value.express_name}</span>
+						{else}
+						<input type="text" name="kuaidi-text"  class="kuaidi-list" value="快递发货" />
+						<span class="card-title kuaidi">快递发货</span>
+						{/if}
+						<div class="card-icon">
+							<!-- <img src="SHOP_IMG/express_delivery.png" style="width: 18px;height: 14px;" /> -->
+							<i class="layui-icon text-color" style="font-size: 16px; !important"> </i>
+						</div>
+					</div>
+					<span class="tips">
+						<input class="control" type="checkbox" name="" id="express" value="1" lay-skin="switch" {if $express_config.is_use == 1} checked {/if} lay-filter="logistics" />
+					</span>
+				</div>
+				<div class="layui-card-body">
+					<p>启用物流配送后，买家下单可以选择快递发货，在微信视频号中仅支持物流配送。</p>
+					<div class="btn-box">
+						<a class="default text-color" href="{:addon_url('shop/express/expresscompany')}">物流公司</a>
+						<a class="default text-color" href="{:addon_url('shop/express/template')}">运费模板</a>
+						<a class="default text-color" href="{:addon_url('shop/express/trace')}">物流跟踪</a>
+					</div>
+				</div>
+			</div>
+			{/if}
+			{if $vo eq 'store'}
+			<div class="layui-card card-common" data-type="store">
+				<div class="layui-card-header">
+					<div class="table_move iconfont icontuodong"></div>
+					<!-- <span class="card-title">门店自提</span> -->
+					<div class="card-list inputTrigger">
+						{if count($store_config.value) && $store_config.value.store_name != ''}
+						<input type="text" name="ziti-text"  class="kuaidi-list" value="{$store_config.value.store_name}" />
+						<span id="card-title-tow" class="card-title ziti">{$store_config.value.store_name}</span>
+						{else}
+						<input type="text" name="ziti-text"  class="kuaidi-list" value="门店自提" />
+						<span class="card-title ziti">门店自提</span>
+						{/if}
+						<div class="ziti-icon">
+							<i class="layui-icon text-color" style="font-size: 16px; !important"> </i>
+						</div>
+					</div>
+					<span class="tips">
+						<input class="control" type="checkbox" name="" id="store" value="1" lay-skin="switch" {if $store_config.is_use == 1} checked {/if} lay-filter="SelfMention" />
+					</span>
+				</div>
+				<div class="layui-card-body">
+					<p>启用上门自提后，买家可以就近选择商品自提门店，买家下单后，您需要确保买家指定的自提门店商品库存充足。</p>
+					<div class="btn-box">
+						{if addon_is_exit('store') == 1}
+						<a class="default text-color" href="{:addon_url('store://shop/store/lists')}">自提门店</a>
+						{else /}
+						<a class="default text-color" href="{:addon_url('shop/store/lists')}">自提门店</a>
+						{/if}
+					</div>
+				</div>
+			</div>
+			{/if}
+			{if $vo eq 'local'}
+			<div class="layui-card card-common" data-type="local">
+				<div class="layui-card-header">
+					<div class="table_move iconfont icontuodong"></div>
+					<!-- <span class="card-title">外卖配送</span> -->
+					<div class="card-list">
+						{if count($local_delivery_config.value) && $local_delivery_config.value.local_name != ''}
+						<input type="text" name="waimai-text"  class="kuaidi-list" value="{$local_delivery_config.value.local_name}"/>
+						<span id="card-title-three" class="card-title waimai">{$local_delivery_config.value.local_name}</span>
+						{else}
+						<input type="text" name="waimai-text"  class="kuaidi-list" value="同城配送" />
+						<span class="card-title waimai">同城配送</span>
+						{/if}
+						<div class="waimai-icon">
+							<i class="layui-icon text-color" style="font-size: 16px; !important"> </i>
+						</div>
+					</div>
+					<span class="tips">
+						<input class="control" class="inputTrigger" type="checkbox" name="" id="local" value="1" lay-skin="switch" {if $local_delivery_config.is_use == 1} checked {/if}  lay-filter="cityDistribution"/>
+					</span>
+				</div>
+				<div class="layui-card-body">
+					<p>启用同城配送后，在配送范围内的买家可以选择同城配送，您可以接入第三方配送，也可以自己配送。</p>
+					<div class="btn-box" >
+						<a class="default text-color" href="{:addon_url('shop/local/deliverlists')}">配送员</a>
+						<a class="default text-color" href="{:addon_url('shop/local/local')}">同城配送</a>
+					</div>
+				</div>
+			</div>
+			{/if}
+		{/foreach}
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" src="__STATIC__/ext/drag-arrange.js"></script>
+<script>
+	var expless = {$express_config.is_use};
+	var store = {$store_config.is_use};
+	var local = {$local_delivery_config.is_use};
+	function choice(){
+		var expressOne =$('#express').prop('checked');
+		var storeTow=$('#store').prop('checked');
+		var localThree=$('#local').prop('checked');
+		$('#express').removeAttr('disabled');
+		$('#store').removeAttr('disabled');
+		$('#local').removeAttr('disabled');
+		if(!expressOne && !storeTow){
+			$('#local').attr('disabled','disabled')
+		}else if(!expressOne && !localThree){
+			$('#store').attr('disabled','disabled')
+		}else if(!storeTow && !localThree){
+			$('#express').attr('disabled','disabled')
+		}
+	}
+	choice();
+	if ($('input[name="kuaidi-text"]').val() != '快递发货' ) {
+		$('.type-type1').html('{$express_config.value.express_name}');
+	}
+	if ($('input[name="ziti-text"]').val() != '快递发货' ) {
+		$('.type-type2').html('{$store_config.value.store_name}');
+	}
+	if ($('input[name="waimai-text"]').val() != '快递发货' ) {
+		$('.type-type3').html('{$local_delivery_config.value.local_name}');
+	}
+	
+	$('.card-icon').click(function(){
+		$('.kuaidi').css("display","none");
+		$('input[name="kuaidi-text"]').css("display","block");
+		$('.card-list').find('input[name="kuaidi-text"]').focus();
+		$('.card-icon').css("display","none");
+	});
+	
+	$('input[name="kuaidi-text"]').blur(function(){
+		$('.kuaidi').css("display","flex");
+		$('input[name="kuaidi-text"]').css("display","none");
+		$('.card-icon').css("display","block");
+		let value = $('input[name="kuaidi-text"]').val();
+		if(value != ''){
+			$.ajax({
+			    dataType: "JSON",
+			    type: "POST",
+			    data:{express_name: value, is_use : expless},
+			    url: ns.url("shop/delivery/modifyExpressStatus"),
+			    success: function(res){
+			        layer.msg(res.message);
+					$('#card-title-one').html(value);
+					location.reload();
+					// if (res.code == 0) {
+					// 	location.reload();
+					// }
+			    }
+			})
+		}
+	});
+	
+	$('.ziti-icon').click(function(){
+		$('.ziti').css("display","none");
+		$('input[name="ziti-text"]').css("display","block");
+		$('.card-list').find('input[name="ziti-text"]').focus();
+		$('.ziti-icon').css("display","none");
+	});
+
+	$('input[name="ziti-text"]').blur(function(){
+		$('.ziti').css("display","flex");
+		$('input[name="ziti-text"]').css("display","none");
+		$('.ziti-icon').css("display","block");
+		let value = $('input[name="ziti-text"]').val();
+		if(value != ''){
+			$.ajax({
+			    dataType: "JSON",
+			    type: "POST",
+			    data:{store_name: value, is_use : store},
+			    url: ns.url("shop/delivery/modifyStoreStatus"),
+			    success: function(res){
+			        layer.msg(res.message);
+					$('#card-title-tow').html(value);
+					location.reload();
+					// if (res.code == 0) {
+					// 	location.reload();
+					// }
+			    }
+			})
+		}
+	});
+	
+	$('.waimai-icon').click(function(){
+		$('.waimai').css("display","none");
+		$('input[name="waimai-text"]').css("display","block");
+		$('.card-list').find('input[name="waimai-text"]').focus();
+		$('.waimai-icon').css("display","none");
+	});
+
+	$('input[name="waimai-text"]').blur(function(){
+		$('.waimai').css("display","flex");
+		$('input[name="waimai-text"]').css("display","none");
+		$('.waimai-icon').css("display","block");
+		let value = $('input[name="waimai-text"]').val();
+		if(value != ''){
+			$.ajax({
+			    dataType: "JSON",
+			    type: "POST",
+			    data:{local_name: value, "is_use" : local},
+			    url: ns.url("shop/delivery/modifyLocalStatus"),
+			    success: function(res){
+			        layer.msg(res.message);
+					$('#card-title-three').html(value);
+					location.reload();
+					// if (res.code == 0) { 
+					// 	location.reload();
+					// }
+			    }
+			})
+		}
+	});
+	
+    layui.use('form', function() {
+        var form = layui.form;
+		form.render();
+
+        //物流配置开关
+        form.on('switch(logistics)', function(data){
+			choice();
+            data.value = data.elem.checked ? data.value : 0;
+			var express_name = $("input[name='kuaidi-text']").val();
+            $.ajax({
+                dataType: "JSON",
+                type: "POST",
+                data:{"is_use": data.value, "express_name" : express_name},
+                url: ns.url("shop/delivery/modifyExpressStatus"),
+                success: function(res){
+                    layer.msg(res.message);
+					setTimeout(()=>{
+						location.reload();
+					},1000)
+                }
+            })
+
+        });
+
+        //门店自提开关
+        form.on('switch(SelfMention)', function(data){
+            data.value = data.elem.checked ? data.value : 0;
+			var store_name = $("input[name='ziti-text']").val();
+			choice();
+            $.ajax({
+                dataType: "JSON",
+                type: "POST",
+                data:{"is_use": data.value, "store_name" : store_name},
+                url: ns.url("shop/delivery/modifyStoreStatus"),
+                success: function(res){
+                    layer.msg(res.message);
+					setTimeout(()=>{
+						location.reload();
+					},1000)
+                }
+            })
+
+        });
+
+        //外卖配送开关
+        form.on('switch(cityDistribution)', function(data){
+			var local = data.elem.checked ? data.value : 0;
+            data.value = data.elem.checked ? data.value : 0;
+			var local_name = $("input[name='waimai-text']").val();
+			choice();
+            $.ajax({
+                dataType: "JSON",
+                type: "POST",
+                data:{"is_use": data.value, "local_name" : local_name},
+                url: ns.url("shop/delivery/modifyLocalStatus"),
+                success: function(res){
+                    layer.msg(res.message);
+					setTimeout(()=>{
+						location.reload();
+					},1000)
+                }
+            })
+
+        });
+
+		$('.layui-card.card-common').arrangeable({
+			dragSelector: '.table_move',
+			callback:function(e){
+				var deliverType = [];
+				$('.deliver-type .layui-card').each(function(){
+					deliverType.push($(this).attr('data-type'));
+				});
+				setTimeout(function(){
+					$.ajax({
+						dataType: "JSON",
+						type: "POST",
+						data:{"deliver_type": deliverType.toString()},
+						url: ns.url("shop/delivery/delivertypesort"),
+						success: function(res){
+						}
+					})
+				},100);
+			}
+		});
+		$('.tips').on('click',function(){
+			var expressOne = $('#express').attr('disabled');
+			var storeTow = $('#store').attr('disabled');
+			var localThree = $('#local').attr('disabled');
+			var name=$(this).children().attr('id');
+			var disabledName;
+			switch ('disabled') {
+				case expressOne:
+					disabledName = 'express';
+					break;
+				case storeTow:
+					disabledName = 'store';
+					break;
+				case localThree:
+					disabledName = 'local';
+					break;
+			}
+			if(name == disabledName){
+				layer.msg('最少保留一个配送方式');
+			}
+		})
+    });
+	
+	
+	function showDemo(){
+	    layer.open({
+	        title: '查看示例',
+	        type: 1,
+	        area: ['700px', '660px'],
+	        content: '<img style="margin:20px 50px;" src="SHOP_IMG/delivery.png">'
+	    })
+	}
+
+	document.onkeydown = function (e) {
+		var theEvent = window.event || e;
+		var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+		var name = $('.kuaidi-list:focus').attr("name");
+		var val = $('.kuaidi-list:focus').val();
+		if (code == 13) {
+			if(name == "kuaidi-text"){
+				var data = {
+					"express_name" : val,
+					"is_use" : expless
+				};
+				var url = ns.url("shop/delivery/modifyExpressStatus");
+			}else if(name == "ziti-text"){
+				var data = {
+					"store_name" : val,
+					"is_use" : store
+				};
+				var url = ns.url("shop/delivery/modifyStoreStatus");
+			}else if(name == "waimai-text"){
+				var data = {
+					"local_name" : val,
+					"is_use" : local
+				};
+				var url = ns.url("shop/delivery/modifyLocalStatus");
+			}
+
+			if(val != ''){
+				$.ajax({
+					dataType: "JSON",
+					type: "POST",
+					data: data,
+					url: url,
+					success: function(res){
+						layer.msg(res.message);
+						location.reload();
+					}
+				})
+			}
+		}
+	}
+</script>
+{/block}

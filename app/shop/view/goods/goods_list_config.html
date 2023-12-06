@@ -1,0 +1,114 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/guess_you_like.css"/>
+{/block}
+{block name="main"}
+<div id="diyView" class="layui-form">
+
+    <div class="preview-wrap">
+
+        <div class='diy-view-wrap'>
+
+            <div class="preview-head">
+                <span>商品列表</span>
+            </div>
+
+            <div class="preview-block">
+                <div class="preview-draggable">
+                    {php}$arr=[1,2,3,4];{/php}
+                    <div class="goods-list row1-of2 style-1">
+                        {foreach name="$arr" item="vo"}
+                        <div class="goods-item">
+                            <div class="goods-img">
+                                <img src="{:img('public/static/img/default_img/square.png')}" />
+                            </div>
+                            <div class="info-wrap">
+                                <div class="goods-name">商品名称</div>
+                                <div class="pro-info">
+                                    <div class="discount-price">
+                                        <div class="price-wrap text-color">
+                                            <span class="unit">¥</span>
+                                            <span class="price">100</span>
+                                            <span class="unit">.00</span>
+                                        </div>
+                                        <div class="delete-price">¥198</div>
+                                        <div class="sale">已售46件</div>
+                                    </div>
+                                    <div class="add-cart bg-color js-add-cart" {if $config['add_cart_switch'] == 1}style="display:block;"{/if}>购买</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/foreach}
+                    </div>
+                </div>
+                <div class="edit-attribute">
+                    <div class="attr-wrap">
+                        <div class="attr-title">
+                            <span class="title">商品列表</span>
+                        </div>
+                        <div class="edit-content-wrap">
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">加入购物车</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="add_cart_switch" lay-filter="add_cart_switch" value="0" title="关闭" {if $config['add_cart_switch'] == 0}checked{/if} />
+                                    <input type="radio" name="add_cart_switch" lay-filter="add_cart_switch" value="1" title="开启" {if $config['add_cart_switch'] == 1}checked{/if} />
+                                </div>
+                                <div class="word-aux diy-word-aux">开启后，列表中将允许加入购物车</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="custom-save">
+        <button class="layui-btn" lay-submit lay-filter="save">保存</button>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form', 'laytpl'], function() {
+        var form = layui.form;
+        var repeat_flag = false; //防重复标识
+        form.render();
+
+        var size = 139; // 公式：二级面包屑layui-header-crumbs-second （55px）+ 自定义模板区域上内边距diyview（20px） + 底部保存按钮（64px）
+        var commonHeight = $(window).height() - size;
+        $('.preview-wrap').css("height", (commonHeight) + "px");
+        $(".edit-attribute .attr-wrap").css("height", (commonHeight - 1) + "px");// 1px是上边框
+        setTimeout(function () {
+            $('#diyView').css('visibility', 'visible');
+        }, 50);
+
+        form.on('radio(add_cart_switch)', function(data){
+            if(data.value == 1) {
+                $('.js-add-cart').show();
+            }else {
+                $('.js-add-cart').hide();
+            }
+        });
+
+        form.on('submit(save)', function(data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+            $.ajax({
+                type: 'POST',
+                url: ns.url("shop/goods/goodsListConfig"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    repeat_flag = false;
+                    layer.msg(res.message);
+                }
+            });
+        });
+    });
+</script>
+{/block}

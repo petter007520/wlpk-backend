@@ -1,0 +1,1223 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/picture_manager.css" />
+<style>
+	.layui-layout-admin.admin-style-1 .type-tab{    margin-left: -15px!important;width: calc(100% - 253px)!important;}
+</style>
+{/block}
+{block name="main"}
+
+<!-- 清理网站缓存 start	-->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache, no-store">
+<meta http-equiv="expires" content="0">
+<!-- 清理网站缓存 end	-->
+
+<div class="fourstage-nav layui-tab layui-tab-brief type-tab" lay-filter="edit_user_tab">
+	<ul class="layui-tab-title">
+		{foreach $type_list as $k => $v}
+		<li class="{$k == $type ? 'layui-this' : ''}" lay-id="{$k}"><a href="{:url('shop/album/lists', ['type' => $k])}">{$v}</a></li>
+		{/foreach}
+	</ul>
+</div>
+
+<!-- 搜索框 -->
+<div class="single-filter-box top">
+	{if $type == 'img'}
+	<button class="layui-btn" onclick="uploadImg()">上传{$type_list[$type]}</button>
+	{else if $type == 'video'}
+	<button class="layui-btn" onclick="uploadVideo()">上传{$type_list[$type]}</button>
+	{/if}
+	<button class="layui-btn layui-btn-primary text-color border-color" onclick="addGrouping()">添加分组</button>
+    <div class="layui-form">
+        <div class="layui-input-inline">
+            <input type="text" name="search_keys" placeholder="请输入{$type_list[$type]}名称" autocomplete="off" class="layui-input album-img-sreach">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="album-box">
+	<div class="album-list">
+		<ul class="bg-color-light-gray layui-nav layui-nav-tree layui-inline" lay-filter="albumList">
+			<div id="albumList" class="demo-tree-more"></div>
+		</ul>
+	</div>
+	<div class="album-content">
+		<div class="album-content-title">
+			<span id="album_name">默认分组</span>
+			<span>|</span>
+			<a href="javascript:;" class="text-color edit" data-status="0">编辑</a>
+			<a href="javascript:;" class="text-color album-action layui-hide" onclick="modifyGrouping()">编辑分组</a>
+			<a href="javascript:;" onclick="deleteGrouping()" class="text-color album-action layui-hide">删除分组</a>
+		</div>
+
+		<ul class="album-img-box"></ul>
+		
+		<div class="album-foot-operation ">
+			<div class="album-content-bar layui-form bg-color-light-gray album-action layui-hide" >
+				<input type="checkbox" name="album-select" lay-filter="allChoose" lay-skin="primary" title="全选">
+			</div>
+			<button class="layui-btn album-action layui-hide" onclick="modifyImgGroup()">修改分组</button>
+			<!-- <button class="layui-btn" onclick="thumbBatch()">生成缩略图</button> -->
+			<button class="layui-btn album-action layui-hide" onclick="deleteImg()">删除</button>
+			<div id="paged" class="page"></div>
+		</div>
+	</div>
+	<!-- 存储图片路径 -->
+	<input type="hidden" id="hidden_image_path">
+</div>
+
+{/block}
+
+{block name="script"}
+<!-- 分组列表 -->
+<script type="text/html" id="album_list">
+	<div class="layui-tree">
+		{{# for(let key in d){ }}
+		<div class="layui-tree-set layui-tree-checkedFirst layui-tree-setHide ">
+
+			<div class="layui-tree-entry">
+				<div class="layui-tree-main">
+					{{# if(d[key].child_list && d[key].child_list.length > 0){ }}
+						<span class="layui-tree-iconClick" onclick="childSwitch(this)"><i class="layui-tree-iconArrow"></i></span>
+					{{# }else{ }}
+						<span class="layui-tree-iconClick"><i class="layui-tree-iconArrow layui-hide"></i></span>
+					{{# } }}
+					<div class="layui-tree-txt {{key == 0 ? 'selected text-color' : ''}}" onclick="switchGroup(this)" data-id="{{ d[key].album_id }}" data-album="{{ d[key].child ? d[key].child.toString() : d[key].album_id}}" data-name="{{d[key].album_name}}">
+						<span>{{d[key].album_name}}</span>
+						<span class="num">{{d[key].num}}</span>
+					</div>
+				</div>
+			</div>
+			{{# if(d[key].child_list && d[key].child_list.length > 0){ }}
+			<div class="layui-tree-pack layui-tree-child">
+				{{# for(let i in d[key].child_list){ }}
+				<div class="layui-tree-set">
+					<div class="layui-tree-entry">
+						<div class="layui-tree-main">
+							<span class="layui-tree-iconClick"><i class="layui-tree-iconArrow layui-hide"></i></span>
+							<div class="layui-tree-txt" onclick="switchGroup(this)" data-id="{{d[key].child_list[i]['album_id']}}" data-album="{{d[key].child_list[i]['album_id']}}" data-name="{{d[key].child_list[i]['album_name']}}">
+								<span>{{d[key].child_list[i]['album_name']}}</span>
+								<span class="num">{{d[key].child_list[i]['num']}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				{{# } }}
+			</div>
+			{{# } }}
+
+		</div>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 多图上传 -->
+<script type="text/html" id="multuple_html">
+	<div class="layui-form multuple-list-box">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">本地图片</label>
+			<ul class="layui-input-block multuple-list">
+				<li class="multuple-list-img" id="ImgUpload">
+					<span class="bg-color">+</span>
+					<span>点击添加图片</span>
+				</li>
+			</ul>
+		</div>
+		<div class="form-row sm">
+			<button class="layui-btn layui-btn-disabled" disabled="disabled" onclick="submitOne()"  id="chooseListAction">提交</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 视频上传 -->
+<script type="text/html" id="video_html">
+	<div class="layui-form multuple-list-box">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">视频</label>
+			<ul class="layui-input-block multuple-list">
+				<li class="multuple-list-img" id="VideoUpload">
+					<span class="bg-color">+</span>
+					<span>点击添加</span>
+				</li>
+			</ul>
+		</div>
+		<div class="form-row sm">
+			<button class="layui-btn layui-btn-disabled" disabled="disabled" onclick="submitVideoLimit()"  id="chooseVideoAction">提交</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 替换图片 -->
+<script type="text/html" id="modify_file_html">
+	<div class="layui-form multuple-list-box">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">本地图片</label>
+			<ul class="layui-input-block multuple-list">
+				<li class="multuple-list-img" id="modifyFile">
+					<span class="bg-color">+</span>
+					<span>点击添加图片</span>
+				</li>
+			</ul>
+		</div>
+		<div class="form-row sm">
+			<button class="layui-btn layui-btn-disabled" disabled="disabled" id="modifyFileAction">提交</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 相册展示 -->
+<script type="text/html" id="list_html">
+	{{# layui.each(d.list,function(index, item){ }}
+    <li class="{$type}">
+        <div class="album-pic">
+			{if $type == 'img'}
+			{{# if(item.is_thumb == 0){ }}
+				<img layer-src="" src="{{ ns.img(item.pic_path + '?time=' + parseInt(new Date().getTime()/1000)) }}" alt="{{item.pic_name}}">
+			{{# }else{ }}
+				<img layer-src="{{ ns.img(item.pic_path + '?time=' + parseInt(new Date().getTime()/1000), 'big') }}" src="{{ ns.img(item.pic_path + '?time=' + parseInt(new Date().getTime()/1000), 'small') }}" alt="{{item.pic_name}}">
+			{{# } }}
+			{else if($type == 'video')}
+				<video src="{{ ns.img(item.pic_path) }}" controls></video>
+			{/if}
+		</div>
+        <div class="layui-form album-img-select">
+			<div class="pic-name">{{item.pic_name ? item.pic_name : '未命名'}}</div>
+			<div class="pic-spec">{{item.pic_spec}}</div>
+		</div>
+        <div class="album-img-operation {{ d.status == 0 ? 'layui-hide' : ''}}">
+            <a href="javascript:;" class="text-color" data-pic-name="{{item.pic_name}}" data-id="{{item.pic_id}}" onclick="modifyImgName(this)">改名</a>|
+            <a href="javascript:;" class="text-color" data-path="{{ns.img(item.pic_path)}}" onclick="copyLink(this)">链接</a>|
+            <a href="javascript:;" class="text-color" data-id="{{item.pic_id}}" onclick="modifyImgGroup(this)">分组</a>|
+			<a href="javascript:;" class="text-color" data-id="{{item.pic_id}}" onclick="modifyFile(this)">替换</a>|
+			<a href="javascript:;" class="text-color delete-pic" data-id="{{item.pic_id}}" onclick="deleteImg(this)">删除</a>
+		</div>
+		<i class="iconfont iconxuanzhong"></i>
+    </li>
+    {{# }) }}
+</script>
+
+<!-- 图片分组 -->
+<script type="text/html" id="pic_group">
+	<div class="layui-form img-group">
+        {foreach $album_list_tree as $album_list_k => $album_list_v}
+			{if !isset($album_list_v['child_list'])}
+			<div class="layui-input-block one-group">
+				{{# if(d.album_id == {$album_list_v.album_id} ){ }}
+				<input type="radio" name="group" checked value="{$album_list_v.album_id}" title="{$album_list_v.album_name}">
+				{{# }else{ }}
+				<input type="radio" name="group" value="{$album_list_v.album_id}" title="{$album_list_v.album_name}">
+				{{# } }}
+			</div>
+			{else /}
+				<input type="radio" name="group" value="{$album_list_v.album_id}" title="{$album_list_v.album_name}">
+<!--				<div class="layui-input-block one-group">{$album_list_v['album_name']}</div>-->
+				{foreach $album_list_v['child_list'] as $k => $v}
+				<div class="layui-input-block two-group">
+					{{# if(d.album_id == {$v.album_id} ){ }}
+					<input type="radio" name="group" checked value="{$v.album_id}" title="{$v.album_name}">
+					{{# }else{ }}
+					<input type="radio" name="group" value="{$v.album_id}" title="{$v.album_name}">
+					{{# } }}
+				</div>
+				{/foreach}
+			{/if}
+        {/foreach}
+    </div>
+</script>
+
+<!-- 复制链接 -->
+<script type="text/html" id="copy_path">
+	<div class="layui-form">
+        <div class="layui-input-block">
+            <input type="text" class="len-long layui-input link-input" name="" id="path_file" value="{{d}}" readonly >
+            <button class="layui-btn layui-btn-primary" onclick="JScopy()">复制</button>
+        </div>
+    </div>
+</script>
+
+
+<!-- 添加分组 -->
+<script type="text/html" id="addGroup">
+	<div class="layui-form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">上级分组</label>
+			<div class="layui-input-block len-mid">
+				<select name="pid">
+					<option value="0">顶级分组</option>
+					{foreach $album_list as $k => $v}
+						{if $v['level'] == 1 && $v['type'] == $type}
+						<option value="{$v['album_id']}" >{$v['album_name']}</option>
+						{/if}
+					{/foreach}
+				</select>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>分组名称：</label>
+			<div class="layui-input-block">
+				<input name="album_name" type="text" placeholder="请输入分组名称" lay-verify="required" class="layui-input len-mid">
+			</div>
+		</div>
+
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="add_group">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeLayer()">返回</button>
+		</div>
+	</div>
+</script>
+
+<script>
+	var form, upload, laytpl, layer, laypage, layer_one,element,tree,
+		picture_arr = [],
+		uploadListIns,
+		initIdent= true;
+		limit = 14,
+		album_list_count = 0,
+		album_id = 0;
+	var repeat_flag = false;
+
+	$(function() {
+		layui.use(['form', 'laytpl', 'laypage', 'layer', 'upload','element','tree'], function() {
+			form = layui.form;
+			laytpl = layui.laytpl;
+			laypage = layui.laypage;
+			element = layui.element;
+			layer = layui.layer;
+			upload = layui.upload;
+			tree = layui.tree;
+
+			init(); //初始化数据
+			form.render();
+			element.init();
+			//监听图片搜索
+			form.on('submit(search)', function() {
+				getFileAlbumList(1, limit); //图片加载
+			});
+
+			/**
+			 * 全选
+			 */
+			form.on("checkbox(allChoose)", function(data) {
+				if (data.elem.checked) {
+					$('.album-img-box li').addClass('selected');
+				} else {
+					$('.album-img-box li').removeClass('selected');
+				}
+			});
+
+			/**
+			 * 添加分组
+			 */
+			form.on('submit(add_group)', function(data) {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				data.field.type = "{$type}";
+				$.ajax({
+					url: ns.url("shop/Album/addAlbum"),
+					data: data.field,
+					type: "POST",
+					dataType: "JSON",
+					success: function(res) {
+						layer.msg(res.message);
+						flag_add_group = false;
+
+						if (res.code == 0) {
+							location.reload();
+						}
+					}
+				})
+
+				return false;
+			});
+
+			element.on('event(albumList)', function (data){
+				console.log(data)
+			});
+		});
+	});
+
+	/**
+	 * 初始化数据
+	 */
+	function init() {
+		albumList(); //相册分组
+		// getFileAlbumList(1, limit); //图片加载
+	}
+	
+	/**
+	 * 多图上传
+	 */
+	function uploadImg() {
+		var imageArray=1;
+		laytpl($("#multuple_html").html()).render({}, function(html) {
+			layer_one = layer.open({
+				type: 1,
+				area: ['580px', '430px'],
+				title: '本地上传',
+				content: html,
+				cancel: function() {
+					$("#chooseListAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+				},
+				success: function(res) {
+					//上传图片
+					upload.render({
+						elem: '#ImgUpload',
+						url: ns.url("shop/upload/album"),
+						data: {
+							album_id: album_id,
+							is_thumb:1,
+						},
+						multiple: true,
+						auto: false,
+						bindAction: '#chooseListAction',
+						choose: function(obj) {
+							imageArray=1;
+							//将每次选择的文件追加到文件队列
+							var files = this.files = obj.pushFile();
+							//预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+							obj.preview(function(index, file, result) {
+								this.num=index;
+								//追加预览图片
+								var html = '';
+								html += '<li class="multuple-list-img upload-wrap" index="' + index + '">';
+									html += '<img layer-src class="multuple-list-image" src="' + result + '" alt="' + file.name + '">';
+									html += '<span class="upload-close-modal"  id="upload_img_' + index + '">×</span>';
+									html += '<div class="upload-image-curtain">50%</div>';
+									html += '<div class="tips"></div>';
+								html += '</li>';
+								$(".multuple-list").prepend(html);
+								//删除预览图片
+								$("#upload_img_" + index).bind("click", function() {
+									delete files[index];
+									delete picture_arr[index]; //删除所选队列
+									$(this).parent('.upload-wrap').remove();
+									// uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+									//禁止点击
+									if ($(".multuple-list li").length <= 1) {
+										$("#chooseListAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+									}
+								});
+								//开启点击
+								if ($(".multuple-list li").length > 1) {
+									$("#chooseListAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+								}
+
+								loadImgMagnify();
+
+							});
+						},
+						done: function(res,index) {
+							let data=$('.multuple-list-image');
+							// 禁止点击
+							picture_arr.push(res.data);
+							var image_box = $(".upload-wrap[index='" + index + "']").parent().find(".upload-image-curtain");
+							var image_tips = $(".upload-wrap[index='" + index + "']").parent().find(".tips");
+							image_box.text("上传汇总");
+							image_box.text("50%");
+							image_box.show();
+							if (res.code >= 0) {
+								setTimeout(function() {
+									image_box.text("100%");
+								}, 500);
+								setTimeout(function() {
+									getFileAlbumList(1, limit);
+									updateAlbumNum(album_id);
+									layer.close(layer_one)
+								}, 1000);
+								return delete this.files[index]; //删除文件队列已经上传成功的文件
+							} else {
+								setTimeout(function() {
+									image_box.text("上传失败");
+									image_tips.text(res.message);
+									layer.msg(res.message);
+								}, 500);
+							}
+							if(imageArray==data.length){
+								$("#chooseListAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+								imageArray=1;
+								return false
+							}
+							imageArray++
+						}
+					});
+				}
+			})
+		});
+	}
+
+	/**
+	 * 视频上传
+	 */
+	function uploadVideo() {
+		var imageArray = 1;
+		laytpl($("#video_html").html()).render({}, function (html) {
+			layer_one = layer.open({
+				type: 1,
+				area: ['580px', '430px'],
+				title: '本地上传',
+				content: html,
+				cancel: function () {
+					$("#chooseVideoAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+				},
+				success: function (res) {
+					//上传视频
+					upload.render({
+						elem: '#VideoUpload',
+						url: ns.url("shop/upload/videoToAlbum"),
+						data: {
+							album_id: album_id,
+							is_thumb: 1,
+						},
+						multiple: true,
+						auto: false,
+						accept: 'video',
+						size: 50 * 1024,
+						bindAction: '#chooseVideoAction',
+						choose: function (obj) {
+							imageArray = 1;
+							//将每次选择的文件追加到文件队列
+							var files = this.files = obj.pushFile();
+							//预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+							obj.preview(function (index, file, result) {
+								this.num = index;
+								//追加预览图片
+								var html = '';
+								html += '<li class="multuple-list-img upload-wrap" index="' + index + '">';
+								html += '<video class="multuple-list-image" src="' + result + '" alt="' + file.name + '"></video>';
+								html += '<span class="upload-close-modal"  id="upload_img_' + index + '">×</span>';
+								html += '<div class="upload-image-curtain">50%</div>';
+								html += '<div class="tips"></div>';
+								html += '</li>';
+								$(".multuple-list").prepend(html);
+								//删除预览图片
+								$("#upload_img_" + index).bind("click", function () {
+									delete files[index];
+									delete picture_arr[index]; //删除所选队列
+									$(this).parent('.upload-wrap').remove();
+									// uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+									//禁止点击
+									if ($(".multuple-list li").length <= 1) {
+										$("#chooseListAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+									}
+								});
+								//开启点击
+								if ($(".multuple-list li").length > 1) {
+									$("#chooseVideoAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+								}
+							});
+						},
+						done: function (res, index) {
+							let data = $('.multuple-list-image');
+							// 禁止点击
+							picture_arr.push(res.data);
+							var image_box = $(".upload-wrap[index='" + index + "']").parent().find(".upload-image-curtain");
+							var image_tips = $(".upload-wrap[index='" + index + "']").parent().find(".tips");
+							image_box.text("上传汇总");
+							image_box.text("50%");
+							image_box.show();
+							if (res.code >= 0) {
+								setTimeout(function () {
+									image_box.text("100%");
+								}, 500);
+								setTimeout(function () {
+									getFileAlbumList(1, limit);
+									updateAlbumNum(album_id);
+									layer.close(layer_one)
+								}, 1000);
+								return delete this.files[index]; //删除文件队列已经上传成功的文件
+							} else {
+								setTimeout(function () {
+									image_box.text("上传失败");
+									image_tips.text(res.message);
+									layer.msg(res.message);
+								}, 500);
+							}
+							if (imageArray == data.length) {
+								$("#chooseVideoAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+								imageArray = 1;
+								return false
+							}
+							imageArray++
+						}
+					});
+				}
+			})
+		});
+	}
+
+	// 上传图片是禁止操作
+	function submitOne(){
+		$("#chooseListAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled","disabled");
+		$(".upload-image-curtain").css('display','block').text('等待中')
+		// var image_box = $(".upload-wrap").parent().find(".upload-image-curtain");
+	}
+
+
+	// 上传视频是禁止操作
+	function submitVideoLimit(){
+		$("#chooseVideoAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled","disabled");
+		$(".upload-image-curtain").css('display','block').text('等待中')
+		// var image_box = $(".upload-wrap").parent().find(".upload-image-curtain");
+	}
+	function modifyFile(data) {
+		if('{$type}' == 'img'){
+
+			laytpl($("#modify_file_html").html()).render({}, function(html) {
+				layer_one = layer.open({
+					type: 1,
+					area: ['580px', '430px'],
+					title: '替换照片',
+					content: html,
+					cancel: function() {
+						$("#modifyFileAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+					},
+					success: function(res) {
+						//上传图片
+						upload.render({
+							elem: '#modifyFile',
+							url: ns.url("shop/upload/modifyFile"),
+							data: {
+								album_id: album_id,
+								pic_id: $(data).attr('data-id')
+							},
+							multiple: false,
+							auto: false,
+							bindAction: '#modifyFileAction',
+							choose: function(obj) {
+								//将每次选择的文件追加到文件队列
+								var files = this.files = obj.pushFile();
+								//预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+								obj.preview(function(index, file, result) {
+									//追加预览图片
+									var html = '';
+									html += '<li class="multuple-list-img upload-wrap" index="' + index + '">';
+									html += '<img src="' + result + '" alt="' + file.name + '">';
+									html += '<span class="upload-close-modal"  id="upload_img_' + index + '">×</span>';
+									html += '<div class="upload-image-curtain">50%</div>';
+									html += '<div class="tips"></div>';
+									html += '</li>';
+									$(".multuple-list").prepend(html);
+
+									//删除预览图片
+									$("#upload_img_" + index).bind("click", function() {
+										delete files[index];
+										delete picture_arr[index]; //删除所选队列
+										$(this).parent('.upload-wrap').remove();
+
+										// uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+
+										//禁止点击
+										if ($(".multuple-list li").length <= 1) {
+											$("#modifyFileAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+											//未选择图片时，显示添加按钮
+											$("#modifyFile").show();
+										}
+
+									});
+
+									//禁止点击
+									if ($(".multuple-list li").length > 1) {
+										$("#modifyFileAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+										//隐藏添加按钮，仅替换一张图片
+										$("#modifyFile").hide();
+									}
+								});
+							},
+							before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+								$("#modifyFileAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled","disabled");
+							},
+							done: function(res, index) {
+								picture_arr.push(res.data);
+								var image_box = $(".upload-wrap[index='" + index + "']").parent().find(".upload-image-curtain");
+								var image_tips = $(".upload-wrap[index='" + index + "']").parent().find(".tips");
+								image_box.text("50%");
+								image_box.show();
+								if (res.code >= 0) {
+									setTimeout(function() {
+										image_box.text("100%");
+									}, 500);
+									setTimeout(function() {
+										getFileAlbumList(1, limit);
+										layer.close(layer_one);
+									}, 1000);
+									return delete this.files[index]; //删除文件队列已经上传成功的文件
+								} else {
+									setTimeout(function() {
+										image_box.text("上传失败");
+										image_tips.text(res.message);
+										layer.close(layer_one);
+									}, 500);
+
+								}
+							},
+							allDone: function(obj){ //当文件全部被提交后，才触发
+								$("#modifyFileAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+							}
+						});
+
+					}
+				})
+			});
+		}else{
+			modifyVideoFile(data);
+		}
+
+	}
+
+	function modifyVideoFile(data) {
+		laytpl($("#video_html").html()).render({}, function(html) {
+			layer_one = layer.open({
+				type: 1,
+				area: ['580px', '430px'],
+				title: '替换视频',
+				content: html,
+				cancel: function() {
+					$("#chooseVideoAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+				},
+				success: function(res) {
+					//上传图片
+					upload.render({
+						elem: '#VideoUpload',
+						url: ns.url("shop/upload/modifyVideoFile"),
+						data: {
+							album_id: album_id,
+							pic_id: $(data).attr('data-id')
+						},
+						multiple: false,
+						auto: false,
+						accept: 'video',
+						size: 50 * 1024,
+						bindAction: '#chooseVideoAction',
+						choose: function(obj) {
+							//将每次选择的文件追加到文件队列
+							var files = this.files = obj.pushFile();
+							//预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+							obj.preview(function(index, file, result) {
+								//追加预览图片
+								var html = '';
+								html += '<li class="multuple-list-img upload-wrap" index="' + index + '">';
+								html += '<video class="multuple-list-image" src="' + result + '" alt="' + file.name + '"></video>';
+								html += '<span class="upload-close-modal"  id="upload_img_' + index + '">×</span>';
+								html += '<div class="upload-image-curtain">50%</div>';
+								html += '<div class="tips"></div>';
+								html += '</li>';
+								$(".multuple-list").prepend(html);
+
+								//删除预览图片
+								$("#upload_img_" + index).bind("click", function() {
+									delete files[index];
+									delete picture_arr[index]; //删除所选队列
+									$(this).parent('.upload-wrap').remove();
+
+									// uploadListIns.config.elem.next()[0].value = ''; //清空 input file 值，以免删除后出现同名文件不可选
+
+									//禁止点击
+									if ($(".multuple-list li").length <= 1) {
+										$("#chooseVideoAction").removeClass("bg-color").addClass("layui-btn-disabled").attr("disabled", "disabled");
+										//未选择图片时，显示添加按钮
+										$("#modifyFile").show();
+									}
+
+								});
+
+								//禁止点击
+								if ($(".multuple-list li").length > 1) {
+									$("#chooseVideoAction").addClass("bg-color").removeClass("layui-btn-disabled").removeAttr("disabled");
+									//隐藏添加按钮，仅替换一张图片
+									$("#modifyFile").hide();
+								}
+							});
+						},
+						done: function(res, index) {
+							picture_arr.push(res.data);
+							var image_box = $(".upload-wrap[index='" + index + "']").parent().find(".upload-image-curtain");
+							var image_tips = $(".upload-wrap[index='" + index + "']").parent().find(".tips");
+							image_box.text("50%");
+							image_box.show();
+							if (res.code >= 0) {
+								setTimeout(function() {
+									image_box.text("100%");
+								}, 500);
+								setTimeout(function() {
+									getFileAlbumList(1, limit);
+									layer.close(layer_one);
+								}, 1000);
+								return delete this.files[index]; //删除文件队列已经上传成功的文件
+							} else {
+								setTimeout(function() {
+									image_box.text("上传失败");
+									image_tips.text(res.message);
+									layer.close(layer_one);
+								}, 500);
+
+							}
+						}
+					});
+
+				}
+			})
+		});
+
+	}
+
+	/**
+	 * 图片加载
+	 */
+	function getFileAlbumList(page, limit) {
+		$.ajax({
+			url: ns.url("shop/Album/lists"),
+			type: "POST",
+			dataType: "JSON",
+			async: false,
+			data: {
+				album_id: $('.album-list .layui-tree-txt.selected').attr('data-album'),
+				pic_name: $(".album-img-sreach").val(),
+				limit,
+				page
+			},
+			success: function(res) {
+				res.data.status = $('.album-content-title .edit').attr('data-status');
+				laytpl($("#list_html").html()).render(res.data, function(html) {
+					$(".album-img-box").html(html);
+					loadImgMagnify();
+				});
+				if(initIdent){
+					album_list_count = res.data.list.length;
+					$(".default-group .num").text(album_list_count);
+					initIdent = false;
+				}
+				$("#paged").empty();
+				if (res.data.count > 0) {
+					//调用分页
+					laypage.render({
+						elem: "paged",
+						count: res.data.count,
+						curr: page, //当前页
+						limit: limit,
+						jump: function(obj, first) {
+							if (!first) {
+								getFileAlbumList(obj.curr, obj.limit);
+							}
+							form.render('checkbox');
+						}
+					})
+				}
+			}
+		})
+	}
+
+	function switchGroup(obj){
+		$('.album-list .selected').removeClass('selected text-color');
+		$(obj).addClass('selected text-color');
+
+		album_id = $(obj).data('id');
+		album_name = $(obj).data('name');
+		$("#album_name").empty().html(album_name);
+		getFileAlbumList(1, limit);
+	}
+
+	/**
+	 * 相册分组
+	 */
+	function albumList(num = '') {
+        $.ajax({
+			url: ns.url("shop/Album/getAlbumList"),
+			type: 'POST',
+			async: false,
+			dataType: 'JSON',
+			data:{'type' : "{$type}"},
+			success: function(res) {
+				var albumList = res.data;
+				laytpl($("#album_list").html()).render(albumList, function(html) {
+					$(".album-list ul").html(html);
+				});
+				if(albumList.length) {
+					album_id = albumList[0].child ? albumList[0].child.toString() : albumList[0]['album_id'];
+					album_name = albumList[0]['album_name'];
+					getFileAlbumList(1, limit); //图片加载
+				}
+			}
+		});
+    }
+
+	/**
+	 * 添加分组
+	 */
+	var flag_add_group = false;
+
+	function addGrouping() {
+		if (flag_add_group) return;
+		flag_add_group = true;
+		var add_attr = $("#addGroup").html();
+		laytpl(add_attr).render({}, function(html) {
+			add_attr_index = layer.open({
+				title: '添加分组',
+				skin: 'layer-tips-class add-group',
+				type: 1,
+				area: ['500px', '250px'],
+				content: html,
+				success: function () {
+					flag_add_group = false;
+					form.render();
+				},
+				error: function () {
+					flag_add_group = false;
+				}
+			});
+		});
+
+	}
+
+	function closeLayer() {
+		layer.closeAll();
+	}
+
+	/**
+	 * 修改分组
+	 */
+	var flag_modify_group = false;
+
+	function modifyGrouping() {
+
+		layer.prompt({
+			formType: 3,
+			title: '修改分组名称',
+			area: ["350px"]
+		}, function(value) {
+			if (flag_modify_group) return;
+			flag_modify_group = true;
+
+			$.ajax({
+				url: ns.url("shop/Album/editAlbum"),
+				data: {
+					"album_name": value,
+					album_id
+				},
+				type: "POST",
+				dataType: "JSON",
+				success: function(res) {
+					layer.msg(res.message);
+					flag_modify_group = false;
+
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			})
+		})
+	}
+
+	/**
+	 * 更新分组图片数量
+	 */
+	function updateAlbumNum(album_id){
+		$.ajax({
+			type: "POST",
+			async: true,
+			url: ns.url("shop/Album/albumInfo"),
+			data: {
+				album_id
+			},
+			dataType: "JSON",
+			success: function(res) {
+				if (res.code == 0 && res.data) {
+					$('[data-id="'+album_id+'"]').find('.num').text(res.data.num);
+				}
+			}
+		});
+
+	}
+
+	/**
+	 * 删除分组
+	 */
+	var flag_delete_group = false;
+
+	function deleteGrouping() {
+
+		layer.confirm('仅删除分组，不删除图片，组内图片将自动归入默认分组', {
+			btn: ['确定', '取消']
+		}, function() {
+			if (flag_delete_group) return;
+			flag_delete_group = true;
+			$.ajax({
+				type: "POST",
+				async: true,
+				url: ns.url("shop/Album/deleteAlbum"),
+				data: {
+					album_id
+				},
+				dataType: "JSON",
+				success: function(data) {
+					flag_delete_group = false;
+					layer.msg(data.message);
+					if (data.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		}, function() {
+			layer.close();
+		});
+	}
+	
+	/**
+	 * 修改图片名字
+	 */
+	var flag_modify_pic;
+
+	function modifyImgName(data) {
+		var type = '{$type}' == 'img' ? '图片' : '视频';
+		layer.prompt({
+			formType: 3,
+			title: '修改' + type + '名称',
+			area: ["640px"],
+			value: $(data).attr('data-pic-name'),
+		}, function(value) {
+			if (flag_modify_pic) return;
+			flag_modify_pic = true;
+
+			$.ajax({
+				url: ns.url("shop/Album/modifyPicName"),
+				data: {
+					pic_name: value,
+					pic_id: $(data).attr('data-id'),
+					album_id,
+				},
+				type: "POST",
+				dataType: "JSON",
+				success: function(res) {
+					layer.msg(res.message);
+					flag_modify_pic = false;
+
+					if (res.code == 0) {
+                        getFileAlbumList(1, limit);
+                        layer.closeAll('page');
+					}
+				}
+			})
+		})
+	}
+
+	/**
+	 * 生成缩略图
+	*/
+	function thumbBatch(data){
+		var pic_ids = [],
+			url = '';
+
+		if (!data) {
+			$("input[data-is_thumb='0'][name='check[]']:checked").each(function(index, item) {
+				pic_ids.push($(item).val());
+			});
+		}else{
+			pic_ids.push($(data).attr("data-id"));
+		}
+		pic_ids = pic_ids.toString();
+		if(pic_ids==''){
+			layer.msg("请选择未裁剪图片再进行操作");
+			return false;
+		}
+
+		layer.confirm('是否需要生成缩略图', {
+			btn: ['确定', '取消']
+		},function () {
+			$.ajax({
+				url:ns.url("shop/Album/thumbBatch"),
+				data:{
+					pic_id: pic_ids,
+				},
+				type:"POST",
+				dataType: "JSON",
+				success: function(data) {
+					flag_delete_group = false;
+					layer.msg(data.message);
+					if (data.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		}, function() {
+			layer.close();
+		});
+	}
+	
+	/**
+	 * 修改图片分组
+	 */
+	function modifyImgGroup(data) {
+		var pic_ids = [],
+			url = '',
+			type = '{$type}' == 'img' ? '图片' : '视频';
+
+		if (!data) {
+			$('.album-img-box li.selected').each(function () {
+				pic_ids.push($(this).find('.delete-pic').attr("data-id"));
+			})
+		}else{
+			pic_ids.push($(data).attr("data-id"));
+		}
+		url = ns.url("shop/Album/modifyFileAlbum");
+		if(pic_ids==''){
+			layer.msg("请选择"+ type +"再进行操作");
+			return false;
+		}
+		laytpl($("#pic_group").html()).render({album_id}, function(html) {
+			layer.open({
+				type: 1,
+				title: '修改'+ type +'分组',
+				area: ["350px"],
+				btn: ['保存', '取消'],
+				content: html,
+				yes: function(index, layero) {
+					$.ajax({
+						url: url,
+						type: 'POST',
+						async: false,
+						dataType: 'JSON',
+						data: {
+							pic_id: pic_ids.toString(),
+							album_id: $(".img-group input[name='group']:checked").val(),
+						},
+						success: function(res) {
+							layer.msg(res.message);
+							if (res.code == 0) {
+                                getFileAlbumList(1, limit);
+								updateAlbumNum(album_id);
+								updateAlbumNum($(".img-group input[name='group']:checked").val());
+                        		layer.closeAll('page');
+							}
+						}
+					})
+				}
+			});
+			form.render();
+		})
+
+	}
+
+	/**
+	 * 删除图片
+	 */
+	var flag_delete_img = false;
+
+	function deleteImg(data) {
+		var pic_ids = [],
+			url = '',
+			type = '{$type}' == 'img' ? '图片' : '视频';
+
+		if (!data) {
+			$('.album-img-box li.selected').each(function () {
+				pic_ids.push($(this).find('.delete-pic').attr("data-id"));
+			})
+		}else{
+			pic_ids.push($(data).attr("data-id"));
+		}
+		pic_ids = pic_ids.toString();
+		url = ns.url("shop/Album/deleteFile");
+		if(pic_ids==''){
+			layer.msg("请选择"+ type +"再进行操作");
+			return false;
+		}
+		layer.confirm('删除'+ type +'会连本地存储或云存储的'+ type +'也删掉,请谨慎操作！', {
+			btn: ['确定', '取消']
+		}, function() {
+			if (flag_delete_img) return;
+			flag_delete_img = true;
+			$.ajax({
+				type: "POST",
+				async: true,
+				url,
+				data: {
+					pic_id: pic_ids,
+					album_id: album_id
+				},
+				dataType: "JSON",
+				success: function(data) {
+					flag_delete_img = false;
+
+					layer.msg(data.message);
+
+					if (data.code == 0) {
+						getFileAlbumList(1, limit);
+						updateAlbumNum(album_id);
+                        layer.closeAll('page');
+					}
+				}
+			});
+		}, function() {
+			layer.close();
+		});
+	}
+
+	/**
+	 * 链接
+	 */
+	function copyLink(data) {
+		laytpl($("#copy_path").html()).render($(data).attr("data-path"), function(html) {
+			layer.open({
+				type: 1,
+				area: ["800px"],
+				title: '复制链接',
+				content: html,
+			})
+		})
+	}
+
+	$('body').on(' mouseenter','.upload-image-curtain',function(){
+		$(this).siblings(".tips").show();
+	});
+
+	$('body').on('  mouseleave','.upload-image-curtain',function(){
+		$(this).siblings(".tips").hide();
+	});
+
+	function JScopy() {
+		ns.copy("path_file", function(res) {
+			$("#hidden_image_path").val(res.url);
+		});
+	}
+
+	$('body').on('click', '.album-img-box li .album-pic', function () {
+		if ($('.album-content-title .edit').attr('data-status') == 0) return;
+		if ($(this).parents('li').hasClass('selected')) {
+			$(this).parents('li').removeClass('selected')
+		} else {
+			$(this).parents('li').addClass('selected')
+		}
+	});
+
+	$('.album-content-title .edit').click(function () {
+		if ($(this).attr('data-status') == 1) {
+			$(this).attr('data-status', 0);
+			$(this).text('编辑');
+			$('.album-img-operation,.album-action').addClass('layui-hide');
+			$('.album-img-box li').removeClass('selected')
+		} else {
+			$(this).attr('data-status', 1);
+			$(this).text('完成');
+			$('.album-img-operation,.album-action').removeClass('layui-hide')
+		}
+	});
+
+	function childSwitch(obj){
+		$(obj).parents('.layui-tree-checkedFirst').find('.layui-tree-child').toggle(0,'linear',function (res){
+			if($(obj).parents('.layui-tree-checkedFirst').hasClass('layui-tree-spread')){
+				$(obj).parents('.layui-tree-checkedFirst').removeClass('layui-tree-spread');
+			}else{
+				$(obj).parents('.layui-tree-checkedFirst').addClass('layui-tree-spread');
+			}
+		});
+	}
+
+</script>
+{/block}

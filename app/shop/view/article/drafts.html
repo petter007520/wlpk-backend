@@ -1,0 +1,182 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+
+<!-- 搜索框 -->
+<div class="single-filter-box top">
+	<button class="layui-btn" onclick="add()">添加文章</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入文章标题" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="article_list" lay-filter="article_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+<script type="text/html" id="sort">
+	<input name="sort" type="number" onchange="editSort({{d.article_id}},this)" value="{{d.sort}}" placeholder="请输入排序" class="layui-input edit-sort len-short">
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var table, repeat_flag = false;//防重复标识;
+	layui.use('form', function() {
+		var form = layui.form;
+		form.render();
+
+		table = new Table({
+			elem: '#article_list',
+			url: ns.url("shop/article/drafts"),
+			cols: [
+				[ {
+					field: 'article_title',
+					title: '文章标题',
+					width: '30%',
+					unresize: 'false'
+				}, {
+					field: 'category_name',
+					title: '文章分类',
+					width: '20%',
+					unresize: 'false'
+				},{
+                    field: 'sort',
+                    title: '排序',
+                    width: '15%',
+                    sort : true,
+                    unresize: 'false',
+                    templet: '#sort'
+                }, {
+					field: 'create_time',
+					title: '创建时间',
+					width: '20%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+                    align : 'right'
+				}]
+			],
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+        table.on("sort",function (obj) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    order:obj.field,
+                    sort:obj.type
+                }
+            });
+        });
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/article/edit?article_id=" + data.article_id);
+					break;
+				case 'delete': //删除
+					deleteArticle(data.article_id);
+					break;
+			}
+		});
+	});
+
+	/**
+	 * 删除
+	 */
+	function deleteArticle(article_id) {
+		if (repeat_flag) return false;
+		repeat_flag = true;
+
+		layer.confirm('确定要删除该文章内容吗?',
+			function () {
+				$.ajax({
+					url: ns.url("shop/article/delete"),
+					data: {article_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function (res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							layer.close(layer.index - 1);
+							table.reload();
+						}
+					}
+				});
+			},
+			function () {
+				repeat_flag = false;
+				layer.close();
+			});
+	}
+
+	// 监听单元格编辑
+	function editSort(article_id, event) {
+		var data = $(event).val();
+		if (!new RegExp("^-?[1-9]\\d*$").test(data)) {
+			layer.msg("排序号只能是整数");
+			return;
+		}
+		if(data < 0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+		$.ajax({
+			type: 'POST',
+			url: ns.url("shop/article/modifySort"),
+			data: {
+				sort: data,
+				article_id: article_id
+			},
+			dataType: 'JSON',
+			success: function(res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					location.reload();
+				}
+			}
+		});
+	}
+
+	function add() {
+		location.href = ns.url("shop/article/add");
+	}
+</script>
+{/block}

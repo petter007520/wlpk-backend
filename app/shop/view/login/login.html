@@ -1,0 +1,217 @@
+{extend name="$base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/login.css?v=20220628">
+<style type="text/css"></style>
+{/block}
+{block name="body"}
+
+<div class="container">
+	<div class="head-wrap">
+		<div class="main-wrap">
+			<div class="login-wrap">
+				<!-- {notempty name='$shop_info.logo'}
+				<img src="{:img($shop_info.logo)}" />
+				{else/}
+				<img src="SHOP_IMG/login/logo.png" />
+				{/notempty} -->
+<!--				<img src="__STATIC__/img/logo/login_logo.png" />-->
+			</div>
+
+			{notempty name="port_data"}
+			<div class="login-iph">
+				<div class="show">
+					<i class="iconfont iconico text-color"></i>
+					<span>手机管理端</span>
+					<div class="log-type">
+						<div class="type-wrap">
+							{volist name="port_data" id="vo"}
+							<div class="type-item">
+								<div class="item-img">
+									<img src="{:img($vo.img)}"  style="width: 100%">
+								</div>
+								<span>{$vo.message}</span>
+							</div>
+							{/volist}
+						</div>
+					</div>
+				</div>
+			</div>
+			{/notempty}
+		</div>
+	</div>
+
+	<div class="body-wrap">
+		<div class="main-wrap">
+			<img src="SHOP_IMG/login-left.png" alt="" class="login-leftbg">
+
+			<div class="form-wrap layui-form">
+				<h2 class="login-title">{if isset($store_is_exit)}智慧门店·{/if}管理中心</h2>
+
+				<div class="input-wrap">
+					<div class="icon">
+						<i class="iconfont iconhuiyuan1"></i>
+					</div>
+					<input type="text" name="username" lay-verify="userName" placeholder="请输入用户名" autocomplete="off" class="layui-input input">
+				</div>
+
+				<div class="input-wrap">
+					<div class="icon">
+						<i class="iconfont iconmima"></i>
+					</div>
+					<input type="password" name="password" lay-verify="password" placeholder="请输入密码" autocomplete="off" class="layui-input input">
+				</div>
+
+				{if $shop_login == 1}
+				<div class="input-wrap">
+					<div class="icon">
+						<i class="iconfont iconyanzhengma"></i>
+					</div>
+					<input type="text" name="captcha" lay-verify="verificationCode" placeholder="请输入验证码" autocomplete="off" class="layui-input input">
+					<img id='verify_img' src="{$captcha['img']}" alt='captcha' onclick="verificationCode()" class="captcha"/>
+					<input type="hidden" name="captcha_id" value="{$captcha['id']}">
+				</div>
+				{/if}
+
+				<button type="button" class="layui-btn bg-color login-btn" lay-submit lay-filter="login">登录</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="footer-wrap">
+		<!-- <div class="main-wrap">
+			<a class="copyright-logo" href="#">
+				<img src="{if !empty($copyright.logo)} {:img($copyright.logo)} {else /}__STATIC__/img/copyright_logo.png{/if}" style="display: none;" />
+				<img src="__STATIC__/img/logo/versions_logo.png" />
+			</a>
+			<div class="info">
+				{notempty name="$copyright.company_name"}
+				<a href="{notempty name='$copyright.copyright_link'}{$copyright.copyright_link}{else/}javascript:;{/notempty}" target="_blank">{$copyright.company_name}</a>
+				{else/}
+				<a href="https://www.niushop.com" target="_blank">杭州牛之云科技有限公司</a>
+				{/notempty}
+				{notempty name="$copyright.icp"}
+				<a href="https://beian.miit.gov.cn/" target="_blank">&nbsp;&nbsp;备案号{$copyright.icp}</a>
+				{/notempty}
+			</div>
+			{notempty name="$copyright.gov_record"}
+				<a class="gov-box" href="{notempty name='$copyright.gov_url'}{$copyright.gov_url}{else/}javascript:;{/notempty}" target="_blank"><img src="SHOP_IMG/gov_record.png" alt="">{$copyright.gov_record}</a>
+			{/notempty}
+		</div> -->
+	</div>
+
+
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	// 二维码
+	var tip_index = 0;
+	$(document).on('mouseover', '#goodTitleMsg', function(data){
+		var details = data.currentTarget.lastChild.defaultValue;
+		if(details!=""){
+			tip_index =  layer.tips("<span style='font-size:13px;line-height:20px;'>"+details+"</span>", ($(this)),{ tips: [3, '5CBA59'],time:0,time:0,area: ['200px']});
+		}
+
+	}).on('mouseleave', '#goodTitleMsg', function(){
+		layer.close(tip_index);
+	});
+			
+	var form, login_repeat_flag = false,carousel;
+	/**
+	 * 验证码
+	 */
+	function verificationCode(){
+		$.ajax({
+			type: "get",
+			url: "{:url('shop/login/captcha')}",
+			dataType: "JSON",
+			async: false,
+			success: function (res) {
+				var data = res.data;
+				$("#verify_img").attr("src",data.img);
+				$("input[name='captcha_id']").val(data.id);
+			}
+		});
+	}
+
+	layui.use(['form','carousel'], function(){
+		form = layui.form;
+		carousel = layui.carousel;
+		form.render();
+
+		/* 登录 */
+		form.on('submit(login)', function(data) {
+			if (login_repeat_flag) return;
+			login_repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				dataType: "JSON",
+				url: '{:url("shop/login/login")}',
+				data: data.field,
+				success: function(res) {
+
+					if (res.code == 0) {
+						layer.msg('登录成功',{anim: 5,time: 500},function () {
+							window.location = data.field.login_module == 'store' ? ns.url('store://store/index/index') : '{:url("shop/index/index")}';
+						});
+					} else {
+						layer.msg(res.message);
+						login_repeat_flag = false;
+						verificationCode();
+					}
+
+				}
+			})
+		});
+
+		/*
+		* 轮播
+		* */
+		carousel.render({
+			elem: '#logCarousel'
+			,width: '100%' //设置容器宽度
+			,height: '100%'
+			,arrow: 'none' //始终显示箭头
+			,anim: 'fade'
+			,indicator: 'none'
+		});
+
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			userName: function(value) {
+				if (!value.trim()) {
+					return "账号不能为空";
+				}
+			},
+			password: function(value) {
+				if (!value.trim()) {
+					return "密码不能为空";
+				}
+			},
+			verificationCode: function(value) {
+				if (!value.trim()) {
+					return "验证码不能为空";
+				}
+			}
+
+		});
+	});
+	
+	$("body").on("blur",".login-content .login-input",function(){
+		$(this).removeClass("login-input-select");
+	});
+	$("body").on("focus",".login-content .login-input",function(){
+		$(this).addClass("login-input-select");
+	});
+
+	$(document).keydown(function (event) {
+		if (event.keyCode == 13) {
+			$(".login-btn").trigger("click");
+		}
+	});
+</script>
+{/block}

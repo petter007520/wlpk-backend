@@ -1,0 +1,263 @@
+{extend name="base"/}
+{block name="resources"}
+    <style>
+        .layui-form{margin-left: initial !important;}
+        .admin-style-2 .single-filter-box{padding-top: 0;}
+    </style>
+{/block}
+{block name="main"}
+<!--<div class="layui-collapse tips-wrap">-->
+<!--	<div class="layui-colla-item">-->
+<!--		<h2 class="layui-colla-title">操作提示</h2>-->
+<!--		<ul class="layui-colla-content layui-show">-->
+<!--			<li>您可以查看和编辑广告位的宽度和高度</li>-->
+<!--		</ul>-->
+<!--	</div>-->
+<!--</div>-->
+
+<div class="single-filter-box">
+    <div>
+        <!-- <button class="layui-btn" onclick="add()">添加广告位</button> -->
+    </div>
+    <div class="layui-form">
+        <div class="layui-input-inline">
+            <input type="text" name="search_text" placeholder="请输入广告位名称" class="layui-input">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 列表 -->
+<table id="adv_position" lay-filter="adv_position"></table>
+
+<!-- 广告位宽度 -->
+<script type="text/html" id="ap_width">
+    <input name="ap_width" type="number" onchange="editPosition({{d.ap_id}}, 'ap_width', this)" value="{{d.ap_width}}"
+           class="layui-input sort-len">
+</script>
+
+<!-- 广告位高度 -->
+<script type="text/html" id="ap_height">
+    <input name="ap_height" type="number" onchange="editPosition({{d.ap_id}}, 'ap_height', this)" value="{{d.ap_height}}" class="layui-input sort-len">
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="action">
+    <div class="table-btn">
+        <a class="layui-btn" lay-event="manager">管理广告</a>
+        <a class="layui-btn" lay-event="edit">编辑</a>
+        <!--        <a class="layui-btn" lay-event="delete">删除</a>-->
+    </div>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="toolbarOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+    <button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+    var table, form,
+        repeat_flag = false; //防重复标识
+
+    layui.use('form', function () {
+        form = layui.form;
+        form.render();
+
+        form.on('switch(state)', function(data){
+            let state = data.elem.checked ? 1 : 0;
+            let ap_id = $(data.elem).attr('data-ap-id');
+
+            if(repeat_flag) return;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("shop/adv/alterAdvPositionState"),
+                data: {
+                    ap_id : ap_id,
+                    state : state,
+                },
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag = false;
+                }
+            });
+        })
+
+        table = new Table({
+            elem: '#adv_position',
+            url: ns.url("shop/adv/index"),
+            cols: [
+                [
+				// {
+                //     width: '3%',
+                //     type: 'checkbox',
+                //     unresize: 'false',
+                // },
+				{
+                    field: 'ap_name',
+                    title: '广告位名称',
+                    unresize: 'false',
+                    width: '16%',
+                }, {
+                    field: 'keyword',
+                    title: '广告关键字',
+                    unresize: 'false',
+                    width: '24%',
+                }, {
+                    title: '是否是系统',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return data.is_system == 0 ? "否" : "是";
+                    },
+                    width: '10%',
+                },{
+                    title: '是否启用',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return '<input type="checkbox" name="state" value="1" lay-skin="switch" lay-filter="state" data-ap-id="'+ data.ap_id +'" '+ (data.state == 1 ? 'checked' : '') +' />';
+                    },
+                    width: '10%',
+                }, {
+                    title: '操作',
+                    toolbar: '#action',
+                    unresize: 'false',
+                    align : 'right'
+                }]
+            ],
+            // toolbar: "#toolbarOperation",
+            // bottomToolbar: "#batchOperation"
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function (obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'manager': //管理
+                    location.href = ns.url("shop/adv/lists?ap_id=" + data.ap_id);
+                    break;
+                case 'edit': //编辑
+                    location.href = ns.url("shop/adv/editPosition?ap_id=" + data.ap_id);
+                    break;
+                case 'delete': //删除
+                    deletePosition(data.ap_id);
+                    break;
+            }
+        });
+
+        /**
+         * 批量操作
+         */
+        table.toolbar(function (obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].ap_id);
+                    deletePosition(id_array.toString());
+                    break;
+            }
+        });
+        table.bottomToolbar(function (obj) {
+            if (obj.data.length < 1) {
+                layer.msg('请选择要操作的数据');
+                return;
+            }
+
+            switch (obj.event) {
+                case "del":
+                    var id_array = new Array();
+                    for (i in obj.data) id_array.push(obj.data[i].ap_id);
+                    deletePosition(id_array.toString());
+                    break;
+            }
+        });
+
+        /**
+         * 删除
+         */
+        function deletePosition(ap_ids) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            layer.confirm('删除将会影响广告位的使用，确定要删除吗?', function () {
+                $.ajax({
+                    url: ns.url("shop/adv/deletePosition"),
+                    data: {'ap_ids': ap_ids},
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function (res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+                repeat_flag = false;
+            });
+        }
+
+        /**
+         * 监听搜索
+         */
+        form.on('submit(search)', function (data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+    });
+
+    // 监听单元格编辑--编辑宽度
+    function editPosition(id, type, event) {
+        var value = $(event).val();
+
+        if (!new RegExp("^\\d+$").test(value)) {
+            layer.msg("广告位宽高必须为大于等于0的整数");
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: ns.url("shop/adv/editPositionField"),
+            data: {
+                'type': type,
+                'value': value,
+                'ap_id': id
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                layer.msg(res.message);
+                if (res.code == 0) {
+                    table.reload();
+                }
+            }
+        });
+    }
+
+    function add() {
+        location.href = ns.url("shop/adv/addPosition");
+    }
+</script>
+{/block}

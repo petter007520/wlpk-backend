@@ -1,0 +1,526 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	/* 公共样式修改 */
+	.layui-layout-admin .layui-body .body-content{background-color: transparent;padding: 0;}
+	/*时间选择*/
+	.time-screen{display: flex;background-color: #fff;padding: 10px;margin-bottom: 10px;}
+	.time-screen .item {height: 32px;line-height: 32px;padding: 0 20px;border: 1px solid #D2D2D2;cursor: pointer;border-right: none;border-left: none;position: relative}
+	.time-screen .item:after{content: '';position: absolute;top: -1px;left: 0;bottom: -1px;right: -1px;border-right: 1px solid #D2D2D2;border-left: 1px solid #D2D2D2;}
+	.time-screen .selected,.time-screen .item:hover{color: #fff;background: var(--base-color);border-color: var(--base-color) }
+	.time-screen .selected:after, .time-screen .item:hover:after {border-right: 1px solid var(--base-color);border-left: 1px solid var(--base-color);}
+	/* 商品统计 */
+	.goods-stat{padding: 5px 20px;margin-bottom: 10px;background-color: #fff;}
+	.goods-stat .goods-stat-item{display: flex;justify-content: space-between;align-items: center;border-bottom: 1px solid #eff0f4;padding: 15px 0;}
+	.goods-stat .goods-stat-item:last-of-type{border-bottom: none;}
+	.goods-stat .goods-stat-item .stat-item-content{width: 130px;display:flex;flex-direction: column;justify-content: center;}
+	.goods-stat .goods-stat-item .stat-item-content > span{margin-top: 8px;font-size: 20px;font-weight: 600;}
+	.goods-stat .goods-stat-item .js-prompt-top{color: #999;cursor: pointer;}
+	/* 销售统计 */
+	.market-stat{display: flex;justify-content: space-between; margin-bottom: 10px;}
+	.market-stat .market-stat-item{background-color: #fff;width: calc(50% - 5px);}
+	.market-stat .market-stat-item .market-item-head{height: 45px;line-height: 45px;padding: 0 15px;font-weight: bold;font-size: 14px;border-bottom: 1px solid #eff0f4;}
+	.market-stat .market-stat-item .market-item-content{padding: 10px 20px;}
+	.market-stat .market-stat-item .market-item-content li{height: 35px;line-height: 35px;display: flex;align-items: center;}
+	.market-stat .market-stat-item .market-item-content li span:first-of-type{display: inline-block;max-width: 400px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;margin-right: 15px;color: #999;}
+	/* 访客数 */
+	.visitor-stat{background-color: #fff;}
+	.visitor-stat .visitor-head{height: 45px;line-height: 45px;padding: 0 15px;font-weight: bold;font-size: 14px;border-bottom: 1px solid #eff0f4;}
+	.visitor-stat .visitor-head .more{font-size: 12px;font-weight: 500;color:var(--base-color); cursor: pointer;}
+	.visitor-stat .visitor-body {padding-top: 30px;display: flex;}
+	.visitor-stat .visitor-body .main {flex: 1;height: 400px}
+	.visitor-stat .visitor-body .main:nth-child(2) {margin-left: 15px}
+	/* 加载动画 */
+	.goods-stat-wrap .loading {background: rgba(255,255,255,.5);position: absolute;left: 0; top: 0;text-align: center;width: 100%;height: 100%;box-sizing: border-box;padding-top: 100px;display: none}
+	.goods-stat-wrap .loading i {font-size: 25px}
+    .date-input{width: 300px}
+
+
+</style>
+{/block}
+{block name="main"}
+<div class="goods-stat-wrap">
+	<div class="time-screen statistics">
+		<div class="item selected" date-type="today">今日</div>
+		<div class="item" date-type="yesterday">昨日</div>
+		<div class="item" date-type="seven">7日内</div>
+		<div class="item" date-type="thirty">30日内</div>
+		<div class="item" date-type="custom">自定义</div>
+	</div>
+
+	<ul class="goods-stat">
+		<list class="goods-stat-item">
+			<div class="stat-item-head">商品概况</div>	
+			<div class="stat-item-content">
+				<div>
+					<span>在架商品数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="当前时间，状态为上架的商品数量"></span>
+				</div>
+				<span data-value="goods_on_type_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<div>
+					<span>被访问商品数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，商品详情页浏览次数大于 0 的商品数"></span>
+				</div>
+				<span data-value="goods_visited_type_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<div>
+					<span>动销商品数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，销量不为 0 的商品数量"></span>
+				</div>
+				<span data-value="goods_order_type_count">0</span>
+			</div>
+		</list>
+		<list class="goods-stat-item">
+			<div class="stat-item-head">商品流量</div>	
+			<div class="stat-item-content">
+				<div>
+					<span>商品浏览量</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，所有商品详情页被访问的次数，一个人在统计时间内访问多次记为多次"></span>
+				</div>
+				<span data-value="goods_visit_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<div>
+					<span>商品访客数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，访问任何商品详情页的人数，一个人在统计时间范围内访问多次只记为一个"></span>
+				</div>
+				<span data-value="goods_visit_member_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<!-- <div>
+					<span>商品曝光数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，店铺所有商品在店铺首页、列表页、商品分组页、 微页面、搜索结果页以及商品页底部关联商品区域中的展示次数之和。（直接进入详情页或微页面中通过图片链接到商品不会统计）"></span>
+				</div>
+				<span data-value="goods_exposure_count">0</span> -->
+			</div>
+		</list>
+		<list class="goods-stat-item">
+			<div class="stat-item-head">商品转化</div>	
+			<div class="stat-item-content">
+				<div>
+					<span>加购件数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，添加商品进入购物车的商品件数"></span></div>
+				<span data-value="goods_cart_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<div>
+					<span>下单件数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，成功下单的商品件数之和（不剔除退款订单）"></span></div>
+				<span data-value="goods_order_count">0</span>
+			</div>
+			<div class="stat-item-content">
+				<div>
+					<span>支付件数</span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内， 成功付款订单的商品件数之和（不剔除退款订单）"></span></div>
+				<span data-value="order_create_count">0</span>
+			</div>
+		</list>
+	</ul>
+
+	<div class="market-stat">
+		<div class="market-stat-item">
+			<div class="market-item-head">销售额（元）TOP5</div>
+			<ul class="market-item-content saleroom">
+				<li>
+					<span>暂无排名</span>
+				</li>
+			</ul>
+		</div>
+		<div class="market-stat-item">
+			<div class="market-item-head">销量（件）TOP5</div>
+			<ul class="market-item-content sales-volume">
+				<li>
+					<span>暂无排名</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="visitor-stat">
+		<!-- <div class="visitor-head">
+			<span>访客数TOP </span>
+			<span class="more">查看更多商品</span>
+		</div> -->
+		<div class="visitor-body">
+			<div class="main" id="main"></div>
+		</div>
+	</div>
+	<div class="loading">
+		<i class="common-loading-layer layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<!-- 自定义时间 -->
+<script type="text/html" id="custom-box">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label sm">选择时间：</label>
+
+            <div class="layui-inline layui-inline-margin" id="time_fission">
+                <div class="layui-input-inline">
+                    <input type="text" id="date" name="date" autocomplete="off" class="layui-input date-input" placeholder="请选择日期">
+                    <i class="iconfont iconriqi"></i>
+                </div>
+            </div>
+            <input type="hidden" name="start_time" value="">
+            <input type="hidden" name="end_time" value="">
+        </div>
+    </div>
+</script>
+<script src="SHOP_JS/echarts.min.js"></script>
+<script>
+	var form;
+	var MAX_SALEMONEY = 5; //控制展示商品排行榜前几的销售额
+	var MAX_SALE = 5; //控制展示商品排行榜前几的销量
+	var timeType = 'today';
+
+	initFn();
+
+	// 初始化
+	function initFn(){
+		layui.use(['form'], function(){
+			form = layui.form;
+		}); 
+
+		var time = {
+			start_time: (new Date('{$today} 00:00:00')).getTime() / 1000,
+			end_time: (new Date('{$today} 23:59:59')).getTime() / 1000,
+		};
+		initChartFn();
+		loadingMethod(time);
+	}
+
+	// 选择时间
+	$('.time-screen.statistics .item').click(function () {
+		var self = this;
+        timeType = $(this).attr('date-type');
+        if (timeType != 'custom') $(this).addClass('selected').siblings().removeClass('selected');
+
+        switch (timeType) {
+            case 'today':
+                var time = {
+                    start_time: (new Date('{$today} 00:00:00')).getTime() / 1000,
+                    end_time: (new Date('{$today} 23:59:59')).getTime() / 1000,
+                }
+                loadingMethod(time);
+                break;
+            case 'yesterday':
+                var time = {
+                    start_time: (new Date('{$yesterday} 00:00:00')).getTime() / 1000,
+                    end_time: (new Date('{$yesterday} 23:59:59')).getTime() / 1000,
+                }
+				loadingMethod(time);
+                break;
+            case 'seven':
+                var dateObj = new Date(Date.now() - 604800000);
+                var date = dateObj.getFullYear() + '-' + (dateObj.getMonth() + 1) + '-' + dateObj.getDate();
+				var time = {start_time: new Date(date).getTime() / 1000};
+				loadingMethod(time,'day');
+                break;
+            case 'thirty':
+                var dateObj = new Date(Date.now() - 2592000000);
+                var date = dateObj.getFullYear() + '-' + (dateObj.getMonth() + 1) + '-' + dateObj.getDate();
+				var time = {start_time: new Date(date).getTime() / 1000};
+				loadingMethod(time,'day');
+                break;
+            case 'custom':
+                var _layer = layer.open({
+                    title: '自定义时间选择',
+                    type: 1,
+                    area: ['480px', '160px'], //自定义文本域宽高
+                    btn: ['确认', '取消'],
+                    content: $('#custom-box').html(),
+                    success: function (layero, index) {
+                        new LayDate({
+                            elem: '#date',
+                            type: 'datetime',
+                            rangeId:['start_time','end_time'],
+                            max: '{:date("Y-m-d")}',
+                            done: function(value, date, endDate){
+                                var time_arr = value.split(' - ');
+                                var start_time = time_arr[0];
+                                var end_time = time_arr[1];
+                                $('input[name="start_time"]').val(time_arr[0]);
+                                $('input[name="end_time"]').val(time_arr[1]);
+                            }
+                        });
+                    },
+                    yes: function () {
+                        var start_time = $('input[name="start_time"]').val();
+                        var end_time = $('input[name="end_time"]').val();
+                        if (start_time == ''){
+                            layer.msg('请选择时间');
+                            return;
+                        }
+                        var time = {
+                            start_time: (new Date(start_time)).getTime() / 1000,
+                            end_time: (new Date(end_time)).getTime() / 1000
+                        };
+						loadingMethod(time,'day');
+                        $(self).addClass('selected').siblings().removeClass('selected');
+                        layer.close(_layer);
+                    }
+                })
+                break;
+        }
+    })
+
+	// 获取商品统计数量
+	var today_goods_stat = 0;
+	function getGoodsStat(time){
+        $('.goods-stat-wrap .loading').show();
+		$.ajax({
+			type: "POST",
+			url: ns.url("shop/stat/getstattotal"),
+			data: time,
+			dataType: 'JSON',
+			success: function(res){
+				$('.goods-stat-wrap .loading').hide();
+				if (res.code == 0) {
+					if(timeType == 'today') today_goods_stat = res.data['goods_on_type_count'];
+					Object.keys(res.data).forEach(function (key) {
+						if(timeType != 'today' && timeType != 'yesterday'&& key=='goods_on_type_count') $('.goods-stat [data-value="'+ key +'"]').text(today_goods_stat);
+						else $('.goods-stat [data-value="'+ key +'"]').text(res.data[key]);
+						
+					});
+				}
+			}
+		});
+	}
+
+	/**
+	 * 商品排行榜 销量
+	 * */
+	function countGoodsSale(data) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: ns.url("shop/stat/countGoodsSale"),
+			data: data,
+			success: function(res) {
+				var html = "";
+				if(res.code >= 0 && res.data.list.length){
+					try{
+						res.data.list.forEach((item,index)=>{
+							if(index >= MAX_SALE) throw new Error('end');
+							html += `
+								<li>
+									<span>${item.goods_name}</span>
+									<span>${item.sale_num}</span>
+								</li>
+							`;
+						});
+					}catch(e){
+						if(e.message != "end") throw e;
+					}
+					$(".market-item-content.sales-volume").html(html);
+				}else{
+					html += `
+						<li>
+							<span>暂无排名</span>
+						</li>
+					`;
+					$(".market-item-content.sales-volume").html(html);
+				}
+			}
+		});
+	}
+
+	/**
+	 * 商品排行榜 销售额
+	 * */
+	function countGoodsSaleMoney(data) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: ns.url("shop/stat/countGoodsSaleMoney"),
+			data: data,
+			success: function(res) {
+				var html = "";
+				if(res.code >= 0 && res.data.list.length){
+					try{
+						res.data.list.forEach((item,index)=>{
+							if(index >= MAX_SALEMONEY) throw new Error('end');
+							html += `
+								<li>
+									<span>${item.goods_name}</span>
+									<span>${item.order_money}</span>
+								</li>
+							`;
+						});
+					}catch(e){
+						if(e.message != "end") throw e;
+					}
+					$(".market-item-content.saleroom").html(html);
+				}else{
+					html += `
+						<li>
+							<span>暂无排名</span>
+						</li>
+					`;
+					$(".market-item-content.saleroom").html(html);
+				}
+			}
+		});
+	}
+
+	var statData = []; // 图表数据
+	var today_stat_data = []; //展示今日商品数据
+	function getGoodsChartData(data, type) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: type == 'hour' ? ns.url("shop/stat/getstathourdata") : ns.url("shop/stat/getStatData"),
+			data: data,
+			success: function(res) {
+				statData = res;
+				if(timeType == 'today') today_stat_data = statData['goods_on_type_count'];
+				analyzeChartData();
+			}
+		});
+	}
+
+	// 初始化图表
+	var baseColor,myChart,option;
+	function initChartFn(){
+		baseColor = getComputedStyle(document.documentElement).getPropertyValue('--base-color');
+		myChart = echarts.init(document.getElementById('main'));
+		option = {
+			tooltip: {
+				trigger: 'axis'
+			},
+			legend: {
+				data: ["在架商品数"],
+				textStyle: {
+					fontSize: 14,
+					color: "#000"
+				}
+			},
+			grid: {
+				left: '4%',
+				right: '4%'
+			},
+			xAxis: {
+				type: 'category',
+				boundaryGap: false,
+				data: []
+			},
+			yAxis: {
+				type: 'value',
+				axisLabel: {
+					formatter: '{value} '
+				},
+				splitLine:{
+					show:false
+				},
+			},
+			color: [baseColor],
+			series: [
+				{
+					name: '在架商品数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#8dc1a9'
+					],
+					data: [],
+				},{
+					name: '被访问商品数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#e69d87'
+					],
+					data: [],
+				},{
+					name: '动销商品数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#759aa0'
+					],
+					data: [],
+				},{
+					name: '商品浏览量',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#73a373'
+					],
+					data: [],
+				},{
+					name: '商品访客数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#73b9bc'
+					],
+					data: [],
+				},{
+					name: '加购件数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#7289ab'
+					],
+					data: [],
+				},{
+					name: '下单件数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#91ca8c'
+					],
+					data: [],
+				},{
+					name: '支付件数',
+					type: 'line',
+					smooth: true,
+					color: [
+						'#f49f42'
+					],
+					data: [],
+				}
+			]
+		};
+	}
+
+	/**
+	 * 渲染echart图表
+	 */
+	function analyzeChartData() {
+		option.xAxis.data = statData.time;
+		var obj = {
+			goods_on_type_count: '在架商品数',
+			goods_visited_type_count: '被访问商品数',
+			goods_order_type_count: '动销商品数',
+			// goods_exposure_count: '商品曝光数',
+			goods_visit_count: '商品浏览量',
+			goods_visit_member_count: '商品访客数',
+			goods_cart_count: '加购件数',
+			goods_order_count: '下单件数',
+			order_create_count: '支付件数'
+		};
+		var num = 0;
+		for(var key in obj){
+			option.legend.data[num] = obj[key];
+			option.series[num].name = obj[key];
+			if(timeType != 'today' && timeType != 'yesterday'&& key=='goods_on_type_count') option.series[num].data = today_stat_data;
+			else option.series[num].data = statData[key];
+			num++;
+		}
+		myChart.setOption(option);
+	}
+
+	// 加载方法
+	function loadingMethod(time,type='hour'){
+		getGoodsStat(time);
+		getGoodsChartData(time, type);
+		countGoodsSale(time);
+		countGoodsSaleMoney(time);
+	}
+</script>
+{/block}

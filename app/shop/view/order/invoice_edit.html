@@ -1,0 +1,130 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .hide{display: none;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">发票抬头：</label>
+        <div class="layui-input-block">
+            {$order_detail.invoice_title}
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">发票类型：</label>
+        <div class="layui-input-block">
+            {if $order_detail['invoice_type'] == 1}纸质{else/}电子{/if}{if $order_detail['is_tax_invoice'] == 1}专票{else/}普票{/if}
+        </div>
+    </div>
+    {if $order_detail['invoice_title_type'] == 2}
+        <div class="layui-form-item">
+            <label class="layui-form-label">纳税人识别号：</label>
+            <div class="layui-input-block">{$order_detail['taxpayer_number']}</div>
+        </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">发票抬头类型：</label>
+        <div class="layui-input-block">{$order_detail['invoice_title_type'] == 1 ? '个人' : '企业'}</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">真实姓名：</label>
+        <div class="layui-input-block">{$order_detail.name}</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">联系电话：</label>
+        <div class="layui-input-block">{$order_detail.mobile}</div>
+    </div>
+    {if $order_detail['invoice_type'] == 1}
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮寄地址：</label>
+        <div class="layui-input-block">{$order_detail.invoice_full_address}</div>
+    </div>
+    {/if}
+    {if $order_detail['invoice_type'] == 2}
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱地址：</label>
+        <div class="layui-input-block">{$order_detail.invoice_email}</div>
+    </div>
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">开票状态：</label>
+        <div class="layui-input-inline">
+            {if $order_detail['invoice_status'] == 0}
+                <input type="radio" name="invoice_status" value="0" title="未开票"  lay-filter="invoice_status" checked>
+                <input type="radio" name="invoice_status" value="1" title="已开票"  lay-filter="invoice_status" >
+            {else/}
+                已开票
+                <input type="hidden" name="invoice_status" value="{$order_detail['invoice_status']}">
+            {/if}
+        </div>
+    </div>
+    <div class="layui-form-item {if $order_detail['invoice_status'] == 0}hide{/if} invoice_content">
+        <label class="layui-form-label">发票编号：</label>
+        <div class="layui-input-block">
+            <input class="layui-input len-long invoice_code" name="invoice_code" value="{$order_detail.invoice_code}">
+        </div>
+    </div>
+    <div class="layui-form-item {if $order_detail['invoice_status'] == 0}hide{/if} invoice_content">
+        <label class="layui-form-label">发票备注：</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea len-long invoice_remark" name="invoice_remark" maxlength="150">{$order_detail.invoice_remark}</textarea>
+        </div>
+    </div>
+    <input type="hidden" name="order_id" value="{$order_id}">
+    <div class="form-row">
+        <button class="layui-btn" lay-submit lay-filter="save">确定</button>
+        <button class="layui-btn layui-btn-primary" onclick="revert()">返回</button>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    var laytpl, add_attr_index = -1,
+        form, table;
+    layui.use(['form', 'laytpl'], function() {
+        laytpl = layui.laytpl;
+        form = layui.form;
+        form.render();
+
+        form.on('radio(invoice_status)', function (data) {
+            if( data.value == 1){
+                $(".invoice_content").show();
+            }else{
+                $(".invoice_content").hide();
+            }
+        });
+        form.on('submit(save)', function(data) {
+            if(data.field.invoice_status == 1){
+                // if(data.field.invoice_code == ''){
+                //     layer.msg('发票编码不能为空',{icon:5})
+                //     return false;
+                // }
+                // if(data.field.invoice_remark == ''){
+                //     layer.msg('发票备注不能为空',{icon:5})
+                //     return false;
+                // }
+            }else{
+                data.field.invoice_code = '';
+                data.field.invoice_remark = ''
+            }
+            $.ajax({
+                url: '{:addon_url("shop/order/invoiceEdit")}',
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(data) {
+                    if(data.code==0){
+                        layer.msg(data.message);
+                        window.location.reload()
+                    }
+                }
+            });
+        });
+    });
+    function revert(){
+        location.href = ns.url("shop/order/invoiceOrderList");
+    }
+</script>
+{/block}

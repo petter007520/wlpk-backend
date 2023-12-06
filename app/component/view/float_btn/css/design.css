@@ -1,0 +1,31 @@
+.float-btn .comp-title {display: none;}
+.float-btn .float-btn-box {display: flex;flex-direction: column;align-items: flex-end;justify-content: center;text-align: center;border: 1px dashed;}
+.float-btn .float-btn-item:nth-last-child(1) {margin-bottom: 0;}
+.float-btn .float-btn-item {display: flex;justify-content: center;align-items: center;flex-direction: column;margin-bottom: 10px;overflow: hidden;}
+.float-btn .float-btn-item .img-box, .float-btn .float-btn-item .icon-box {overflow: hidden;display: flex;justify-content: center;align-items: center;}
+.float-btn .float-btn-item .img-box img {max-width: 100%;max-height: 100%;}
+.float-btn .float-btn-item span {margin-top: 5px;color: #333;font-size: 12px;}
+.float-btn .float-btn-list li, .float-btn .float-btn-list .add-item {display: flex;align-items: end;border: 1px dashed #e5e5e5;padding: 10px;}
+.float-btn .float-btn-list li + li {margin: 10px 0;}
+.float-btn .float-btn-list .right-wrap {display: flex;flex-direction: column;flex: 1;width: 0;}
+.float-btn-list .right-wrap .action-box {display: flex;margin-bottom: 4px;}
+.float-btn-list .action {margin-right: 10px;width: 42px;height: 28px;line-height: 28px;text-align: center;border: 1px solid #EEEEEE;cursor: pointer;}
+.float-btn-list .action .iconfont {font-size: 20px;}
+.float-btn-list .action:hover {border-color: var(--base-color);color: var(--base-color);}
+.float-btn .right-wrap .layui-form-item {margin-bottom: 0;}
+.float-btn .right-wrap .layui-form-label {text-align: left;}
+.float-btn .float-btn-list .add-item {justify-content: center;align-items: center;margin: 10px 0;cursor: pointer;}
+.float-btn .float-btn-list .add-item i {font-weight: bold;display: inline-block;height: 24px;line-height: 24px;font-size: 18px;margin-right: 10px;}
+.float-btn .float-btn-list .add-item span {display: inline-block;height: 24px;line-height: 24px;}
+.float-btn .float-btn-list li {position: relative;}
+.float-btn .float-btn-list li:hover .del {display: block;}
+.float-btn {position: absolute;}
+.float-btn .preview-draggable {padding: 0;}
+.float-btn.left {background: rgba(255, 255, 255, 0.45);margin-left: 10px;top: 130px;}
+.float-btn.left .edit-attribute {right: -980px;top: -100px;}
+.float-btn.right_bottom {margin-left: 10px;bottom: 130px;left: 642px;}
+.float-btn-list {margin-left: 20px;}
+.float-btn-list .hint {margin: 10px 0 10px 0;color: #909399;font-size: 12px;}
+.float-btn .tab-wrap {display: none !important;}
+.float-btn .icon-radio .icon-wrap i {color: #303133;}
+.float-btn .preview-draggable .del {right: -20px;}

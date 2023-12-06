@@ -1,0 +1,264 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-form-item {
+		margin: 5px 0 10px 0;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">默认商品图片：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block">
+				<div class="upload-img-box {if !empty($default_img.goods)}hover{/if}">
+					<div class="upload-default" id="imgUploadGoods">
+						{if empty($default_img.goods)}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{else/}
+						<div id="preview_imgUploadGoods" class="preview_img">
+							<img layer-src src="{:img($default_img.goods)}" alt="" class="img_prev">
+						</div>
+						{/if}
+					</div>
+					<div class="operation">
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="goods" {if $default_img} value="{$default_img.goods}" {/if}>
+				</div>
+				<!-- 	<p id="imgUploadGoods" class=" {if condition="$default_img.goods"} replace {else/} no-replace{/if}">替换</p>
+				<i class="del {if !empty($default_img.goods)}show{/if}">x</i> -->
+			</div>
+		</div>
+	</div>
+
+	<div class="word-aux">
+		<p>说明：默认商品图针对默认商品数据的商品图片。</p>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">默认会员头像：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block">
+				<div class="upload-img-box {if !empty($default_img.head)}hover{/if}">
+					<div class="upload-default" id="imgUploadMember">
+						{if empty($default_img.head)}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{else/}
+						<div id="preview_imgUploadMember" class="preview_img">
+							<img layer-src src="{:img($default_img.head)}" alt="" class="img_prev">
+						</div>
+						{/if}
+					</div>
+					<div class="operation">
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="head" {if $default_img} value="{$default_img.head}" {/if}>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="word-aux">
+		<p>说明：前后端没有上传头像的会员会展示该默认图。</p>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">默认门店图片：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block">
+				<div class="upload-img-box {if !empty($default_img.store)}hover{/if}">
+					<div class="upload-default" id="imgUploadStore">
+						{if empty($default_img.store)}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{else/}
+						<div id="preview_imgUploadStore" class="preview_img">
+							<img layer-src src="{:img($default_img.store)}" alt="" class="img_prev">
+						</div>
+						{/if}
+					</div>
+					<div class="operation">
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="store" {if $default_img} value="{$default_img.store}" {/if}>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="word-aux">
+		<p>说明：如果门店未上传门店logo，那么前后端都默认展示该图片。</p>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">默认文章图片：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block">
+				<div class="upload-img-box {if !empty($default_img.article)}hover{/if}">
+					<div class="upload-default" id="imgUploadArticle">
+						{if empty($default_img.article)}
+						<div class="upload">
+							<i class="iconfont iconshangchuan"></i>
+							<p>点击上传</p>
+						</div>
+						{else/}
+						<div id="preview_imgUploadArticle" class="preview_img">
+							<img layer-src src="{:img($default_img.article)}" alt="" class="img_prev">
+						</div>
+						{/if}
+					</div>
+					<div class="operation">
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="article" {if $default_img} value="{$default_img.article}" {/if}>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="word-aux">
+		<p>说明：文章封面图没有或者错误时展示该默认图。</p>
+	</div>
+
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+		<a id="defaultGoodsImgId"></a>
+		<a id="defaultHeadimgId"></a>
+		<a id="defaultStoreimgId"></a>
+		<a id="defaultArticleimgId"></a>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var saveData = null;
+	var totalUploadNum = 0;
+	var completeUploadNum = 0;
+	var store_upload;
+	var goods_upload;
+	var member_upload;
+	var article_upload;
+	layui.use(['form'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		goods_upload = new Upload({
+			elem: '#imgUploadGoods',
+			auto:false,
+			bindAction:'#defaultGoodsImgId',
+			callback: function(res) {
+				uploadComplete('goods', res.data.pic_path);
+			}
+		});
+
+		member_upload = new Upload({
+			elem: '#imgUploadMember',
+			auto:false,
+			bindAction:'#defaultHeadimgId',
+			callback: function(res) {
+				uploadComplete('head', res.data.pic_path);
+			}
+		});
+
+		store_upload = new Upload({
+			elem: '#imgUploadStore',
+			auto:false,
+			bindAction:'#defaultStoreimgId',
+			callback: function(res) {
+				uploadComplete('store', res.data.pic_path);
+			}
+		});
+
+		article_upload = new Upload({
+			elem: '#imgUploadArticle',
+			auto:false,
+			bindAction:'#defaultArticleimgId',
+			callback: function(res) {
+				uploadComplete('article', res.data.pic_path);
+			}
+		});
+
+		function uploadComplete(field, pic_path) {
+			saveData.field[field] = pic_path;
+			completeUploadNum += 1;
+			if(completeUploadNum == totalUploadNum){
+				saveFunc();
+			}
+		}
+
+		function saveFunc(){
+			var data = saveData;
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/config/defaultpicture"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.msg(res.message);
+						location.reload();
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			});
+		}
+
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			// 删除图片
+			if (!data.field.goods && goods_upload.path != 'public/static/img/default_img/square.png') goods_upload.delete();
+
+			if (!data.field.head && member_upload.path != 'public/static/img/default_img/head.png') member_upload.delete();
+
+			if (!data.field.store && store_upload.path != 'public/static/img/default_img/square.png') store_upload.delete();
+
+			if (!data.field.article && article_upload.path != 'public/static/img/default_img/article.png') article_upload.delete();
+
+			saveData = data;
+			var obj = $("img.img_prev[data-prev='1']");
+			totalUploadNum = obj.length;
+			if(totalUploadNum > 0){
+				obj.each(function(){
+					var actionId = $(this).attr('data-action-id');
+					$(actionId).click();
+				})
+			}else{
+				saveFunc();
+			}
+		});
+
+	});
+</script>
+{/block}

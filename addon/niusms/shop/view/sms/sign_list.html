@@ -1,0 +1,310 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .addsign {
+        margin-left: 10px
+    }
+
+    .line-feed {
+        white-space: break-spaces;
+    }
+
+    .word-aux {
+        display: block;
+        margin-top: 5px;
+        color: rgb(178, 178, 178);
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .signature-annotation {
+        display: inline-block;
+        height: 20px;
+        line-height: 20px;
+        padding: 0 !important;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="single-filter-box">
+    <button class="layui-btn addsign" onclick="add()">添加短信签名</button>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="sign_tab">
+
+    <div class="layui-tab-content">
+        <!-- 列表 -->
+        <table id="sign_list" lay-filter="sign_list"></table>
+        <input class="signature" type="hidden" value="{$sms_config['signature']}"/>
+    </div>
+</div>
+
+<script type="text/html" id="use_status">
+    {{# if(d.sign == "{$sms_config['signature']}" ){ }}
+    使用中
+    {{# }else { }}
+    未使用
+    {{# } }}
+</script>
+
+<!-- 审核状态 -->
+<script type="text/html" id="status">
+    {{#  if(d.auditResult == 1){  }}
+    <span style="color:red">待审核</span>
+    {{#  }else if(d.auditResult == 2){  }}
+    <span style="color:green">审核通过</span>
+    {{#  }else if(d.auditResult == 3){  }}
+    <p style="color:grey">审核不通过</p>
+    <p style="color:red" class="line-feed" title="{{ d.auditMsg }}">（{{ d.auditMsg }}）</p>
+    {{#  }  }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+    <div class="table-btn">
+        {{# if(d.sign == "{$sms_config['signature']}" ){ }}
+
+        {{# }else { }}
+        <a class="layui-btn" lay-event="use">使用</a>
+        {{# } }}
+    </div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+
+    var table, laytpl, element, repeat_flag, form, layer_signature;
+    layui.use(['form', 'element', 'laytpl'], function () {
+        laytpl = layui.laytpl;
+        form = layui.form;
+        element = layui.element;
+        repeat_flag = false; //防重复标识
+        form.render();
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(sign_tab)', function () {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    'status': this.getAttribute('data-status')
+                }
+            });
+        });
+
+        table = new Table({
+            elem: '#sign_list',
+            url: ns.url("niusms://shop/sms/signlist"),
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": 0, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.page.total, //解析数据长度
+                    "data": res.data.signatures //解析数据列表
+                };
+            },
+            cols: [
+                [{
+                    field: 'sign',
+                    title: '签名名称',
+                    unresize: 'false',
+                    width: '15%'
+                }, {
+                    title: '使用状态',
+                    unresize: 'false',
+                    templet: '#use_status',
+                    width: '15%'
+                }, {
+                    title: '审核状态',
+                    unresize: 'false',
+                    templet: '#status',
+                    width: '45%'
+                }, {
+                    title: '添加时间',
+                    unresize: 'false',
+                    width: '15%',
+                    templet: function (data) {
+                        return ns.millisecond_to_date(data.createTime);
+                    }
+                }, {
+                    title: '操作',
+                    toolbar: '#operation',
+                    unresize: 'false',
+				    align:'right'
+
+                }]
+            ]
+
+        });
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function (data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function (obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'use': //使用
+                    changeSign(data.sign);
+                    break;
+            }
+        });
+
+        /**
+         * 使用签名
+         */
+        function changeSign(sign) {
+
+            layer.confirm('确定要使用该签名?', function () {
+                if (repeat_flag) return;
+                repeat_flag = true;
+
+                $.ajax({
+                    url: ns.url("niusms://shop/sms/changeSignature"),
+                    data: {
+                        signature: sign
+                    },
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function (res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+                        if (res.code == 0) {
+                            location.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+                repeat_flag = false;
+            });
+        }
+
+        //添加签名
+        form.on('submit(add_signature)', function (data) {
+
+            var signature = data.field.signature;
+            if (signature.trim().length == 0) {
+                layer.msg("请填写短信签名！");
+                return false;
+            }
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                type: "post",
+                url: ns.url("niusms://shop/sms/addChildSignature"),
+                async: true,
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    layer.msg(res.message, {}, function () {
+                        if (res.code == 0) {
+
+                            layer.closeAll();
+                            table.reload();
+                        }
+                    });
+                }
+            })
+
+        });
+
+    });
+
+    function add() {
+        laytpl($("#add_signature").html()).render({}, function (html) {
+            layer_signature = layer.open({
+                title: '添加短信签名',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['800px', '650px'], //自定义文本域宽高
+                content: html,
+                shade: 0
+            });
+
+            var upload = new Upload({
+                elem: '#imgUploadGoods'
+            });
+        });
+        form.render();
+
+    }
+
+    function closeSignature() {
+        layer.close(layer_signature);
+    }
+</script>
+<!-- 添加签名html -->
+<script type="text/html" id="add_signature">
+    <div class="layui-form" lay-filter="form">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">短信签名：</label>
+            <div class="layui-input-block">
+                <input type="text" name="signature" lay-verify="required" placeholder="请输入短信签名" autocomplete="off" class="layui-input len-long">
+                <span class="layui-word-aux signature-annotation">字数要求在2-20个字符，不能使用空格和特殊符号“ - + = * & % # @ ~等;</span>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">签名类型：</label>
+            <div class="layui-input-block">
+                <input type="radio" name="type" value="公司全称或简称" title="公司全称或简称（须提供营业执照截图）" lay-filter="type" checked>
+                <input type="radio" name="type" value="公众号或小程序全称或简称" title="公众号或小程序全称或简称（须提供微信平台截图）" lay-filter="type">
+                <input type="radio" name="type" value="网站全称或简称" title="网站全称或简称（须提供域名备案服务商的后台备案截图）" lay-filter="type">
+                <input type="radio" name="type" value="商标全称或简称" title="商标全称或简称（须提供商标注册证书截图）" lay-filter="type">
+            </div>
+        </div>
+
+        <div class="layui-form-item goods-image-wrap">
+            <label class="layui-form-label">上传截图：</label>
+            <div class="layui-input-inline">
+                <div class="upload-img-block">
+                    <div class="upload-img-box">
+                        <div class="upload-default" id="imgUploadGoods">
+                            <div class="upload">
+                                <i class="iconfont iconshangchuan"></i>
+                                <p>点击上传</p>
+                            </div>
+                        </div>
+                        <div class="operation">
+                            <div>
+                                <i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+                            </div>
+                            <div class="replace_img js-replace">点击替换</div>
+                            <input type="hidden" name="default_goods_img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block">
+                <textarea name="remark" class="layui-textarea len-long" lay-verify="required" maxlength="100"></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <button class="layui-btn" lay-submit lay-filter="add_signature">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeSignature()">返回</button>
+        </div>
+    </div>
+</script>
+{/block}

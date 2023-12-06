@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="renderer" content="webkit" />
+	<meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1" />
+	<title>{$menu_info['title']|default=""} - {$shop_info['site_name']|default=""}</title>
+	<meta name="keywords" content="{$shop_info['seo_keywords']}">
+	<meta name="description" content="{$shop_info['seo_description']}">
+	<link rel="icon" type="image/x-icon" href="__STATIC__/img/shop_bitbug_favicon.ico" />
+	<!-- 加载图标库 -->
+	{:implode('',$load_diy_icon_url)}
+    <link rel="stylesheet" type="text/css" href="STATIC_CSS/iconfont.css" />
+	<link rel="stylesheet" type="text/css" href="__STATIC__/ext/layui/css/layui.css" />
+	<link rel="stylesheet" type="text/css" href="SHOP_CSS/style2/common.css" />
+	<script src="__STATIC__/js/jquery-3.1.1.js"></script>
+	<script src="__STATIC__/js/jquery.cookie.js"></script>
+	<script src="__STATIC__/ext/layui/layui.js"></script>
+	<script>
+		layui.use(['layer', 'upload', 'element'], function() {});
+		window.ns_url = {
+			baseUrl: "ROOT_URL/",
+			route: ['{:request()->module()}', '{:request()->controller()}', '{:request()->action()}'],
+			appModule: '{$app_module}',
+			siteId: '{:request()->siteid()}',
+			SHOPIMG: 'SHOP_IMG',
+			staticImg: 'STATIC_IMG',
+			staticExt: 'STATIC_EXT',
+			upload_max_filesize: '{$upload_max_filesize ?? 0}'
+		};
+	</script>
+	<script src="__STATIC__/js/common.js"></script>
+	<script src="SHOP_JS/common.js"></script>
+    <style>
+        .layui-logo{height: 100%;display: flex;align-items: center;}
+        .layui-logo a{display: flex;justify-content: center;align-items: center;width: 200px;height: 50px;}
+        .layui-logo a img{max-height: 100%;}
+        .goods-preview .qrcode-wrap{max-width: 130px;max-height: 130px;overflow: hidden;}
+        .goods-preview .qrcode-wrap input{margin-top: 30px;}
+        @media only screen and (max-width: 1340px){.layui-nav .layui-nav-item a{padding: 0 15px;}
+        .layui-nav.head-account .layui-nav-item a{padding: 0 20px;}} @media only screen and (max-width: 1200px){.layui-nav .layui-nav-item a{padding: 0 10px;}
+        .layui-nav.head-account .layui-nav-item a{padding: 0 20px;}} @media only screen and (max-width: 920px){.layui-nav .layui-nav-item a{padding: 0 5px;}
+        .layui-nav.head-account .layui-nav-item a{padding: 0 20px;}} @media only screen and (max-width: 1090px){.shop-ewm{display: none;}}.style_all{display: flex;margin: auto;}
+        .styles{width:48%;margin-right:4%;}
+        .styles:nth-child(2){margin-right: 0;}
+        .styles img{width:100%;height:200px;border:2px #ccc solid;box-sizing: border-box;}
+        .styles p{text-align: center;margin-top:10px;}
+        .admin-style-2 .layui-body>.fourstage-nav.layui-tab{margin: 0;text-align: left !important;background: #fff;position: fixed;top: 55px;left: 224px;width: calc(100vw - 291px);z-index: 1000;padding: 10px;border: 15px solid #EFF0F4;border-bottom: 0;border-right: 0;}
+        .layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content{padding-top: 55px !important;}
+        .layui-breadcrumb a:hover{color: var(--base-color) !important;}
+    </style>
+	{block name="resources"}{/block}
+</head>
+
+<body>
+{block name="body"}
+<div class="layui-layout layui-layout-admin admin-style-2">
+    {block name='head'}
+    <div class="layui-header">
+        <div class="layui-logo">
+            <a href="{:url('shop/index/index')}">
+                <!-- {notempty name="$shop_info.logo"}
+                <img src="{:img($shop_info.logo)}">
+                {else/}
+                <img src="SHOP_IMG/shop_logo.png">
+                {/notempty} -->
+<!--				<img src="__STATIC__/img/logo/shop_logo.png" />-->
+            </a>
+        </div>
+        
+		<div class="layui-header-right">
+			<div class="layui-header-crumbs">
+				<div class="layui-header-crumbs-first">
+					{foreach $menu as $menu_k => $menu_v}
+						{if $menu_v.selected}
+							<span>{$menu_v.title}</span>
+							{php}
+							$second_menu = $menu_v["child_list"];
+							{/php}
+						{/if}
+					{/foreach}
+				</div>
+				{notempty name="$second_menu"}
+					<div class="layui-header-crumbs-second">
+                        <span class="layui-breadcrumb" lay-separator="-">
+                            {foreach $crumbs as $crumbs_k => $crumbs_v}
+								{if $crumbs_k > 0}
+									{if $crumbs_k == (count($crumbs) -1)}
+									<a href="javascript:void(0);">{$crumbs_v.title}</a>
+									{else/}
+									<a href="{$crumbs_v.url}">{$crumbs_v.title}</a>
+									{/if}
+                                {/if}
+                            {/foreach}
+                        </span>
+					</div>
+				{/notempty}
+			</div>
+
+			<!-- 账号 -->
+			<div class="login-box layui-layout-right">
+				<div class="shop-ewm">
+<!--					<a href="#" onclick="releaseNow()" title="立即发布"><img src="SHOP_IMG/release.png"></a>
+                    <a href="#" onclick="checkStyle()" title="后台风格"><img src="SHOP_IMG/switch_style.png"></a>-->
+					<button class="layui-btn" onclick="getShopUrl()">访问店铺</button>
+                </div>
+                
+                <div class="help-btn">
+                    <i class="iconfont iconwenhao1"></i>
+                    <span>帮助</span>
+                </div>
+
+				<ul class="layui-nav head-account">
+					<li class="layui-nav-item layuimini-setting">
+						<a href="javascript:;">{$user_info['username']}</a>
+						<dl class="layui-nav-child">
+							<dd class="reset-pass" onclick="resetPassword();">
+								<a href="javascript:;">修改密码</a>
+							</dd>
+							<dd>
+								<a href="{:addon_url('shop/system/cache')}">清除缓存</a>
+							</dd>
+							<dd>
+								<a href="{:addon_url('shop/login/logout')}" class="login-out">退出登录</a>
+							</dd>
+						</dl>
+					</li>
+				</ul>
+			</div>
+		</div>
+    </div>
+    {/block}
+
+    {block name='side_menu'}
+	<!-- 一级菜单 -->
+	<div class="layui-side first-nav">
+	    <div class="layui-side-scroll">
+	
+	        <!--一级菜单 -->
+	        <ul class="layui-nav layui-nav-tree">
+				{foreach $menu as $menu_k => $menu_v}
+				<li class="layui-nav-item">
+				    <a href="{$menu_v.url}" {if $menu_v.selected}class="active"{/if} {if $menu_v.name == 'CASHIER'}target="_blank"{/if}>
+                        <!-- <img src="__ROOT__/{$menu_v.icon}" alt=""> -->
+                        <i class="iconfont {$menu_v.icon}"></i>
+						<span>{$menu_v.title}</span>
+				    </a>
+				</li>
+				{if $menu_v.selected}
+				{php}
+				$second_menu = $menu_v["child_list"];
+				{/php}
+				{/if}
+				{/foreach}
+	        </ul>
+	    </div>
+	</div>
+	
+    {notempty name='$second_menu'}
+    <div class="layui-side second-nav">
+        <div class="layui-side-scroll">
+
+            <!--二级菜单 -->
+            <ul class="layui-nav layui-nav-tree">
+                {foreach $second_menu as $menu_second_k => $menu_second_v}
+                <li class="layui-nav-item  layui-nav-itemed {if $menu_second_v.selected}layui-this{/if}">
+                    <a href="{empty name=" $menu_second_v.child_list"}{$menu_second_v.url}{else /}javascript:;{/empty}" class="layui-menu-tips {if !$menu_second_v.child_list && $menu_second_v.selected} second-selecte-nav{/if}">
+                        <span>{$menu_second_v.title}</span>
+                    </a>
+
+                    {notempty name="$menu_second_v.child_list"}
+                    <dl class="layui-nav-child">
+                        {foreach $menu_second_v["child_list"] as $menu_third_k => $menu_third_v}
+                        <dd class="{if $menu_third_v.selected} layui-this{/if}">
+                            <a href="{$menu_third_v.url}" class="layui-menu-tips">
+                                <span class="layui-left-nav">{$menu_third_v.title}</span>
+                            </a>
+                        </dd>
+                        {/foreach}
+                    </dl>
+                    {/notempty}
+                </li>
+                {/foreach}
+            </ul>
+        </div>
+    </div>
+    {/notempty}
+    {/block}
+
+    {empty name="$second_menu"}
+    <div class="body-wrap layui-body " style="left: 92px; top: 55px;">
+    {else /}
+    <div class="body-wrap layui-body">
+    {/empty}
+			<!-- 四级导航 -->
+			{if condition="isset($forth_menu) && !empty($forth_menu)"}
+			<div class="fourstage-nav layui-tab layui-tab-brief" lay-filter="edit_user_tab">
+				<ul class="layui-tab-title">
+					{volist name="$forth_menu" id="menu"}
+					<li class="{$menu.selected == 1 ? 'layui-this' : ''}" lay-id="basic_info"><a href="{$menu.parse_url}">{$menu.title}</a></li>
+					{/volist}
+				</ul>
+			</div>
+			{/if}
+            <!-- 内容 -->
+            <div class="body-content">
+                {block name="main"}{/block}
+            </div>
+
+            {block name="copyright"}
+            <!-- 版权信息 -->
+            <div class="footer">
+<!--                <a class="footer-img" href="#"><img src="{if !empty($copyright.logo)} {:img($copyright.logo)} {else /}__STATIC__/img/copyright_logo.png{/if}" /></a>-->
+                <!--<p>{notempty name="$copyright.company_name"}{$copyright.company_name}{else/}杭州牛之云科技有限公司{/notempty} {notempty name="$copyright.icp"}<a href="{notempty name='$copyright.copyright_link'}{$copyright.copyright_link}{/notempty}">&nbsp;&nbsp;备案号{$copyright.icp}</a>{/notempty}</p>-->
+                <!--{notempty name="$copyright.gov_record"}<a class="gov-box" href={$copyright.gov_url}><img src="HOME_IMG/gov_record.png" alt="">公安备案{$copyright.gov_record}</a>{/notempty}-->
+            </div>
+            {/block}
+        </div>
+    </div>
+</div>
+
+<!-- 重置密码弹框html -->
+<div class="layui-form" id="reset_pass" style="display: none;">
+    <div class="layui-form-item">
+        <label class="layui-form-label mid"><span class="required">*</span>原密码</label>
+        <div class="layui-input-block">
+            <input type="password" id="old_pass" name="old_pass" required class="layui-input len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label mid"><span class="required">*</span>新密码</label>
+        <div class="layui-input-block">
+            <input type="password" id="new_pass" name="new_pass" required class="layui-input len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label mid"><span class="required">*</span>确认新密码</label>
+        <div class="layui-input-block">
+            <input type="password" id="repeat_pass" name="repeat_pass" required class="layui-input len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+        </div>
+    </div>
+
+    <div class="form-row mid">
+        <button class="layui-btn" onclick="repass()">确定</button>
+        <button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    layui.use('element',function () {
+        var element = layui.element;
+        element.render('breadcrumb');
+    });
+
+    function clearCache () {
+        $.ajax({
+            type: 'post',
+            url: ns.url("shop/Login/clearCache"),
+            dataType: 'JSON',
+            success: function(res) {
+                layer.msg(res.message);
+                location.reload();
+            }
+        })
+    }
+
+    /**
+     * 重置密码
+     */
+    var index;
+    function resetPassword() {
+        index = layer.open({
+            type:1,
+            content:$('#reset_pass'),
+            offset: 'auto',
+            area: ['500px']
+        });
+
+        setTimeout(function() {
+            $(".reset-pass").removeClass('layui-this');
+        }, 1000);
+    }
+
+    var repeat_flag = false;
+    function repass(){
+        var old_pass = $("#old_pass").val();
+        var new_pass = $("#new_pass").val();
+        var repeat_pass = $("#repeat_pass").val();
+
+        if (old_pass == '') {
+            $("#old_pass").focus();
+            layer.msg("原密码不能为空");
+            return;
+        }
+
+        if (new_pass == '') {
+            $("#new_pass").focus();
+            layer.msg("新密码不能为空");
+            return;
+        } else if (new_pass == old_pass) {
+            $("#new_pass").focus();
+            layer.msg("新密码不能与原密码一致");
+            return;
+        } else if ($("#new_pass").val().length < 6) {
+            $("#new_pass").focus();
+            layer.msg("密码不能少于6位数");
+            return;
+        }
+        if (repeat_pass == '') {
+            $("#repeat_pass").focus();
+            layer.msg("密码不能为空");
+            return;
+        } else if ($("#repeat_pass").val().length < 6) {
+            $("#repeat_pass").focus();
+            layer.msg("密码不能少于6位数");
+            return;
+        }
+        if (new_pass != repeat_pass) {
+            $("#repeat_pass").focus();
+            layer.msg("两次密码输入不一致，请重新输入");
+            return;
+        }
+
+        if(repeat_flag)return;
+        repeat_flag = true;
+
+        $.ajax({
+            type: "POST",
+            dataType: 'JSON',
+            url: ns.url("shop/login/modifypassword"),
+            data: {"old_pass": old_pass,"new_pass": new_pass},
+            success: function(res) {
+                layer.msg(res.message);
+                repeat_flag = false;
+
+                if (res.code == 0) {
+                    layer.close(index);
+                    location.reload();
+                }
+            }
+        });
+    }
+
+    function closePass() {
+        layer.close(index);
+    }
+
+    layui.use('element', function() {
+        var element = layui.element;
+        element.init();
+    });
+
+    function getShopUrl(e) {
+		window.open("{:url('index/index/h5preview')}");
+    }
+
+	function checkStyle() {
+		layer.open({
+			title: '后台风格选择',
+			skin: 'release-layer',
+			type: 1,
+			area: ['800px'],
+			content: $('#check_style').html(),
+			btn: ['确定', '取消'],
+			yes:function(){
+				var type=$(".options").val();
+				if(type == 'new'){
+					layer.close(layer.index);
+					return false;
+				}
+				$.ajax({
+					type: 'post',
+					url: ns.url("shop/BaseShop/checkStyle"),
+					data:{type:type},
+					dataType: 'JSON',
+					success: function(res) {
+						layer.msg(res.message);
+						location.reload();
+					}
+				})
+			}
+		});
+	}
+	$("body").on('click',".styles",function(){
+		$(this).find("img").css('border','2px #FF6A00 solid');
+		$(this).siblings().find("img").css('border','2px #ccc solid');
+		var type = $(this).attr('data-id');
+		$(".options").val(type);
+	})
+
+    function releaseNow(){
+        {if empty($base_weapp_config) || ( isset($base_weapp_config['is_authopen']) && empty($base_weapp_config['component_appid']) ) || ( !isset($base_weapp_config['is_authopen']) && empty($base_weapp_config['appid']) )}
+        layer.open({
+            title: '立即发布',
+            skin: 'release-layer',
+            type: 1,
+            area: ['360px', '410px'],
+            content: $('#weapp_release').html(),
+        });
+        {else/}
+            {if isset($base_weapp_config['is_authopen']) && $base_weapp_config['is_authopen'] && addon_is_exit('wxoplatform')}
+            location.href = "{:addon_url('wxoplatform://shop/weapp/plugin')}";
+            {else/}
+                location.href = "{:addon_url('weapp://shop/weapp/package')}";
+                {/if}
+                    {/if}
+                    }
+
+                    {if $user_info['sys_uid']}
+                    function backController() {
+                        location.href = ns.url('home/index/index');
+                    }
+                    {/if}
+</script>
+
+	<script type="text/html" id="weapp_release">
+		<div class="weapp-release">
+			<h3 class="title">小程序发布</h3>
+			<div class="desc">发布小程序需先配置小程序，请配置好之后再进行该操作</div>
+			<div class="operation-btns">
+				<div>
+					<a href="{:addon_url('weapp://shop/weapp/config', [])}" class="layui-btn">立即配置</a>
+				</div>
+				<div>
+					<a href="https://mp.weixin.qq.com/" target="_blank" class="layui-btn layui-btn-primary">注册小程序账号</a>
+				</div>
+			</div>
+		</div>
+	</script>
+	<script type="text/html" id="check_style">
+		<div class="style_all">
+			<div class="styles" data-id="old">
+				<img src="__STATIC__/img/shop/old.JPG">
+				<p>顶部菜单风格</p>
+			</div>
+			<div class="styles" data-id="new">
+				<img src="__STATIC__/img/shop/new.JPG" style="border:2px #FF6A00 solid;">
+				<p>左侧菜单风格</p>
+			</div>
+			<input type="hidden" class="options" value="new">
+		</div>
+	</script>
+{/block}
+{block name="script"}
+{/block}
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .form-wrap {margin-top: 0;}
+	.form-row .layui-btn{margin-right:14px;}
+	.layui-btn+.layui-btn{margin-left: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+    <div class="layui-form-item">
+        <label class="layui-form-label"><span class="required">*</span>社群名称：</label>
+        <div class="layui-input-block">
+            <input name="qr_name" lay-verify="qr_name" type="text" lay-verify="required" class="layui-input len-long" autocomplete="off">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label"><span class="required">*</span>社群描述：</label>
+        <div class="layui-input-block">
+            <textarea name="community_describe" class="layui-textarea len-long" maxlength="100" placeholder="请输入社群描述，不能超过100个字符" id="" lay-verify="community_describe" lay-verify="required" cols="30" rows="10"></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label short-label"><span class="required">*</span>二维码图片：</label>
+        <div class="layui-input-inline">
+            <div class="upload-img-block square">
+                <div class="upload-img-box">
+                    <div class="upload-default" id="qr_img">
+                        <div class="upload">
+                            <i class="iconfont iconshangchuan"></i>
+                            <p>点击上传</p>
+                        </div>
+                    </div>
+                    <div class="operation">
+                        <div>
+                            <i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+                            <i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+                        </div>
+                        <div class="replace_img js-replace">点击替换</div>
+                    </div>
+                    <input type="hidden" lay-verify="qr_img" name="qr_img" />
+                </div>
+                <!-- <p id="qr_img" class="no-replace">替换</p>
+                <i class="del">x</i> -->
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <button id="submit" class="layui-btn" lay-submit lay-filter="save">提交</button>
+        <button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form', 'laydate'], function() {
+        var form = layui.form,
+            laydate = layui.laydate,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        laydate.render({
+            elem: '#laydate'
+        });
+
+        var upload = new Upload({
+            elem: '#qr_img',
+			callback:function(res){
+				if(res.code==10067){
+					// $('#submit').css('display','inline-block')
+				}
+			}
+        });
+
+        /**
+         * 表单验证
+         */
+        form.verify({
+            qr_name: function (value) {
+                if (!/[\S]+/.test(value)) {
+                    return '请输入二维码名称';
+                }
+                if (value < 0) {
+                    return '金额不能小于0!';
+                }
+            },
+            community_describe: function (value) {
+                if (!/[\S]+/.test(value)) {
+                    return '请输入社群描述';
+                }
+            },
+            qr_img: function (value) {
+                if (!/[\S]+/.test(value)) {
+                    return '请上传社群二维码';
+                }
+            }
+        });
+
+        /**
+         * 监听提交
+         */
+        form.on('submit(save)', function(data) {
+
+            // 删除图片
+            if(!data.field.qr_img) upload.delete();
+
+            if(repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("shop/goods/addqrcode"),
+                data: data.field,
+                dataType: 'JSON', //服务器返回json格式数据
+                type: 'POST', //HTTP请求类型
+                success: function(res) {
+                    repeat_flag = false;
+                    if (res.code == 0) {
+                        layer.confirm('添加成功', {
+                            title:'操作提示',
+                            btn: ['返回列表', '继续添加'],
+                            closeBtn: 0,
+                            yes: function(){
+                                location.href = ns.url("shop/goods/communityqrcode")
+                            },
+                            btn2: function () {
+                                location.href = ns.url("shop/goods/addqrcode")
+                            }
+                        });
+                    }else{
+                        layer.msg(res.message);
+                    }
+                }
+            });
+        });
+
+    });
+
+    function back() {
+        location.href = ns.url("shop/goods/communityqrcode");
+    }
+</script>
+{/block}

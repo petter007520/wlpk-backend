@@ -1,0 +1,364 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.select-coupon-layer .layui-layer-content{overflow-y: scroll!important;}
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-form form-wrap">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否开启消费奖励：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_use" lay-filter="is_use" value="1" lay-skin="switch" {if !empty($config) && $config.is_use==1 } checked {/if} >
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">返积分事件：</label>
+		<div class="layui-input-block len-mid">
+			<select name="return_point_status" lay-verify="required">
+				<option value="">请选择</option>
+				{foreach $event_list as $list_k => $list_v}
+				<option value="{$list_v.name}" {if condition="!empty($config.value) && $config.value.return_point_status == $list_v['name']"} selected {/if}>{$list_v.title}</option>
+				{/foreach}
+			</select>
+		</div>
+		<div class="word-aux">返积分事件为订单收货时，虚拟商品因无收货操作将在订单完成时发放奖励</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">返积分比率：</label>
+		<div class="layui-input-block">
+		<div class="layui-input-inline">
+			<input type="number" name="return_point_rate" value="{if condition="!empty($config.value)"}{$config.value.return_point_rate}{else/}0{/if}" lay-verify="positivEinteger" autocomplete="off" class="layui-input len-short">
+		</div>
+			<span class="layui-form-mid">%</span>
+		</div>
+		<div class="word-aux">比率必须为0-100的整数</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">返成长值比率：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="return_growth_rate" value="{if condition="!empty($config.value)"}{$config.value.return_growth_rate ?: 0}{else/}0{/if}" lay-verify="growthInteger" autocomplete="off" class="layui-input len-short">
+			</div>
+			<span class="layui-form-mid">%</span>
+		</div>
+		<div class="word-aux">比率必须为整数，例：当设置为100时，每消费1元增加1个成长值</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">送优惠券：</label>
+		<div class="layui-input-block">
+			<div class="coupon-item coupon">
+				<div>
+					<input type="checkbox" name="discount_type" value="coupon" class="input-checkbox" lay-skin="primary" {if isset($config.value.is_return_coupon) && $config.value.is_return_coupon == 1}checked{/if}><label>送优惠券</label>
+				</div>
+				<div class="discount-cont {if !isset($config.value.is_return_coupon) || $config.value.is_return_coupon == 0}layui-hide{/if}">
+					<div><a href="javascript:;" class="text-color select-coupon">选择优惠券</a></div>
+					<div class="word-aux" style="margin-left: 0">
+						<p>请确认优惠券数量是否充足，优惠券数量不足将导致赠送失败</p>
+					</div>
+					<div>
+						<table class="layui-table" lay-skin="nob">
+							<colgroup>
+								<col width="30%">
+								<col width="50%">
+								<col width="20%">
+							</colgroup>
+							<thead>
+								<tr>
+									<th>优惠券</th>
+									<th>优惠内容</th>
+									<th style="text-align:center;">操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								{if isset($config.value.coupon_list) && !empty($config.value.coupon_list)}
+
+								{foreach $config.value.coupon_list as $k => $vo}
+								<tr data-coupon="{$vo.coupon_type_id}">
+									<td>{$vo.coupon_name }</td>
+									{if $vo.at_least > 0 }
+									<td>满{$vo.at_least }{$vo.type == 'discount' ? '打'. $vo.discount .'折' : '减' . $vo.money }</td>
+									{else/}
+									<td>无门槛，{$vo.type == 'discount' ? '打'. $vo.discount .'折' : '减' . $vo.money }</td>
+									{/if}
+									<td style="text-align:center;"><a href="javascript:;" onclick="deleteCoupon(this)" class="text-color">删除</a></td>
+								</tr>
+								{/foreach}
+
+								{/if}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">退款是否回收奖励：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="checkbox" name="is_recovery_reward" value="1" lay-skin="switch" {if !empty($config) && $config.value.is_recovery_reward == 1 } checked {/if} >
+			</div>
+		</div>
+		<div class="word-aux">当启用退款回收奖励，用户维权成功后，未发放的奖励将不会进行发放，已发放的奖励会进行回收</div>
+		<div class="word-aux">回收奖励仅会回收优惠券和积分，已使用的优惠券将无法收回，如果会员剩余积分不足将只扣除至0</div>
+	</div>
+
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+
+<!-- 优惠券 -->
+<script type="text/html" id="couponList">
+	<div class="gift-box">
+		<div class="single-filter-box">
+			<div class="layui-form">
+				<div class="layui-input-inline">
+					<input type="text" name="coupon_name" placeholder="请输入优惠券名称" class="layui-input len-mid">
+					<button type="button" class="layui-btn layui-btn-primary" lay-filter="coupon-search" lay-submit>
+						<i class="layui-icon">&#xe615;</i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<table id="coupon_list" lay-filter="coupon_list"></table>
+	</div>
+</script>
+
+<!-- 优惠券-名称 -->
+<script type="text/html" id="couponName">
+	<div class="table-tuwen-box">
+		<div class="font-box">
+			<p class="multi-line-hiding">{{d.coupon_name}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- 优惠券-操作 -->
+<script type="text/html" id="couponOperation">
+	{{# var select_coupon_list = ','+coupon_list+','}}
+	{{# if(select_coupon_list.indexOf(','+d.coupon_type_id+',') != -1){ }}
+	<p title="该优惠券已参加">已添加</p>
+	{{# }else{ }}
+	<a class="layui-btn" lay-event="add">添加</a>
+	{{# } }}
+</script>
+
+<script >
+	var coupon_list = '{$config.value.return_coupon}';
+	var laytpl;
+	layui.use(['form','laytpl'], function(){
+		// 监听返积分是否启用
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		laytpl = layui.laytpl;
+		form.render();
+
+		form.on('submit(save)', function(data){
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			if(data.field.discount_type == undefined){
+				coupon_list = '';
+			}
+			data.field.is_return_coupon = 0;
+			data.field.return_coupon = coupon_list;
+			if(coupon_list != '') data.field.is_return_coupon = 1;
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("memberconsume://shop/config/index"),
+				data: data.field,
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/promotion/market")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+		
+		// 验证正整数
+		form.verify({
+			positivEinteger: function(value){
+				if(!new RegExp("^(\\d|[1-9]\\d|100)$").test(value)){
+					return '请输入0-100之间的正整数';
+				}
+			}
+		});
+
+		form.verify({
+			growthInteger: function (value) {
+				if(!new RegExp("^(\\d|[1-9]\\d|100)$").test(value)){
+					return '请输入0-100之间的正整数';
+				}
+			}
+		});
+
+        form.on('submit(coupon-search)', function(data) {
+            couponTable.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            })
+        })
+	});
+
+	// 选择优惠
+	$('body').on('click', '.coupon-item .layui-form-checkbox', function(e){
+		if ($(this).prev('[name="discount_type"]').is(':checked')) {
+			$(this).parents('.coupon-item').find('.discount-cont').removeClass('layui-hide');
+		} else {
+			$(this).parents('.coupon-item').find('.discount-cont').addClass('layui-hide');
+		}
+	});
+
+	$('body').on('click', '.coupon-item .select-coupon', function(e){
+		var event = this;
+
+		layer.open({
+			type: 1,
+			area: ["1200px","600px"],
+			title: '优惠券列表',
+			skin: 'select-coupon-layer',
+			content: $("#couponList").html()
+		});
+
+		couponTable = new Table({
+			elem: "#coupon_list",
+			url: ns.url("coupon://shop/coupon/lists"),
+			where: {'status': 1},
+			cols: [
+				[{
+					title: '优惠券名称',
+					unresize: 'false',
+					width: '15%',
+					templet: '#couponName'
+				}, {
+					title: '类型',
+					unresize: 'false',
+					width: '10%',
+					templet: function(data){
+						return data.type == 'discount' ? '折扣' : '满减'
+					}
+				}, {
+					title: '优惠金额/折扣',
+					unresize: 'false',
+					width: '15%',
+					templet: function(data){
+						return data.type == 'discount' ? data.discount+'折' : data.money+'元';
+					}
+				},{
+					field: 'goods_type',
+					title: '适用商品',
+					unresize: 'false',
+					width: '10%',
+					templet: function(data){
+						return data.goods_type == 1 ? '全部商品' : '指定商品';
+					}
+				},{
+					field: 'max_fetch',
+					title: '领取人限制',
+					unresize: 'false',
+					width: '10%'
+				},{
+					field: 'count',
+					title: '已领取/发放数',
+					unresize: 'false',
+					width: '15%',
+                    templet: function(data){
+						return data.count == -1 ? data.lead_count+'/不限量' : data.lead_count+'/'+data.count;
+					}
+				}, {
+					field: 'gift_state',
+					title: '结束时间',
+					unresize: 'false',
+					width: '15%',
+					templet: function (res) {
+						if(res.validity_type == 0){
+							return ns.time_to_date(res.end_time);
+						}else{
+							return "领取之日起" + res.fixed_term + "天有效";
+						}
+					}
+				}, {
+					title: '操作',
+					toolbar: '#couponOperation',
+					unresize: 'false',
+					align: 'right'
+				}]
+			]
+		});
+
+		couponTable.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case "add":
+					addcoupon(data);
+					break;
+			}
+		});
+
+		function addcoupon(data){
+			var template = `<tr data-coupon="{{ d.coupon_type_id }}">
+				<td>{{ d.coupon_name }}</td>
+				{{# if(d.at_least > 0){  }}
+					<td>满{{ d.at_least }}{{ d.type == 'discount' ? '打'+ d.discount +'折' : '减' + d.money }}</td>
+				{{# } else { }}
+					<td>无门槛，{{ d.type == 'discount' ? '打'+ d.discount +'折' : '减' + d.money }}</td>
+				{{# } }}
+				<td style="text-align:center;"><a href="javascript:;" onclick="deleteCoupon(this)" class="text-color">删除</a></td>
+			</tr>`;
+			laytpl(template).render(data, function(string){
+				$(event).parents('.discount-cont').find('.layui-table tbody').append(string);
+				layer.closeAll();
+			});
+			getCoupon();
+		}
+	})
+
+	// 删除优惠券
+	function deleteCoupon(e){
+		$(e).parents('tr').remove();
+		getCoupon();
+	}
+	getCoupon();
+	//获取已选中优惠券
+	function getCoupon() {
+		var coupon = [];
+		if ($('.coupon').find('[value="coupon"]').is(':checked')) {
+			$('.coupon').find('tr[data-coupon]').each(function (i, e) {
+				coupon.push($(e).attr('data-coupon'));
+			})
+		}
+		coupon_list = coupon.toString();
+	}
+
+	function back(){
+		location.href = ns.url("shop/promotion/member");
+	}
+
+</script>
+{/block}

@@ -1,0 +1,148 @@
+{extend name="base"/}
+
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css" />
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/diyview.css" />
+<style>
+    .icon-style-set{
+        padding: 15px 30px;
+        display: none;
+    }
+</style>
+{/block}
+
+{block name="body"}
+<div id="app" class="layui-form icon-style-set" >
+    <div class="layui-form-item tag-wrap" >
+        <label class="layui-form-label sm">标签</label>
+        <div class="layui-input-block">
+            <div @click="labelData.control = true" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : labelData.control}">
+                <i class="layui-anim layui-icon">{{ labelData.control ? "&#xe643;" : "&#xe63f;" }}</i>
+                <div>开启</div>
+            </div>
+            <div @click="labelData.control = false" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : !labelData.control}">
+                <i class="layui-anim layui-icon">{{ !labelData.control ? "&#xe643;" : "&#xe63f;" }}</i>
+                <div>关闭</div>
+            </div>
+        </div>
+    </div>
+
+    <div v-show="labelData.control">
+        <div class="layui-form-item" >
+            <label class="layui-form-label sm">标签内容</label>
+            <div class="layui-input-block">
+                <input type="text" name='text' v-model="labelData.text" maxlength="3" class="layui-input len-short" autocomplete="off" />
+            </div>
+        </div>
+
+        <div class="layui-form-item flex">
+            <div class="flex_left">
+                <label class="layui-form-label sm">标签文字</label>
+                <slot></slot>
+                <div class="curr-color">
+                    <span>{{ labelData.textColor ? labelData.textColor : "透明" }}</span>
+                </div>
+                <slot name="right"></slot>
+            </div>
+            <div class="layui-input-block flex_fill">
+                <div id="graphgic_nav_tag_color" class="picker colorSelector"><div :style="{ background : labelData.textColor }"></div></div>
+                <span class="color-selector-reset text-color" @click="reset('textColor')">重置</span>
+            </div>
+        </div>
+
+        <div class="layui-form-item flex">
+            <div class="flex_left">
+                <label class="layui-form-label sm">背景</label>
+                <slot></slot>
+                <div class="curr-color">
+                    <span>{{ labelData.bgColorStart ? labelData.bgColorStart : "透明" }}</span>
+                    <span>{{ labelData.bgColorEnd ? labelData.bgColorEnd : "透明" }}</span>
+                </div>
+                <slot name="right"></slot>
+            </div>
+            <div class="layui-input-block flex_fill">
+                <div id="bgColorStart" class="picker colorSelector"><div :style="{ background : labelData.bgColorStart }"></div></div>
+                <div id="bgColorEnd" class="picker colorSelector"><div :style="{ background : labelData.bgColorEnd }"></div></div>
+                <span class="color-selector-reset text-color" @click="reset('bgColorStart,bgColorEnd')">重置</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{/block}
+
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script>
+    var form,slider,colorpicker,vue, data;
+    data = {:json_encode($data)};
+    layui.use(['form', 'slider', 'colorpicker'], function() {
+        form = layui.form;
+        slider = layui.slider;
+        colorpicker = layui.colorpicker;
+        vue = new Vue({
+            el: "#app",
+            data: {
+                labelData: {},
+                defaultColor:{
+                    'text' : '热门',
+                    'textColor' : '#FFFFFF',
+                    'bgColorStart' : '#F83288',
+                    'bgColorEnd' : '#FE3523',
+                },
+                lazyLoad:false,
+            },
+            created: function (){
+                this.labelData = data;
+                this.labelData.control = this.labelData.control == 'true' ? true : false;
+            },
+            methods: {
+
+                reset: function (field) {
+                    let self = this;
+                    let field_arr = field.split(',');
+                    for (let i in field_arr) {
+                        self.labelData[field_arr[i]] = this.defaultColor[field_arr[i]];
+                    }
+                },
+                colorRender(id, color, callback){
+                    Colorpicker.create({
+                        el: id,
+                        color: color,
+                        change: function (elem, hex) {
+                            callback(hex)
+                        }
+                    });
+                }
+            },
+            mounted(){
+                var self = this;
+                self.colorRender('graphgic_nav_tag_color', self.labelData.textColor, function (color) {
+                    self.labelData.textColor = color;
+                })
+                self.colorRender('bgColorStart', self.labelData.bgColorStart, function (color) {
+                    self.labelData.bgColorStart = color;
+                })
+                self.colorRender('bgColorEnd', self.labelData.bgColorEnd, function (color) {
+                    self.labelData.bgColorEnd = color;
+                })
+                setTimeout(function () {
+                    self.lazyLoad = true;
+                    $('.icon-style-set').show()
+                }, 100)
+            },
+            computed: {
+
+            }
+        })
+    })
+
+    function getData(callback) {
+        var data = ns.deepclone(vue._data.labelData);
+        callback(data);
+    }
+
+</script>
+{/block}

@@ -1,0 +1,549 @@
+/* 文字基本颜色 */
+$base-color: #105CFB; //主色调
+:root {
+  --base-color: #105CFB;
+}
+
+/* 水平导航 */
+.layui-layout-admin {
+  .layui-header {
+    height: 55px;
+    background-color: #FFFFFF;
+  }
+
+  .layui-logo {
+    width: 92px;
+    background-color: #1C2233;
+
+    a {
+      display: block;
+      width: 100%;
+      height: 60px;
+      padding: 0 11px 0 12px;
+      box-sizing: border-box;
+      line-height: 60px;
+
+      span {
+        display: block;
+        color: #FFFFFF;
+        font-size: 14px;
+        margin-top: 6px;
+      }
+    }
+
+    h1 {
+      display: inline-block;
+      font-size: 16px;
+      color: #5D5D5D;
+    }
+  }
+
+  //访问店铺
+  .login-box {
+    display: flex;
+    align-items: center;
+
+    .help-btn {
+      margin-left: 40px;
+      cursor: pointer;
+    }
+
+    & > div {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: -21px;
+        width: 1px;
+        height: 16px;
+        background-color: #e6e6e6;
+        transform: translateY(-50%);
+      }
+    }
+
+    .head-account {
+      .layuimini-setting > a {
+        height: 55px;
+        line-height: 55px;
+      }
+    }
+  }
+
+  .layui-header-right {
+    position: absolute;
+    left: 92px;
+    right: 0;
+    height: 55px;
+    border-bottom: 1px solid #eee;
+    box-sizing: border-box;
+
+    .layui-header-crumbs {
+      .layui-header-crumbs-first {
+        float: left;
+        display: inline-block;
+        width: 131px;
+        height: 55px;
+        padding-left: 18px;
+        line-height: 55px;
+        box-sizing: border-box;
+      }
+
+      .layui-header-crumbs-second {
+        float: left;
+        display: inline-block;
+        height: 55px;
+        border-left: 1px solid #eee;
+        padding-left: 16px;
+        line-height: 55px;
+      }
+    }
+  }
+
+  .layui-nav {
+    .layui-nav-bar {
+      display: none;
+    }
+
+    .layui-nav-item a {
+      color: #333333;
+    }
+  }
+
+  .layui-layout-left {
+    .layui-this:after {
+      width: 0;
+      border: 0;
+    }
+
+    a {
+      span {
+        display: inline-block;
+        height: 40px;
+        line-height: 40px;
+        box-sizing: border-box;
+      }
+
+      &:hover span {
+        border-bottom: 3px solid $base-color;
+      }
+
+      &.active span {
+        border-bottom: 3px solid $base-color;
+        border-radius: 1.5px;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  .layui-layout-right {
+    .layui-nav-more {
+      border-top-color: #333;
+    }
+
+    .layui-nav-mored {
+      border-color: transparent transparent #333;
+    }
+
+    .layui-nav-child {
+      right: 0;
+      left: unset;
+
+      dd.layui-this, dd.layui-this a {
+        background-color: $base-color;
+      }
+    }
+  }
+
+  // 侧边导航 -- 一级导航
+  .first-nav {
+    top: 55px;
+    width: 92px !important;
+    background-color: #1C2233;
+
+    .layui-side-scroll {
+      width: 112px;
+
+      .layui-nav-tree {
+        width: 92px;
+        background-color: transparent;
+
+        .layui-nav-item {
+          margin: 0 5px 6px;
+          width: calc(100% - 10px);
+          height: 36px;
+          border-radius: 2px;
+          overflow: hidden;
+
+          a {
+            height: 36px;
+            line-height: 36px;
+            color: #FFF !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            i {
+              font-size: 16px;
+              margin-right: 8px;
+            }
+          }
+
+          a {
+            &.active {
+              background-color: #536183;
+            }
+
+            &.hover {
+              background-color: #30374e;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* 侧边导航 -- 二级导航 */
+  .second-nav {
+    width: 132px !important;
+    background-color: #fff;
+    border-right: 1px solid #eee;
+    overflow: hidden;
+    box-sizing: border-box;
+    left: 92px;
+    top: 55px;
+
+    .second-selecte-nav {
+      background-color: #EFF0F4;
+    }
+
+    .layui-side-scroll {
+      width: 152px;
+
+      .layui-nav {
+        width: 132px;
+        background-color: transparent !important;
+      }
+
+      .layui-nav-item {
+        width: calc(100% - 24px);
+        background-color: #fff;
+        line-height: 34px;
+        margin: 0 12px;
+
+        a {
+          width: 100%;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          box-sizing: border-box;
+          padding-left: 6px;
+
+          span {
+            line-height: 34px;
+          }
+
+          &:hover {
+            background-color: #EFF0F4;
+
+            img {
+              left: -19px !important;
+            }
+          }
+
+          .stair-menu {
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            margin-right: 5px;
+            width: 20px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+
+            img {
+              max-height: 100%;
+            }
+          }
+        }
+
+      }
+
+      .layui-nav-itemed > a {
+        color: #333333 !important;
+
+        &:hover {
+          background-color: transparent !important;
+        }
+      }
+
+      .layui-nav-itemed > .layui-nav-child {
+        background-color: #FFFFFF !important;
+      }
+
+      .layui-nav-tree {
+        margin-top: 10px;
+        position: relative;
+      }
+
+      .layui-nav-tree > .layui-this {
+        > .second-selecte-nav {
+          background-color: #EFF0F4 !important;
+        }
+
+        > a {
+          background-color: transparent !important;
+          color: #333333;
+          box-sizing: border-box;
+          position: relative;
+        }
+
+      }
+
+      .layui-nav-child {
+
+        dd.layui-this {
+          background-color: #FFFFFF !important;
+          color: #333333;
+
+          a {
+            background-color: #FFFFFF !important;
+            color: #333333;
+          }
+
+          .layui-left-nav {
+            width: 100%;
+            background-color: #EFF0F4;
+          }
+        }
+
+        dd > a {
+          padding: 0;
+
+          span {
+            font-size: 14px;
+            padding-left: 20px;
+          }
+        }
+      }
+
+      .layui-nav .layui-nav-more {
+        width: 6px;
+        height: 6px;
+        border-width: 1px;
+        border-color: #333 #333 transparent transparent;
+        border-style: solid;
+        transform: rotate(45deg);
+        -ms-transform: rotate(45deg); /* IE 9 */
+        -moz-transform: rotate(45deg); /* Firefox */
+        -webkit-transform: rotate(45deg); /* Safari 和 Chrome */
+        -o-transform: rotate(45deg);
+        top: 13px;
+        right: 6px;
+        margin-top: 0;
+      }
+
+      .layui-nav-itemed > a .layui-nav-more {
+        transform: rotate(135deg);
+        -ms-transform: rotate(135deg);
+        -moz-transform: rotate(135deg);
+        -webkit-transform: rotate(135deg);
+        -o-transform: rotate(135deg);
+        top: 10px;
+      }
+    }
+  }
+
+  /* 面包屑 */
+  .crumbs {
+    position: fixed;
+    top: 60px;
+    left: 184px;
+    z-index: 9;
+    right: 0;
+    height: 43px;
+    line-height: 43px;
+    padding: 0 28px;
+    background-color: #fff;
+    border-bottom: 1px solid #f1f1f1;
+
+    a:hover {
+      color: $base-color !important;
+    }
+  }
+
+  /* 内容 */
+  .layui-body {
+    position: absolute;
+    overflow: auto !important;
+    top: 55px;
+    bottom: 0;
+    left: 224px;
+    background-color: #EFF0F4;
+
+    .body-content {
+      min-width: 1000px;
+      min-height: 650px;
+      padding: 15px;
+      margin: 15px;
+      background-color: #fff;
+    }
+  }
+
+  // 提示操作
+  .tips-wrap {
+    background-color: #FFF4E6;
+    border-color: #FFC780;
+    border-radius: 2px;
+
+    .layui-colla-title {
+      font-size: 14px;
+    }
+
+    .layui-colla-content li {
+      color: #333;
+
+      &::marker {
+        color: #FFAC42;
+      }
+    }
+  }
+
+  // 筛选操作
+  .screen .layui-colla-content {
+    border: none;
+    background-color: #F2F3F5;
+  }
+
+  // 表格
+  .layui-table-view {
+    margin-top: 0;
+  }
+
+  .layui-table-tool {
+    padding: 15px 0 10px;
+  }
+
+
+  .single-filter-box {
+    padding-top: 0 !important;
+
+    &.top {
+      padding-top: 14px !important;
+    }
+  }
+}
+
+.shop-ewm {
+  > .layui-btn {
+    color: $base-color;
+    border: 1px solid $base-color;
+    background-color: transparent;
+    width: 80px;
+    height: 28px;
+    line-height: 28px;
+    padding: 0;
+  }
+
+  > a {
+    line-height: 55px !important;
+  }
+}
+
+.icon-preview {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  background: rgba(55, 55, 55, 0.6);
+
+  .icon-preview-block {
+    width: 100px;
+    height: 100px;
+    font-size: 100px;
+    margin: 0 auto;
+    background: #fff;
+  }
+}
+
+.notify-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 330px;
+  padding: 20px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+  .notify-item {
+    display: flex;
+    background: #fff;
+    padding: 15px 25px 15px 15px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    transition: opacity .3s,transform .3s,left .3s,right .3s,top .4s,bottom .3s;
+    position: relative;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    .iconclose_light {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+    .box {
+      flex: 1;
+      width: 0;
+      margin-left: 10px;
+    }
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  .icon {
+    i {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: url('../../img/notify_icon.png') no-repeat;
+      &.success {
+        background-position-x: -24px;
+      }
+      &.fail {
+        background-position-x: -48px;
+      }
+      &.warning {
+        background-position-x: 0px;
+      }
+      &.info {
+        background-position-x: -72px;
+      }
+    }
+  }
+}
+.notify-item {
+  .box {
+    .title {
+      font-weight: 700;
+      font-size: 16px;
+      color: #303133;
+      white-space: break-spaces;
+    }
+    .content {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 21px;
+      margin: 6px 0 0;
+      color: #606266;
+      text-align: justify;
+      white-space: break-spaces;
+      overflow: hidden;
+    }
+  }
+}

@@ -1,0 +1,285 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-form layui-colla-content layui-form layui-show"  lay-filter="order_list" action="javascript:;">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">订单号：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="order_no">
+					</div>
+				</div>
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">购买人昵称：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="nickname">
+					</div>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">下单时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(7, this);return false;">近7天</button>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(30, this);return false;">近30天</button>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">订单状态：</label>
+					<div class="layui-input-inline">
+						<select name="status" lay-filter="status">
+							<option value="">全部</option>
+							<option value="0">待支付</option>
+							<option value="1">已支付</option>
+							<option value="-1">已关闭</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 订单列表 -->
+<table id="order_list" lay-filter="order_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		{{# if(d.order_status == 0 ){ }}
+		<a class="layui-btn" lay-event="offlinepay">线下支付</a>
+		{{# } }}
+		<a class="layui-btn" lay-event="detail">详情</a>
+	</div>
+</script>
+
+<!-- 用户信息 -->
+<script type="text/html" id="member_info">
+	<div class="table-title">
+		<div class='title-pic'>
+		{{#  if(d.headimg){  }}
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' "/>
+		{{#  }  }}
+		</div>
+		<div class='title-content'>
+			<p class="multi-line-hiding">{{d.nickname}}</p>
+		</div>
+	</div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+	var table,
+		laydate,
+		form,
+		repeat_flag = false; //防重复标识
+
+	layui.use(['form', 'laydate'], function() {
+		laydate = layui.laydate;
+		form = layui.form;
+
+		form.render();
+
+		//渲染时间
+        laydate.render({
+            elem: '#start_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+        laydate.render({
+            elem: '#end_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#order_list',
+			url: ns.url("shop/memberlevel/order"),
+			cols: [
+				[{
+					field: 'order_no',
+					title: '订单号',
+					width: '14%',
+					unresize: 'false'
+				},
+					{
+						title: '购买人信息',
+						width: '12%',
+						templet: "#member_info"
+					},
+					{
+						field: 'level_name',
+						title: '卡名称',
+						width: '12%',
+						unresize: 'false'
+					}, {
+					title: '订单类型',
+					width: '8%',
+					templet: function (data) {
+						return (data.order_type == 1 ? '开卡' : '续费');
+					}
+				},
+					{
+						title: '购买时长',
+						width: '8%',
+						unresize: 'false',
+						templet: function (data) {
+							var str = '';
+							switch (data.period_unit) {
+								case 'week':
+									str = '一周';
+									break;
+								case 'month':
+									str = '一月';
+									break;
+								case 'quarter':
+									str = '一季';
+									break;
+								case 'year':
+									str = '一年';
+									break;
+							}
+							return str;
+						}
+					}, {
+					title: '订单金额',
+					width: '8%',
+					unresize: 'false',
+					templet: function (data) {
+						return data.order_money;
+					}
+				},
+					{
+						title: '下单时间',
+						width: '10%',
+						unresize: 'false',
+						templet: function (data) {
+							return ns.time_to_date(data.create_time);
+						}
+					},
+					{
+						title: '订单状态',
+						width: '8%',
+						templet: function (data) {
+							var str = '';
+							switch (data.order_status) {
+								case 0:
+									str = '待支付';
+									break;
+								case 1:
+									str = '已支付';
+									break;
+								case -1:
+									str = '已关闭';
+									break;
+							}
+							return str;
+						}
+					}, {
+					title: '操作',
+					unresize: 'false',
+					toolbar: '#operation',
+					align: 'right'
+				}]
+			]
+		});
+		
+		/**
+		 * 工具栏操作，编辑、删除
+		 */
+		table.tool(function(obj) {
+			var data = obj.data,
+				event = obj.event;
+				
+			switch (event) {
+				case 'offlinepay':
+                    $.ajax({
+                        url: ns.url("shop/memberlevel/offlinepay"),
+                        data: {
+                            out_trade_no:  data.out_trade_no
+						},
+                        type: "POST",
+                        dataType: "JSON",
+                        success: function(res) {
+                            if (res.code == 0) {
+                                table.reload();
+                            }else{
+                                layer.msg(res.message);
+                            }
+                        }
+                    });
+					break;
+				case 'detail':
+					location.href = ns.url("shop/memberlevel/orderdetail?order_id=" + data.order_id);
+					break;
+			}
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload( {
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+
+	function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+    }
+</script>
+{/block}

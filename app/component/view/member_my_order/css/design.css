@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+/* 会员中心——我的订单组件 */
+
+.diy-member-my-order .order-wrap .status-wrap {display: flex;padding: 15px 0;align-items: center;justify-content: center;color: #333;}
+.diy-member-my-order .order-wrap .status-wrap .item-wrap {flex: 1;text-align: center;}
+.diy-member-my-order .order-wrap .status-wrap .item-wrap .icon-block {width: 30px;height: 30px;font-size: 30px;margin: 2px auto;position: relative;}
+.diy-member-my-order .order-wrap .status-wrap .item-wrap .icon-block > img {width: 100%;height: 100%;position: absolute;z-index: 6;left: 0;top: 0;}
+.diy-member-my-order .order-wrap .status-wrap .item-wrap .icon-block .icon-shade {width: 100%;height: 100%;position: absolute;z-index: 5;left: 0;top: 0;-webkit-mask: no-repeat center / contain;}
+.diy-member-my-order .order-wrap .status-wrap .item-wrap .title {font-size: 13px;}

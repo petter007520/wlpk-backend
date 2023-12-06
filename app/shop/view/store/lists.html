@@ -1,0 +1,342 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/store_lists.css" />
+<style>
+	.table-tab{margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<input id="store_exit" type="hidden" value="{$store_is_exit}"/>
+<!-- 搜索框 -->
+<div class="single-filter-box">
+	<button class="layui-btn" onclick="add()">添加{$title}</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="keyword" placeholder="请输入{$title}名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="layui-tab table-tab"  lay-filter="store_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="" lay-typer="">全部{$title}</li>
+		<li lay-id="1" lay-type="1">营业中</li>
+		<li lay-id="0" lay-type="1">休息中</li>
+		<li lay-id="1" lay-type="2">已停业</li>
+	</ul>
+	<div id="store-lists"></div>
+
+	<div id="list_page"></div>
+</div>
+
+<!-- {$title}详情 -->
+<script type="text/html" id="store">
+	<div class="table-title">
+		<div class="title-pic">
+			{{#  if(d.store_image){  }}
+			<img layer-src src={{ns.img(d.store_image)}} alt="" onerror=src='__STATIC__/img/default_shop.png'>
+			{{#  }else{  }}
+			<img layer-src src="__STATIC__/img/default_shop.png" alt="">
+			{{#  }  }}
+		</div>
+		<div class="title-content">
+			<p class="layui-elip">店铺名称：{{d.store_name}}</p>
+			<p class="layui-elip">联系方式：{{d.telphone}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- {$title}管理员 -->
+<script type="text/html" id="store_admin">
+	<div class="table-title">
+		<div class="title-pic">
+			<span>{{ d.username }}</span>
+			{if $store_is_exit == 1}
+			<a style="cursor: pointer;" class="text-color" onclick="resetStorePassword({{ d.store_id }})" >重置密码</a>
+			{/if}
+		</div>
+	</div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# if(d.is_frozen) { }}
+		<a class="layui-btn" lay-event="frozen">开启</a>
+		{{# } else{ }}
+		<a class="layui-btn" lay-event="frozen">关闭</a>
+		{{# } }}
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var layer_pass,laytpl,table,form,element, laypage, list_count = 0, limit = 12, search_text = "", curr = 1, status = "", type = "", store_exit = $("#store_exit").val(),store_id="";
+	layui.use(['form','element','laytpl'], function() {
+		form = layui.form;
+		element = layui.element;
+		laytpl = layui.laytpl;
+		laypage = layui.laypage;
+		repeat_flag = false; //防重复标识
+		form.render();
+
+		getStoreLists(search_text, curr, status, type);
+		pageList(list_count, limit, curr, status, type);
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(store_tab)', function(){
+			search_text = "";
+			$("input[name='keyword']").val("");
+			var status = this.getAttribute('lay-id');
+			var type = this.getAttribute('lay-type');
+			getStoreLists(search_text, curr, status, type);
+			pageList(list_count, limit, curr, status, type);
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			/*table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});*/
+			search_text = data.field.keyword;
+			getStoreLists(search_text, curr, status, type);
+			pageList(list_count, limit, curr, status, type);
+		});
+	});
+	
+	function getStoreLists(search_text, curr, status, type){
+		$("#store-lists").empty();
+		$.ajax({
+			type: "POST",
+			url: ns.url("shop/store/lists"),
+			data: {
+				"page": curr,
+				"page_size": limit,
+				"search_text": search_text,
+				"status" : status,
+				"type" : type
+			},
+			dataType: 'JSON',
+			async: false,
+			success: function(res) {
+				if (res.code == 0) {
+					var data = res.data.list;
+					list_count = res.data.count;
+
+					if(!data.length){
+						var empty = "<div class='empty' style='text-align: center;margin-top: 30px;color: #999'>无数据！</div>";
+						$("#store-lists").html(empty);
+					}
+
+					var html = "";
+					for (var i=0; i<data.length; i++) {
+						var d = data[i];
+						if (d.is_frozen == 1) {
+							html += '<div class="store-li">';
+						} else {
+							html += '<div class="store-li border-color">';
+						}
+							html += '<p class="store-name"><span class="store-name">'+ d.store_name +'</span>';
+							if(d.is_frozen == 1){
+								html += '<span class="type-name-cloe">停业</span>';
+							}else{
+								if(d.status == 0){
+									html += '<span class="type-name">休息</span>';
+								}else{
+									html += '<span class="type-name">正常</span>';
+								}
+							}
+							var telphone = d.telphone ? d.telphone : "暂无";
+
+							html += '</p>';
+							if(store_exit == 1){
+								html += '<p class="store-time user-name">管理员：'+ d.username +'<a class="edit-password" onclick="resetStorePassword('+ d.store_id +')">重置密码</a></p>';
+							}
+							html += '<p class="store-time">联系方式：'+ telphone +'</p>';
+							html += '<p class="store-time">地址：'+ d.full_address +' '+ d.address +'</p>';
+							html += '<div class="store-operation">';
+								html += '<span class="operation-type" onclick="editStore('+ d.store_id +')">编辑</span>';
+								if(d.is_default != 1) {
+									html += '<span class="operation-type" onclick="deleteStore(' + d.store_id + ')">删除</span>';
+								}
+								if(d.is_frozen == 1){
+									html += '<span class="operation-type" onclick="closeStore('+ d.store_id +', '+ d.is_frozen +')">开启</span>';
+								}else{
+									html += '<span class="operation-type" onclick="closeStore('+ d.store_id +', '+ d.is_frozen +')">停业</span>';
+								}
+
+
+
+							html += '</div>';
+						html += '</div>';
+					}
+
+					$("#store-lists").append(html);
+				}
+			}
+		});
+	}
+
+	function pageList(count, limit, curr, status, type) {
+		if (!count) return false;
+		page = new Page({
+			elem: 'list_page',
+			count: count,
+			limit: limit,
+			curr: curr,
+			callback: function(obj){
+				getStoreLists(search_text, obj.page, status, type);
+			}
+		});
+	}
+
+	function add() {
+		location.href = ns.url("shop/store/addStore");
+	}
+
+    /**
+     * 重置密码
+     */
+    function resetStorePassword(data) {
+        laytpl($("#pass_change").html()).render(data, function(html) {
+            layer_pass = layer.open({
+                title: '重置密码',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['550px'],
+                content: html
+            });
+        });
+		store_id=data;
+		
+    }
+
+    function editStore(data) {
+		location.href = ns.url("shop/store/editStore",{"store_id":data});
+	}
+
+	function deleteStore(data){
+		layer.confirm('{$title}已开始运营，确认要删除吗?', function() {
+			$.ajax({
+				url: ns.url("shop/store/deleteStore"),
+				data: { store_id : data},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+                        var status = $(".layui-tab.table-tab .layui-tab-title .layui-this").attr('lay-id');
+                        var type = $(".layui-tab.table-tab .layui-tab-title .layui-this").attr('lay-type');
+                        getStoreLists(search_text, curr, status, type);
+                        pageList(list_count, limit, curr, status, type);
+					}
+				}
+			});
+		});
+	}
+	function toLocal(store_id){
+		window.open(ns.url("shop/store/local",{store_id}));
+	}
+	function closeStore(store_id, is_frozen){
+		var msg = '{$title}已开始运营，确认要关闭吗?';
+		if(is_frozen == 1) {
+			msg = '确定要开启该{$title}吗？';
+		}
+		layer.confirm(msg, function() {
+			$.ajax({
+				url: ns.url("shop/store/frozenStore"),
+				data: {store_id:store_id, is_frozen:is_frozen},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+
+					if (res.code == 0) {
+                        var status = $(".layui-tab.table-tab .layui-tab-title .layui-this").attr('lay-id');
+                        var type = $(".layui-tab.table-tab .layui-tab-title .layui-this").attr('lay-type');
+                        getStoreLists(search_text, curr, status, type);
+                        pageList(list_count, limit, curr, status, type);
+					}
+				}
+			});
+		});
+	}
+
+	function joinStore(){
+		window.open("{:addon_url('store://store/login/login')}");
+    	//location.href="{:addon_url('store://store/login/login')}";
+	}
+
+    function closePass() {
+        layer.close(layer_pass);
+    }
+	
+	function determine(){
+		var password=$("#newPassword").val();
+		var newPasswordTow=$("#newPasswordTow").val();
+		if(password!=newPasswordTow){
+			layer.msg("两次输入密码不一致，请重新输入")
+			return false
+		}
+		if(password!="" && newPasswordTow!="" && password==newPasswordTow){
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/store/modifyPassword"),
+				data: {
+					store_id:store_id,
+					password:password
+				},
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message)
+					if(res.code==0){
+						layer.close(layer_pass);
+					}
+				}
+			});
+		}
+	}
+</script>
+
+<!-- 重置密码弹框html -->
+<script type="text/html" id="pass_change">
+	<div class="layui-form" id="reset_pass" lay-filter="form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" id="newPassword" name="password" lay-verify="required" class="layui-input len-mid new_pass" maxlength="18">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" id="newPasswordTow" name="password" lay-verify="repass|required" class="layui-input len-mid" maxlength="18">
+			</div>
+			<div class="word-aux mid">请再一次输入密码，两次输入密码须一致</div>
+		</div>
+
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="repass" onclick="determine()">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+
+		<input class="reset-pass-id" type="hidden" name="store_id" value="{{d}}"/>
+	</div>
+</script>
+
+{/block}

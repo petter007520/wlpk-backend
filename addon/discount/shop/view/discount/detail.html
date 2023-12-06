@@ -1,0 +1,125 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_CSS/promotion_detail.css">
+{/block}
+{block name="main"}
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<div>
+			<span class="card-title">基本信息</span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div class="promotion-view">
+			<div class="promotion-view-item">
+				<label>活动名称：</label>
+				<span>{$discount_info.discount_name}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>活动状态：</label>
+				<span>{if condition="$discount_info.status == 0"}未开始{/if}{if condition="$discount_info.status == 1"}进行中{/if}{if condition="$discount_info.status == 2"}已结束{/if}{if condition="$discount_info.status == -1"}已关闭{/if}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>开始时间：</label>
+				<span>{:date('Y-m-d H:i:s', $discount_info.start_time)}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>结束时间：</label>
+				<span>{:date('Y-m-d H:i:s', $discount_info.end_time)}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>备注：</label>
+				<span>{$discount_info.remark}</span>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<div>
+			<span class="card-title">活动商品</span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div class='promotion-view-list'>
+			<table id="promotion_list"></table>
+		</div>
+	</div>
+</div>
+
+<!-- 商品 -->
+<script type="text/html" id="sku_name">
+	<div class="table-title">
+	    <div class="title-pic">
+		    <img layer-src src="{{ns.img(d.sku_image,'small')}}">
+	    </div>
+	    <div class="title-content">
+		    <p class="multi-line-hiding">{{d.sku_name}}</p>
+	    </div>
+	</div>
+</script>
+
+<script type='text/html' id="promotion_list_item_box_html">
+	<div class="promotion-list-item-title">
+		<div class="promotion-list-item-title-icon">
+			<img src="{{ ns.img(d.sku_image) }}" alt="">
+		</div>
+		<p class="promotion-list-item-title-name multi-line-hiding">{{ d.sku_name }}</p>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		new Table({
+			elem: '#promotion_list',
+			url: ns.url('discount://shop/discount/detail'),
+			where:{discount_id:"{$discount_info.discount_id}"},
+			parseData: function(res) {
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.message, //解析提示文本
+					"count": res.data.length, //解析数据长度
+					"data": res.data //解析数据列表
+				};
+			},
+			cols: [
+				[{
+					field: 'sku_name',
+					title: '商品名称',
+					unresize: 'false',
+					templet: '#promotion_list_item_box_html',
+					width: '40%'
+				}, {
+					field: 'price',
+					title: '商品价格',
+					unresize: 'false',
+					width: '20%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.price;
+					}
+				}, {
+					field: 'discount_price',
+					title: '商品折扣价',
+					unresize: 'false',
+					width: '20%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.discount_price;
+					}
+				}, {
+					field: 'discount_rate',
+					title: '折扣率（%）',
+					unresize: 'false',
+					width: '20%',
+					align: 'right'
+				}]
+			],
+			page: false
+		});
+	});
+</script>
+{/block}

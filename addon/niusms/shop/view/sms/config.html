@@ -1,0 +1,94 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.form-wrap {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+
+    <div class="form-row">
+        <button class="layui-btn" onclick="getSmsPackageList()">获取短信套餐包</button>
+	    <button class="layui-btn" onclick="register()">注册</button>
+	    <button class="layui-btn" onclick="alert()">发送短信</button>
+	    <button class="layui-btn" onclick="removeChildAccount()">删除</button>
+    </div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use('form', function() {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+		form.render();
+
+        form.on('submit(save)', function(data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+			
+            $.ajax({
+                url: ns.url("alisms://shop/sms/config"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/message/sms")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+                }
+            });
+        });
+    });
+
+    function back() {
+        location.href = ns.url("shop/message/sms");
+    }
+
+    function getSmsPackageList() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/getSmsPackageList"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("getSmsPackageList",res);
+			}
+		});
+	}
+
+	function register() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/register"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("register",res);
+			}
+		});
+	}
+
+	function removeChildAccount() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/removeChildAccount"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("removeChildAccount",res);
+			}
+		});
+	}
+</script>
+{/block}

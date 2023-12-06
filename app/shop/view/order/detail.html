@@ -1,0 +1,600 @@
+{extend name="base" /}
+{block name="resources"/}
+<link rel="stylesheet" href="SHOP_CSS/order_detail.css"/>
+<link rel="stylesheet" href="SHOP_CSS/package.css"/>
+{/block}
+{block name="main"}
+<!-- 订单详情、订单状态 -->
+<div class="order-detail">
+	<div class="title">订单详情</div>
+	<div class="order-information order-information-bottom">
+		<div class="order-information-contentOne">
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">交易流水号：</div>
+				<div class="contentOne-content-text text-num">{$order_detail['out_trade_no']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">订单编号：</div>
+				<div class="contentOne-content-text text-num">{$order_detail['order_no']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">订单类型：</div>
+				<div class="contentOne-content-text">{$order_detail['order_type_name']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">订单来源：</div>
+				<div class="contentOne-content-text">{$order_detail.order_from_name}</div>
+			</div>
+			{if $order_detail.pay_status == 1}
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">付款方式：</div>
+				<div class="contentOne-content-text">{$order_detail.pay_type_name}</div>
+			</div>
+			{/if}
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">买家：</div>
+				<div class="contentOne-content-text">{$order_detail.nickname}</div>
+			</div>
+		</div>
+		<div class="order-information-contentTwo">
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">配送方式：</div>
+				<div class="contentOne-content-text">{$order_detail['delivery_type_name']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">收货人：</div>
+				<div class="contentOne-content-text">{$order_detail['name']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">联系电话：</div>
+				<div class="contentOne-content-text">{$order_detail['mobile']}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">收货地址：</div>
+				<input type="text" class="address" id="address" value="{$order_detail['full_address']}-{$order_detail['address']}">
+				<div class="contentOne-content-text contentOne-content-text-die" title="{$order_detail['full_address']}-{$order_detail['address']}">{$order_detail['full_address']}-{$order_detail['address']}</div>
+				<div class="copy-icon-box"><a href="javascript:ns.copy('address');" class="iconfont iconfuzhi" style="margin-top: 4px"></a></div>
+			</div>
+		</div>
+		<div class="order-information-contentTwo">
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">营销活动：</div>
+				<div class="contentOne-content-text">{if empty($order_detail['promotion_type_name'])}-{else/}{$order_detail['promotion_type_name']}{/if}</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">买家留言：</div>
+				<div class="contentOne-content-text contentOne-content-text-die">
+					{if $order_detail['buyer_message'] == ""}
+					-
+					{else/}
+					{$order_detail['buyer_message']}
+					{/if}
+				</div>
+			</div>
+			<div class="contentOne-content">
+				<div class="contentOne-content-title">备注：</div>
+				<div class="contentOne-content-text">
+					{if $order_detail['remark'] == ""}
+					-
+					{else/}
+					{$order_detail['remark']}
+					{/if}
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="title">订单状态</div>
+	<div class="order-information-contentOne order-orderStatus-contentOne ">
+		<div class="contentOne-content">
+			<div class="contentOne-content-title">订单状态：</div>
+			<div class="contentOne-content-text contentOne-content-textNew">{$order_detail.order_status_name}</div>
+		</div>
+		<div class="contentTow-operation">
+			<div class="contentTow-operation-content" onclick="orderRemark('{$order_detail.order_id}')">备注</div>
+			{php}
+			$order_json_data = json_decode($order_detail['order_status_action'], true);
+			$action = $order_json_data['action'];
+			{/php}
+			{foreach $action as $action_k => $action_item}
+				<a class="contentTow-operation-content contentTow-operation-new" href="javascript:orderAction('{$action_item.action}', '{$order_detail.order_id}')">{$action_item.title}</a>
+			{/foreach}
+			{if $order_detail.order_type == 1 && in_array($order_detail.order_status, [1,3,10])}
+			<a class="contentTow-operation-content contentTow-operation-new" href="javascript:printDeliverOrder('{$order_detail.order_id}');" >打印发货单</a>
+			{/if}
+			{if $order_detail.order_type == 1 && $order_detail.order_status == 1}
+			<a class="contentTow-operation-content contentTow-operation-new" href="javascript:orderPrintElectronicsheet('{$order_detail.order_id}');" >打印电子面单</a>
+			{/if}
+
+		</div>
+		<div class="orderStatus">
+			<div class="orderStatus-content-title">提醒：</div>
+			<div class="orderStatus-content-text">
+				<p class="text-tile">买家付款成功后，货款将直接进入您的商户号（微信、支付宝）</p>
+                <p class="text-tile">请及时关注你发出的包裹状态，确保可以配送至买家手中</p>
+                <p class="text-tile">如果买家表示没收到货或货物有问题，请及时联系买家处理，友好协商</p>
+			</div>
+		</div>
+	</div>
+
+	{if isset($order_detail.form)}
+    	<!-- 表单信息 -->
+		<div class="formFields">
+			<div class="title">表单信息</div>
+			<div class="order-information order-formFields">
+				{foreach name="$order_detail.form" item="vo"}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">{$vo.value.title}：</div>
+					<div class="contentOne-content-text">
+					{if $vo.controller == 'Img'}
+                        {foreach name="$vo.img_lists" item="io"}
+                            <div class="form-img">
+                                <div class="form-img-wrap">
+                                    <img src="{:img($io)}" layer-src>
+                                </div>  
+                            </div>
+                        {/foreach}
+                    {else/}
+						{if isset($vo.val)}
+						{$vo.val}
+						{/if}
+                    {/if}
+                    </div>
+				</div>
+				{/foreach}
+			</div>
+		</div>
+	{/if}
+
+	{if  $order_detail['is_invoice'] == 1}
+		<!-- 发票信息 -->
+		<div class="formFields">
+			<div class="title">发票信息</div>
+			<div class="order-information order-formFields">
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票类型：</div>
+					<div class="contentOne-content-text">{if $order_detail['invoice_type'] == 1}纸质{else/}电子{/if}{if $order_detail['is_tax_invoice'] == 1}专票{else/}普票{/if}</div>
+				</div>
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票抬头：</div>
+					<div class="contentOne-content-text">{$order_detail['invoice_title']}</div>
+				</div>
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票抬头类型：</div>
+					<div class="contentOne-content-text">{$order_detail['invoice_title_type'] == 1 ? '个人' : '企业'}</div>
+				</div>
+				{if $order_detail['invoice_title_type'] == 2}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">纳税人识别号：</div>
+					<div class="contentOne-content-text">{$order_detail['taxpayer_number']}</div>
+				</div>
+				{/if}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票内容：</div>
+					<div class="contentOne-content-text">{$order_detail['invoice_content']}</div>
+				</div>
+				{if $order_detail['invoice_type'] == 1}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票邮寄地址：</div>
+					<div class="contentOne-content-text">{$order_detail['invoice_full_address']}</div>
+				</div>
+				{else/}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票接收邮件：</div>
+					<div class="contentOne-content-text">{$order_detail['invoice_email']}</div>
+				</div>
+				{/if}
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票费用：</div>
+					<div class="contentOne-content-text">￥{$order_detail.invoice_money}</div>
+				</div>
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票税率：</div>
+					<div class="contentOne-content-text">{$order_detail.invoice_rate}%</div>
+				</div>
+				<div class="contentOne-content">
+					<div class="contentOne-content-title">发票邮寄费用：</div>
+					<div class="contentOne-content-text">￥{$order_detail.invoice_delivery_money}</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+	
+</div>
+
+{if !empty($order_detail['package_list'])}
+<!-- 物流信息 -->
+<div class="distribution">
+	<div class="title">物流信息</div>
+	<div class="order-information">
+		<div class="order-information-contentOne order-package">
+			<ul class="package-list">
+		        {foreach $order_detail['package_list'] as $package_k => $package_v}
+		        <li {if $package_k == 0}class="layui-this"{/if}>{$package_v.package_name}</li>
+		        {/foreach}
+		    </ul>
+	     	<div class="order-package-content">
+		        {foreach $order_detail['package_list'] as $package_k => $package_v}
+		        <div class="layui-tab-item{if $package_k == 0} layui-show{/if}">
+		            <div class="package-inner">
+		            	<div class="package-head">
+		            		<div class="contentOne-content">
+		                        <label class="contentOne-content-title">发货时间：</label>
+		                        <div class="contentOne-content-text">
+		                            {:time_to_date($package_v["delivery_time"])}
+		                        </div>
+							</div>
+							{if $order_detail.delivery_type == 'express' && $package_v.delivery_type == 1}
+		                    <div class="contentOne-content">
+		                        <label class="contentOne-content-title">物流公司：</label>
+		                        <div class="contentOne-content-text">{$package_v.express_company_name}</div>
+		                    </div>
+		                    <div class="contentOne-content">
+		                        <label class="contentOne-content-title">运单号：</label>
+		                        <div class="contentOne-content-text">{$package_v.delivery_no}</div>
+		                    </div>
+							{/if}
+							<div class="contentOne-content">
+								{php}
+								$packageV = json_encode($package_v);
+								{/php}
+								{if in_array($order_detail.order_status,[1,3])}
+								<a class="contentTow-operation-content contentTow-operation-new" onclick="logisticsOperation('{$order_detail.order_id}','{$package_v.id}',{$packageV})">修改物流</a>
+								{/if}
+							</div>
+		            	</div>
+
+		            	<div class="package-body">
+		            		<div class="goods-list">
+                                {foreach $package_v['goods_list'] as $goods_k => $goods_v }
+                                <div class="goods-item">
+                                    <div class="package-inner-goods-item-inner">
+										<div class="package-inner-goods-item-image"><img layer-src src="{:img($goods_v.sku_image,'')}"></div>
+                                        <div class="package-inner-goods-item-info">
+											<p class="package-inner-goods-item-name multi-line-hiding" title="{:$goods_v.sku_name}">{:$goods_v.sku_name}</p>
+											<p class="package-inner-goods-item-name">数量：{$goods_v.num}</p>
+										</div>
+                                    </div>
+                                </div>
+                                {/foreach}
+                            </div>
+		            	</div>
+		                
+		                <div class="package-inner-express">
+		                    <div class="package-inner-content-item">
+		                    	<div class="package-head">
+									{if $order_detail.delivery_type == 'express' && $package_v.delivery_type == 1}
+			                    	<div class="contentOne-content" style="padding-right: 20px;">
+				                        <label class="contentOne-content-title">物流状态：</label>
+				                        <div class="contentOne-content-text">
+				                            {if $package_v.trace.success}
+				                                {$package_v.trace.status_name}
+				                            {else/}
+				                                {$package_v.trace.reason}
+				                            {/if}
+				                        </div>
+									</div>
+									{/if}
+			                     	{if $package_v.type == 'electronicsheet'}
+				                    <div class="contentOne-content">
+				                        <a onclick="printElectronicsheet({$package_v.order_id},{$package_v.template_id})" class="contentTow-operation-content contentTow-operation-new">重新打印电子面单</a>
+				                    </div>
+				                    {/if}
+			                    </div>
+		                    </div>
+
+		                    {if $package_v.trace.success}
+		                    <div class="shop-operation-time">
+								<ul class="layui-timeline">
+									{foreach $package_v.trace.list as $trace_k => $trace_v}
+								  	<li class="layui-timeline-item">
+										<div class="layui-time-left">
+											<p>{:date('Y-m-d', strtotime($trace_v.datetime))}</p>
+											<p>{:date('H:i:s', strtotime($trace_v.datetime))}</p>
+										</div>
+									    <div class="layui-icon layui-timeline-axis">
+											<span class="layui-icon-center"></span>
+										</div>
+								    	<div class="layui-timeline-content layui-text">
+								      		<div class="layui-timeline-title">{$trace_v.remark}</div>
+								    	</div>
+								  	</li>
+								  	{/foreach}
+						  		</ul>
+					  		</div>
+					  		{/if}
+		                </div>
+		            </div>
+		        </div>
+		        {/foreach}
+		    </div>
+		</div>
+	</div>
+</div>
+{/if}
+
+<!-- 商品信息、订单操作日志 -->
+<div class="shop-information">
+	<div class="title">商品信息</div>
+	<div class="shop-information-table">
+		<table lay-filter="parse-table-order-product" lay-skin="line">
+			<thead>
+				<tr class="table-trOne">
+					<th lay-data="{field:'product_name', width:200}">商品</th>
+					<th lay-data="{field:'price'}">价格</th>
+					<th lay-data="{field:'sku_no'}">商品编码</th>
+					<th lay-data="{field:'sale_num'}">数量</th>
+					<th lay-data="{field:'total_money'}">小计（元）</th>
+					<th lay-data="{field:'refund_status'}">退款状态</th>
+				</tr>
+			</thead>
+			<tbody>
+				{foreach $order_detail['order_goods'] as $list_k => $order_goods_item}
+				<tr class="table-trTow">
+					<td>{$order_goods_item.sku_name}</td>
+					<td>{$order_goods_item.price}</td>
+					<td>{$order_goods_item.sku_no}</td>
+					<td>{$order_goods_item.num}</td>
+					<td>{$order_goods_item.goods_money}</td>
+					<td>
+						{if $order_goods_item.refund_status != 0}
+						<a class="text-color" href='{:addon_url("shop/orderrefund/detail?order_goods_id=".$order_goods_item["order_goods_id"])}'>{$order_goods_item.refund_status_name}</a>
+						{/if}
+					</td>
+				</tr>
+				{if isset($order_goods_item.form)}
+				<tr>
+					<td colspan="6">
+						<div class="order-goods-form">
+							{foreach name="$order_goods_item.form" item="vo"}
+							<div class="form-item">
+								<div class="field-title">{$vo.value.title}：</div>
+								<div class="field-content">
+									{if $vo.controller == 'Img'}
+									{foreach name="$vo.img_lists" item="io"}
+									<div class="form-img">
+										<div class="form-img-wrap">
+											<img src="{:img($io)}" layer-src>
+										</div>
+									</div>
+									{/foreach}
+									{else/}
+									{if isset($vo.val)}
+									{$vo.val}
+									{/if}
+									{/if}
+								</div>
+							</div>
+							{/foreach}
+						</div>
+					</td>
+				</tr>
+				{/if}
+				{/foreach}
+			</tbody>
+		</table>
+		<div class="table-trThree table-trFour">
+			<div>
+				<p>商品总额：<span>￥{$order_detail["goods_money"]}</span></p>
+			</div>
+			<div>
+				<p>店铺优惠券：<span>￥{$order_detail["coupon_money"]}</span></p>
+			</div>
+			<div>
+				<p>店铺优惠：<span>￥{$order_detail["promotion_money"]}</span></p>
+			</div>
+			{if $order_detail["point_money"] > 0}
+			<div>
+				<p>积分抵扣：<span>￥{$order_detail["point_money"]}</span></p>
+			</div>
+			{/if}
+			{if $order_detail["balance_money"] > 0}
+			<div>
+				<p>余额：<span>￥{$order_detail["balance_money"]}</span></p>
+			</div>
+			{/if}
+
+			<div>
+				<p>订单调价：<span>￥{$order_detail["adjust_money"]}</span></p>
+			</div>
+			<div>
+				<p>配送费用：<span>￥{$order_detail["delivery_money"]}</span></p>
+			</div>
+			<div>
+				<p>发票费用：<span>￥{$order_detail["invoice_money"]}</span></p>
+			</div>
+			<div>
+				<p>发票邮寄费用：<span>￥{$order_detail["invoice_delivery_money"]}</span></p>
+			</div>
+			{if $order_detail["member_card_money"] > 0}
+			<div>
+				<p>会员卡：<span>￥{$order_detail["member_card_money"]}</span></p>
+			</div>
+			{/if}
+		</div>
+	    <div class="table-settlement">
+			订单共<span>{$order_detail["goods_num"]}</span>件商品,共计<span>￥{$order_detail["order_money"]}</span>
+		</div>
+	</div>
+</div>
+
+{notempty name="$order_detail.order_log"}
+<!-- 订单操作 -->
+<div class="shop-operation">
+	<div class="title">订单操作日志</div>
+	<div class="shop-operation-time">
+		<ul class="layui-timeline">
+			{foreach name="$order_detail.order_log" item="vo"}
+		  	<li class="layui-timeline-item">
+				<div class="layui-time-left">
+					<p>{:date('Y-m-d', $vo.action_time)}</p>
+					<p>{:date('H:i:s', $vo.action_time)}</p>
+				</div>
+			    <div class="layui-icon layui-timeline-axis">
+					<span class="layui-icon-center"></span>
+				</div>
+			    <div class="layui-timeline-content layui-text">
+			      	<div class="layui-timeline-title">{$vo.action}</div>
+			    </div>
+		 	</li>
+		 	{/foreach}
+		</ul>
+	</div>
+</div>
+{/notempty}
+
+{include file="order/order_common_action" /}
+<!-- 修改订单收货地址 -->
+{include file="order/order_action" /}
+<!-- 发货 -->
+{include file="order/order_delivery_action" /}
+
+<!-- 主动退款 -->
+{include file="order/shop_active_refund" /}
+<!--打印相关-->
+{include file="electronicsheet/print_html" /}
+{/block}
+{block name="script"}
+<script src="SHOP_JS/lodop_funcs.js"></script>
+<script>
+	$('.package-list li').click(function(){
+		$(this).addClass('layui-this').siblings('li').removeClass('layui-this');
+		$('.order-package-content .layui-tab-item:eq('+ $(this).index() +')').addClass('layui-show').siblings('.layui-tab-item').removeClass('layui-show');
+	})
+
+    function logisticsOperation(orderId,packageId,dataJson) {
+        // console.log(dataJson);
+        //获取模板
+        var getTpl = $("#logistics_html").html();
+        var data = {};
+        data.dataJson = dataJson;
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/express/getShopExpressCompanyList"),
+            dataType: 'json',
+            async: false,
+            success: function (res) {
+                if (res.code == 0) {
+                    data.express_company = res.data;
+                }
+            }
+        });
+        laytpl(getTpl).render(data, function (html) {
+            layer.open({
+                type: 1,
+                shadeClose: true, 
+                shade: 0.3,
+                fixed: false,
+                scrollbar: false,
+                title: "修改物流信息",
+                area: '800px',
+                content: html,
+                cancel: function (index, layero) {
+                    //右上角关闭回调
+                    layer.close(index);
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                success: function (layero, index) {
+                    form.render();
+                    form.on('radio(delivery_type)', function (data) {
+                        if (data.value == 1) {
+                            $(".express-type").removeClass("layui-hide");
+                        } else {
+                            $(".express-type").addClass("layui-hide");
+                        }
+
+                    });
+                    var submitting = false;
+                    form.on('submit(button_logistics_order)', function (data) {
+                        var express_company_id = data.field.express_company_id;
+                        if (data.field.delivery_type == 1 && express_company_id <= 0) {
+                            layer.msg('请选择物流公司', {time: 2000, icon: 5});
+                            return;
+                        }
+                        if (data.field.delivery_no == "" && data.field.delivery_type == 1) {
+                            layer.msg('物流单号不能为空', {time: 2000, icon: 5});
+                            return;
+                        }
+                        if (submitting) {
+                            return false;
+                        }
+                        submitting = true;
+                        data.field.order_id = orderId;
+                        data.field.package_id = packageId;
+                        $.ajax({
+                            type: "post",
+                            url: '{:addon_url("shop/delivery/editOrderDelivery")}',
+                            async: true,
+                            dataType: 'json',
+                            data: data.field,
+                            success: function (res) {
+								layer.msg(res.message);
+								if(res.code == 0){
+									layer.close(layer.index - 1);
+									reloadList();
+								}else{
+									submitting = false;
+								}
+                            }
+                        })
+                    });
+                }
+
+            });
+        })
+    }
+</script>
+<script type="text/html" id="logistics_html">
+    <div class="order-delivery">
+        <div class="layui-form">
+            <input type="hidden" name="type" value="manual">
+            <div class="layui-form-item delivery-type">
+                <label class="layui-form-label">发货方式：</label>
+                <div class="layui-input-block">
+                    {{# if(d.dataJson.delivery_type == 1){ }}
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="1" title="物流发货" checked>
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="0" title='无需物流'>
+                    {{# }else{ }}
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="1" title="物流发货">
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="0" title='无需物流' checked>
+                    {{# } }}
+                </div>
+            </div>
+
+            {{# if(d.dataJson.delivery_type == 1){ }}
+            <div class="express-type">
+            {{# }else{ }}
+            <div class="express-type layui-hide">
+            {{# } }}
+                <div class="layui-form-item logistics-company">
+                    <label class="layui-form-label">物流公司：</label>
+                    <div class="layui-input-block len-mid">
+                        <select name="express_company_id" lay-search lay-filter="express_company">
+                            <option value="">请选择物流公司</option>
+                            {{# layui.each(d.express_company, function(index, item){ }}
+                                {{# if(item.company_id == d.dataJson.express_company_id){ }}
+                                <option value="{{ item.company_id }}" selected>{{ item.company_name }}</option>
+                                {{# }else{ }}
+                                <option value="{{ item.company_id }}">{{ item.company_name }}</option>
+                                {{# } }}
+                            {{# }); }}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item express-number">
+                    <label class="layui-form-label">快递单号：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="delivery_no" placeholder="" autocomplete="off" class="layui-input len-mid" value="{{d.dataJson.delivery_no}}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <button type="button" class="layui-btn" lay-submit lay-filter="button_logistics_order">保存</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+{/block}

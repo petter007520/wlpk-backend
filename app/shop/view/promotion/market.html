@@ -1,0 +1,267 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.card-common:first-child{margin-top: 0;}
+	.item-block-parent .item-poa-pic{background-image: linear-gradient(to right, #fb8700, #fb6400);text-align: center;color: #FFFFFF;width: 70px;height: 28px;line-height: 28px;border-bottom-left-radius: 3px;}
+	.layui-card-body{padding: 0 !important;}
+	.item-block .item-hide{position: absolute;top: 0;right: -1px}
+	.layui-card-header .layui-form .layui-input-inline {display: flex}
+	.empty-promotion {text-align: center;padding: 100px 0;flex: 1}
+	.item-block-parent .item-block {background: #fff;border: 1px solid #eee;border-radius: 2px;}
+	.item-block-parent .item-block:hover {background: #fff}
+	.common-addon {position: absolute;right: 10px;top: 10px;font-size: 16px;cursor: pointer;display: none;font-weight: bold;}
+	.item-block-parent .item-block:hover .common-addon {display: block;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card card-common card-brief" id="promotion">
+	<div class="layui-card-header ">
+		<span class="card-title">商品营销</span>
+
+		<div class="layui-form">
+			<div class="layui-input-inline">
+				<input type="text" id="search_text" name="search_text" placeholder="请输入活动名称" autocomplete="off" class="layui-input">
+				<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit="">
+					<i class="layui-icon"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card-body">
+		<div class="item-block-parent item-five goods-promotion">
+			{foreach $promotion as $list_k => $list_v}
+
+			{if  condition="$list_v['show_type'] eq 'shop'"}
+			{empty name="$list_v['is_developing']"}
+			<a class="item-block item-block-hover-a" href="javascript:;" onclick="location.href = ns.url('{$list_v[\'url\']}')">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+				{if in_array($list_v.name, $common_addon)}
+				<span class="iconfont iconshixian common-addon" data-addon="{$list_v.name}" title="取消快捷方式"></span>
+				{else/}
+				<span class="iconfont iconadd_light common-addon" data-addon="{$list_v.name}" title="添加快捷方式"></span>
+				{/if}
+			</a>
+			{else/}
+			<a class="item-block item-block-hover-a" href="#">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+					<div class="item-poa-pic">
+						敬请期待
+					</div>
+				</div>
+			</a>
+			{/empty}
+			{/if}
+			{/foreach}
+			{if  condition="$user_info['is_admin'] eq '1'"}
+			{foreach $shop_addon as $shop_addon_k => $shop_addon_v}
+			<div class="item-block item-block-hover">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{$shop_addon_v.logo_img}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$shop_addon_v.goods_name}</div>
+						<p class="item-content-desc line-hiding" title="{$shop_addon_v.package_name}">{$shop_addon_v.package_name}</p>
+					</div>
+					<img class="item-hide" src="SHOP_IMG/recommend.png" alt="">
+				</div>
+				<div class="item-float-wrap ">
+					<div class="item-float">
+						<div class="item-float-con"></div>
+						<div class="item-float-con">
+							<a onclick="alertAddon()" target="_blank">立即升级</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/foreach}
+			{/if}
+		</div>
+	</div>
+
+	<div class="layui-card-header ">
+		<span class="card-title">会员互动</span>
+	</div>
+
+	<div class="layui-card-body">
+		<div class="item-block-parent item-five member-promotion">
+			{foreach $promotion as $list_k => $list_v}
+			{if  condition="$list_v['show_type'] eq 'member'"}
+			{empty name="$list_v['is_developing']"}
+			<a class="item-block item-block-hover-a" href="javascript:;" onclick="location.href = ns.url('{$list_v[\'url\']}')">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+				{if in_array($list_v.name, $common_addon)}
+				<span class="iconfont iconshixian common-addon" data-addon="{$list_v.name}" title="取消快捷方式"></span>
+				{else/}
+				<span class="iconfont iconadd_light common-addon" data-addon="{$list_v.name}" title="添加快捷方式"></span>
+				{/if}
+			</a>
+			{else/}
+			<a class="item-block item-block-hover-a" href="#">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+					<div class="item-poa-pic">
+						敬请期待
+					</div>
+				</div>
+			</a>
+			{/empty}
+			{/if}
+			{/foreach}
+			{if  condition="$user_info['is_admin'] eq '1'"}
+			{foreach $member_addon as $member_addon_k => $member_addon_v}
+			<div class="item-block item-block-hover">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{$member_addon_v.logo_img}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$member_addon_v.goods_name}</div>
+						<p class="item-content-desc line-hiding" title="{$member_addon_v.package_name}">{$member_addon_v.introduction}</p>
+					</div>
+					<img class="item-hide" src="SHOP_IMG/recommend.png" alt="">
+				</div>
+				<div class="item-float-wrap ">
+					<div class="item-float">
+						<div class="item-float-con"></div>
+						<div class="item-float-con now_btn" >
+							<a onclick="alertAddon()" target="_blank">立即升级</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+
+<script type="text/html" id="promotionData">
+	{{# if (d.length){ }}
+	{{# d.forEach(function(item){ }}
+	<a class="item-block item-block-hover-a" href="{{ ns.url(item.url) }}">
+		<div class="item-block-wrap">
+			<div class="item-pic">
+				<img src="{{ ns.img(item.icon) }}" />
+			</div>
+			<div class="item-con">
+				<div class="item-content-title">{{ item.title }}</div>
+				<p class="item-content-desc line-hiding" title="{{ item.description }}">{{ item.description }}</p>
+			</div>
+		</div>
+	</a>
+	{{# }) }}
+	{{# } else { }}
+	<p class="empty-promotion">未搜索到任何活动</p>
+	{{# } }}
+</script>
+{/block}
+{block name="script"}
+<script>
+	var promotion_items = $("#promotion a").length,
+		extend_items = $("#extend a").length,
+		interaction_items = $("#interaction a").length,
+		tool_items = $("#tool a").length,
+		goodsPromotionHtml = $('.goods-promotion').html(),
+		memberPromotionHtml = $('.member-promotion').html(),
+		promotion = {:json_encode($promotion)};
+
+	if (promotion_items == 0) {
+		$("#promotion").hide();
+	}
+	if (extend_items == 0) {
+		$("#extend").hide();
+	}
+	if (interaction_items == 0) {
+		$("#interaction").hide();
+	}
+	if (tool_items == 0) {
+		$("#tool").hide();
+	}
+
+	function alertAddon() {
+		layer.msg('该插件为付费插件，请联系客服购买！');
+	}
+
+	layui.use(['laydate','laytpl'], function(){
+		var laytpl = layui.laytpl;
+
+		$('#search_text').on("input", function(e){
+			var value = $(this).val().trim(), goods = [], member = [];
+
+			if (value.length) {
+				if (!/[^\u4E00-\u9FA5]/.test(value)) {
+					promotion.forEach(function (item) {
+						if (item.title.indexOf(value) != -1) {
+							if (item.show_type == 'shop') goods.push(item);
+							if (item.show_type == 'member') goods.push(item);
+						}
+					})
+					laytpl($('#promotionData').html()).render(goods, function(string){
+						$('.goods-promotion').html(string)
+					});
+					laytpl($('#promotionData').html()).render(member, function(string){
+						$('.member-promotion').html(string)
+					});
+				}
+			} else {
+				$('.goods-promotion').html(goodsPromotionHtml)
+				$('.member-promotion').html(memberPromotionHtml)
+			}
+		});
+	})
+
+	$('.common-addon').click(function (event) {
+		event.stopPropagation();
+
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			data: {
+				addon: $(this).attr('data-addon'),
+				type: 'promotion'
+			},
+			url: ns.url("shop/promotion/commonAddonSetting"),
+			success: function(res) {
+				if (res.code == 0) {
+					layer.msg(res.message)
+					setTimeout(() => {
+						location.reload();
+					}, 500)
+				}
+			}
+		})
+	})
+</script>
+{/block}

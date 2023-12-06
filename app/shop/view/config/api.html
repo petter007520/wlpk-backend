@@ -1,0 +1,99 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-form form-wrap">
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">Token加密秘钥：</label>
+		<div class="layui-input-block">
+			{if condition="$config.value"}
+			<input type="text" name="private_key" class="layui-input len-long" placeholder="请输入秘钥" value="{$config.value.private_key}">
+			{else/}
+			<input type="text" name="private_key" class="layui-input len-long" placeholder="请输入秘钥">
+			{/if}
+		</div>
+		<div class="word-aux">该配置关系到会员token解析，请慎重设置，注意设置之后对应会员要求重新登录获取token</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>token存储时长 ：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline len-short">
+				{if condition="$config.value"}
+				<input type="number" name="long_time" value="{$config.value.long_time}" lay-verify="required|num" data-min="0" data-unit="小时" placeholder="登录限制时长" autocomplete="off" class="layui-input len-short">
+				{else/}
+				<input type="text" name="long_time" value="" class="layui-input len-long" placeholder="登录限制时长">
+				{/if}
+			</div>
+			<div class="layui-form-mid">小时</div>
+		</div>
+		<div class="word-aux">
+			<p>说明：该存储时间为小程序端和公众号端用户从登录开始到设置时间会重新获取登录信息，0为不限制</p>
+		</div>
+	</div>
+	
+	<div class="form-row">
+<!--		<button class="layui-btn" lay-submit lay-filter="generate">生成秘钥</button>-->
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			num: function(value) {
+				if (value < 0) {
+					return '不能小于0！';
+				}
+			},
+		});
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/config/api"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(data){
+				    layer.msg(data.message);
+					repeat_flag = false;
+				}
+			});
+		});
+		form.on('submit(generate)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/config/generateRSA"),
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res){
+					$("textarea[name='public_key']").val(res.data.public_key.replace(/(\n$)/g,""));
+					$("textarea[name='private_key']").val(res.data.private_key.replace(/(\n$)/g,""));
+					repeat_flag = false;
+				}
+			});
+		});
+		
+	});
+</script>
+{/block}

@@ -1,0 +1,169 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css"/>
+<link rel="stylesheet" href="SHOP_CSS/goods_detail_config.css"/>
+<style>
+	.layui-layout-admin .layui-body .body-content{padding: 15px;margin: 15px;}
+	.table-tab{margin-bottom: 20px;}
+	#diyView{background: #fff;padding: 0;}
+	.edit-attribute{padding: 0;border-top: none;}
+	.edit-attribute .attr-wrap .attr-title{line-height: 40px;padding: 0 0 1px 10px;border-bottom: 1px solid #f1f1f1;}
+	.preview-wrap{margin-right: 358px;}
+	/*.custom-save{border-top: 1px solid #f1f1f1;}*/
+</style>
+{/block}
+{block name="main"}
+{notempty name="$promotion_zone_list"}
+<div id="diyView" class="layui-form">
+
+	<div class="layui-tab table-tab" lay-filter="promotion_tab">
+		<ul class="layui-tab-title">
+			{foreach name="$promotion_zone_list" key="k" item="vo"}
+			<li {if $k==0}class="layui-this"{/if} lay-id="{$vo['name']}" data-preview="{$vo['preview']}" data-url="{$vo['url']}" data-bg-color="{$vo['value']['bg_color']}">{$vo['title']}</li>
+			{/foreach}
+		</ul>
+	</div>
+
+	<div class="preview-wrap">
+
+		<div class='diy-view-wrap'>
+
+			<div class="preview-head">
+				<span>专区</span>
+			</div>
+
+			<div class="preview-block">
+				<div class="preview-draggable">
+					<img />
+				</div>
+				<div class="edit-attribute">
+					<div class="attr-wrap">
+						<div class="attr-title">
+							<span class="title">专区</span>
+						</div>
+						<div class="edit-content-wrap">
+
+							<div class="layui-form-item">
+								<label class="layui-form-label sm">广告图</label>
+								<div class="layui-input-block">
+									<a href="" target="_blank" class="text-color js-adv">管理广告</a>
+								</div>
+							</div>
+
+							<div class="layui-form-item flex">
+								<label class="layui-form-label sm">背景色</label>
+								<div class="curr-color">
+									<span></span>
+								</div>
+								<div class="layui-input-block flex_fill">
+									<div id="bgColor" class="picker colorSelector">
+										<div></div>
+									</div>
+									<input type="hidden" name="bg_color">
+									<span class="color-selector-reset text-color">重置</span>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="custom-save">
+		<input type="hidden" name="name" value="" />
+		<input type="hidden" name="title" value="" />
+		<input type="hidden" name="bg_color" {notempty name='$config'}value="{$config['bg_color']}"{/notempty} />
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{else/}
+<div class="empty">暂无活动专区</div>
+{/notempty}
+{/block}
+{block name="script"}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script>
+	var promotion_config_list = JSON.parse('{:json_encode($promotion_config_list)}');
+	layui.use(['form', 'laydate', 'laytpl','element'], function () {
+		var form = layui.form;
+		var repeat_flag = false; //防重复标识
+		var element = layui.element;
+		form.render();
+
+		var size = 256; // 公式：二级面包屑layui-header-crumbs-second （55px）+ body-content（60px）+ .layui-tab table-tab（77px）+  .custom-save（64px）
+		var commonHeight = $(window).height() - size;
+		$('.preview-wrap').css("height", commonHeight + "px");
+		$(".edit-attribute .attr-wrap").css("height", commonHeight + 64 + "px");
+		$(".preview-block").css("min-height", (commonHeight - 84) + "px"); // 公式：高度 - 自定义模板区域下外编辑（20px）- 自定义模板头部（64px）
+		setTimeout(function () {
+			$('#diyView').css('visibility', 'visible');
+		}, 50);
+
+		// Tab 切换，以改变地址 hash 值
+		element.on('tab(promotion_tab)', function () {
+			var name = $(this).attr('lay-id');
+			var title = $(this).text();
+			var preview = $(this).attr('data-preview');
+			var url = $(this).attr('data-url');
+
+			$('.preview-wrap .diy-view-wrap .preview-head span').text(title + '专区');
+			$('.edit-attribute .attr-wrap .attr-title .title').text(title + '专区');
+			$('.preview-draggable img').attr('src', ns.img(preview));
+			$('.js-adv').attr('href', ns.url(url));
+
+			$('input[name="name"]').val(name);
+			$('input[name="bg_color"]').val(promotion_config_list[name].bg_color);
+			$('input[name="title"]').val(title);
+
+			reset('#bgColor', promotion_config_list[name].bg_color);
+		});
+
+		$('.table-tab .layui-tab-title li:eq(0)').click();
+
+		Colorpicker.create({
+			el: 'bgColor',
+			color: "{notempty name='$config'}{$config['bg_color']}{/notempty}",
+			change: function (elem, hex) {
+				$(elem).find("div").css('background', hex);
+				$(elem).parent().parent().find('.curr-color span').text(hex);
+				$('.preview-draggable').css('background',hex);
+				$('input[name="bg_color"]').val(hex);
+			}
+		});
+
+		// 重置活动背景色
+		$('.color-selector-reset').click(function () {
+			var li = $('.table-tab .layui-tab-title li.layui-this');
+			reset('#bgColor', li.attr('data-bg-color'));
+		});
+
+		form.on('submit(save)', function (data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: 'POST',
+				url: ns.url("shop/promotion/zoneConfig"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function (res) {
+					repeat_flag = false;
+					layer.msg(res.message);
+				}
+			});
+
+		});
+	});
+
+	function reset(elem,color) {
+		$(elem).children('div').css('background', color);
+		$(elem).parent().parent().find('.curr-color span').text(color);
+		$('input[name="bg_color"]').val(color);
+		$('.preview-draggable').css('background',color);
+	}
+</script>
+{/block}

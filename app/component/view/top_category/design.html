@@ -1,0 +1,104 @@
+<nc-component :data="data[index]" class="top-category">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div :class="['preview-box',('preview-box-'+nc.styleType)]" :style="{backgroundColor: nc.componentBgColor}">
+			<div class="top-category-wrap" v-if="nc.styleType == 'line'">
+				<div class="top-category-item active" :style="{ color : nc.selectColor}">
+					<p>{{nc.title}}</p>
+					<p class="line" :style="{ background : nc.selectColor}"></p>
+				</div>
+				<div class="top-category-item" :style="{ color : nc.noColor }">分类1</div>
+				<div class="top-category-item" :style="{ color : nc.noColor }">分类2</div>
+				<div class="top-category-item" :style="{ color : nc.noColor }">分类3</div>
+				<div class="iconfont iconunfold" :style="{ color : nc.moreColor } "></div>
+			</div>
+			<div class="top-category-wrap fill" v-if="nc.styleType == 'fill'">
+				<div class="top-category-item" :style="{ background : nc.selectColor}" style="border-radius: 50px;">
+					<p style="color: #fff;">{{nc.title}}</p>
+				</div>
+				<div class="top-category-item" :style="{ color : nc.noColor}">分类1</div>
+				<div class="top-category-item" :style="{ color : nc.noColor}">分类2</div>
+				<div class="top-category-item" :style="{ color : nc.noColor}">分类3</div>
+				<div class="iconfont iconunfold" :style="{ color : nc.moreColor } "></div>
+			</div>
+
+		</div>
+
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>风格选择</h3>
+				<style-choose></style-choose>
+			</div>
+
+			<div class="template-edit-title">
+				<h3>内容设置</h3>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">首页名称</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.title" :id="'title_'+index" placeholder="请输入文本" maxlength="10" class="layui-input">
+					</div>
+				</div>
+
+			</div>
+
+		</template>
+
+		<!-- 弹框 -->
+		<article class="top-category-style">
+			<div class="style-list-top-category layui-form">
+				<div class="style-list-con-top-category">
+					<div class="style-li-top-category" :class="{'selected border-color': nc.styleType == 'line'}">
+						<div class="style-list1">
+							<div :style="{color:nc.selectColor}">标签一<div class="line" :style="{background:nc.selectColor}"></div></div>
+							<div :style="{color:nc.noColor}">标签二</div>
+						</div>
+						<span class="title" data-type="line">线条标签</span>
+					</div>
+					<div class="style-li-top-category" :class="{'selected border-color': nc.styleType == 'fill'}">
+						<div class="style-list2">
+							<div :style="{background:nc.selectColor}">标签一</div>
+							<div :style="{color:nc.noColor}">标签二</div>
+						</div>
+						<span class="title" data-type="fill">填充标签</span>
+					</div>
+				</div>
+
+				<input type="hidden" name="style">
+				<input type="hidden" name="style_name" />
+			</div>
+		</article>
+
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+
+			<div class="template-edit-title">
+				<h3>分类样式</h3>
+				<color :data="{ field : 'noColor', 'label' : '未选中颜色', defaultColor : '#333333' }"></color>
+				<color :data="{ field : 'selectColor', 'label' : '选中颜色', defaultColor : '#FF4444' }"></color>
+				<color :data="{ field : 'moreColor', 'label' : '箭头颜色', defaultColor : '#333333' }"></color>
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var topCategoryResourcePath = "{$resource_path}"; // http路径
+			var topCategoryRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

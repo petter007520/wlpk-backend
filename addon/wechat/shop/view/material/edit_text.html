@@ -1,0 +1,103 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_graphic_message.css">
+<link rel="stylesheet" href="SHOP_CSS/goods_lists.css">
+<style>
+  .layui-tab-brief{width: 800px;height:646px}
+  .input-text-hint{float:right}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse tips-wrap">
+  <div class="layui-colla-item">
+    <h2 class="layui-colla-title">操作提示<i class="layui-icon layui-colla-icon"></i></h2>
+    <ul class="layui-colla-content layui-show">
+      <li>由于微信公众平台的接口规范，仅提供向微信认证服务号商家。如你的公众号同时具有微信支付权限，你还可以在正文内添加超级链接。</li>
+    </ul>
+  </div>
+</div>
+<!-- 按钮容器 -->
+<!--<div class="single-filter-box">-->
+<!--  <button class="layui-btn" onclick="add_tuwen()">添加图文</button>-->
+<!--  <button class="layui-btn" onclick="add_text()">添加文本</button>-->
+<!--</div>-->
+<div id='graphic_message'>
+  <!-- 添加文本消息 -->
+  <div class="layui-tab layui-tab-brief" id="add_material_text">
+    <ul class="layui-tab-title">
+      <li class="layui-this">添加文本消息</li>
+    </ul>
+    <div class="layui-form" style="margin-top: 20px;">
+      <div class="layui-form-item">
+        <label class="layui-form-label sm">内容</label>
+        <div class="layui-input-block">
+          <textarea name="content" placeholder="请输入内容" id="material_text_content" class="layui-textarea" maxlength="300" lay-verify='material_text_content'>{$material_data.value.content}</textarea>
+          <span class='input-text-hint'>剩余300字</span>
+          <input type="hidden" name="media_id" id="media_id" value="{$material_data.id}">
+        </div>
+      </div>
+      <div class="form-row sm">
+        <button class="layui-btn" lay-submit lay-filter="addText">保存</button>
+        <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+  function add_tuwen()
+  {
+    location.href = ns.url("wechat://shop/material/add");
+  }
+</script>
+
+<script>
+  layui.use('form', function () {
+    var form = layui.form;
+
+    $('#material_text_content').on('input', function (e) {
+      var num = e.target.value.length;
+      num = 300 - parseInt(num);
+      $('#add_material_text .input-text-hint').html('剩余' + num);
+    });
+    form.verify({
+      'material_text_content': function (value, item) {
+        if (value == '' || value == undefined) {
+          return '文本内容不可为空';
+        }
+      }
+    });
+
+    form.on('submit(addText)', function (data) {
+      if (repeat_flag) return;
+      repeat_flag = true;
+      $.ajax({
+        type: 'post',
+        url: ns.url('wechat://shop/material/editTextMaterial'),
+        data: {type: 5,content: data.field.content,media_id:data.field.media_id},
+        dataType: "JSON",
+        success: function (res) {
+          if (res.code == 0) {
+            location.href = ns.url('wechat://shop/material/lists');
+          } else {
+            repeat_flag = false;
+          }
+          layer.msg(res.message);
+        }
+      });
+    });
+  });
+
+  function add_text()
+  {
+    location.href = ns.url("wechat://shop/material/addTextMaterial");
+  }
+
+  function back() {
+    location.href = ns.url("wechat://shop/material/lists");
+  }
+</script>
+
+{/block}
+

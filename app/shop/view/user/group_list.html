@@ -1,0 +1,133 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+
+<!-- 搜索框 -->
+<div class="single-filter-box top">
+	<button class="layui-btn" onclick="add()">添加角色</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="请输入角色名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="group_list" lay-filter="group_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		{{#  if(d.is_system == 1){ }}
+		<span class="cursor">系统角色不可编辑</span>
+		{{#  }else{ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{#  } }}
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var table,
+			form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#group_list',
+			url: ns.url("shop/user/group"), //数据接口
+			cols: [
+				[{
+					field: 'group_name',
+					title: '角色名称',
+					width: '40%',
+					unresize: 'false'
+				}, {
+					field: 'desc',
+					title: '描述',
+					width: '40%',
+					unresize: 'false',
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					align:'right'
+				}]
+			]
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/user/editGroup", {"group_id": data.group_id});
+					break;
+				case 'delete': //删除
+					deleteGroup(data.group_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteGroup(group_id) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除该员工角色吗?', function() {
+				$.ajax({
+					dataType: 'JSON',
+					type: 'POST',
+					url: ns.url("shop/user/deleteGroup"),
+					data: {group_id},
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+
+	function add() {
+		location.href = ns.url("shop/user/addGroup");
+	}
+</script>
+{/block}

@@ -1,0 +1,182 @@
+@CHARSET "UTF-8";
+.image-ads .layui-input-block span.sm span{
+	max-width: 100px;
+}
+/*图片广告组件*/
+.image-ads .image-ads-warp {
+	overflow: hidden;
+	position: relative;
+}
+.image-ads .image-ads-warp .image-ads-item{
+	background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+/* 图片轮播点 */
+.image-ads .carousel-btn{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+}
+.image-ads .carousel-btn .arrows{
+	display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.image-ads .carousel-btn .arrows i{
+	display: none;
+	width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    color: #fff;
+    background-color: rgba(0, 0, 0, .35);
+	border-radius: 50%;
+	cursor: pointer;
+}
+.image-ads .carousel-btn .dot-wrap{
+	text-align: center;
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.image-ads .carousel-btn .dot-wrap.line i{
+	width: 9px;
+	height: 3px;
+	border-radius: 2px;
+}
+.image-ads .carousel-btn .dot-wrap.line i:last-of-type{
+	margin-right: 0;
+}
+.image-ads .carousel-btn .dot-wrap.left{
+	left: 35px;
+}
+.image-ads .carousel-btn .dot-wrap.right{
+	left: auto;
+    right: 0;
+}
+.image-ads .carousel-btn .dot-wrap.hide{
+	display: none;
+}
+.image-ads .carousel-btn .dot-wrap.straightLine i{
+	width: 12px;
+    height: 4px;
+    border-radius: 0;
+
+}
+.image-ads .carousel-btn .dot-wrap i{
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background-color: #b2b2b2;
+	margin-right: 5px;
+	cursor: pointer;
+}
+.image-ads .carousel-btn .dot-wrap i.active{
+	background-color: rgba(0, 0, 0, .6);
+}
+.image-ads .carousel-btn .dot-wrap.line i.active{
+	width: 18px;
+}
+.image-ads .carousel-btn:hover .arrows i{
+	display: block;
+}
+/* 图片广告 - 属性设置 */
+.image-ads .edit-attribute .attr-wrap .restore-wrap .img-block{
+	margin-left: 40px;
+}
+.image-ads .edit-attribute .attr-wrap .restore-wrap .img-block + .content-block{
+	width: calc(100% - 125px);
+}
+.edit-attribute .attr-wrap .restore-wrap .image-ad-list>ul>li:hover .img-block i.del {
+	display:block;
+}
+.image-ads .image-ad-list {
+	margin-left:20px;
+}
+.image-ads .image-ad-list .word-aux {
+	margin: 10px 0 10px 0;
+	color: #909399;
+	font-size: 12px;
+}
+.image-ads .image-ad-list>ul>li {
+	padding:10px;
+	background: #ffffff;
+	border:1px dashed #e5e5e5;
+	position:relative;
+	margin-top:16px;
+}
+.image-ads .image-ad-list>ul>li:first-child {
+	margin-top:0;
+}
+.image-ads .image-ad-list>ul>li .content-block {
+	display:inline-block;
+	width:71%;
+	min-height: 66px;
+}
+.image-ads .image-ad-list>ul>li .content-block.textNavigation {
+	width:100%;
+}
+.image-ads .image-ad-list>ul>li .content-block .layui-form-item {
+	margin:0;
+}
+.image-ads .image-ad-list>ul>li .content-block .layui-form-label {
+	width:60px;
+	padding:9px 0;
+	line-height: 1;
+}
+.image-ads .image-ad-list>ul>li .content-block div {
+	margin-top:10px;
+}
+.image-ads .image-ad-list>ul>li .content-block div:last-child {
+	margin-top:0;
+}
+.image-ads .image-ad-list>ul>li:hover .del {
+	display:block;
+}
+.image-ads .image-ad-list>ul>li>.iconfont {
+	position: absolute;
+    top: 50%;
+    left: 15px;
+    cursor: move;
+    font-size: 20px;
+    transform: translateY(-50%);
+}
+
+.image-ads .add-item {
+	border:1px dashed #e5e5e5;
+	text-align: center;
+	cursor:pointer;
+	background: #ffffff;
+	padding:10px;
+	margin:16px 0;
+}
+.image-ads .add-item p i {
+	display: inline-block;
+	height: 24px;
+	line-height: 24px;
+	font-size: 18px;
+	font-style: normal;
+}
+.image-ads .add-item p span {
+	display: inline-block;
+	height: 24px;
+	line-height: 24px;
+}
+.image-ads .add-item>span {
+	vertical-align: middle;
+	color:#999;
+	font-size:12px;
+}
+.image-ads .navigation-set-list .error-msg{
+	margin: 5px 0 0 40px;
+	color: #f44;
+	display: none;
+}

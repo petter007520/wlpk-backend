@@ -1,0 +1,265 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.tree-line {
+		padding: 10px 0;
+		background: #ededed;
+		margin-bottom: 2px;
+		line-height: 1.8;
+		border: 1px solid #000;
+	}
+
+	.tree-line .layui-form {
+		padding-left: 10px !important;
+	}
+
+	.tree-line .layui-form-checkbox {
+		margin: 0 10px !important;
+		vertical-align: middle;
+	}
+	.form {
+		margin-top: 0;
+	}
+	.show{
+		display: none;
+		margin-left: 20px;
+	}
+	.sel-width .len-mar{
+		margin-left: 10px;
+	}
+	.sel-mar{
+		margin-left: 10px;
+	}
+	.radio{
+		margin-bottom: 5px;
+	}
+	.layui-input-inline-block{
+		display: flex;
+	}
+	.layui-input-inline-block input{
+		width: 143.2px !important;
+		margin-right: 10px;
+	}
+	/* .group-tree-block .layui-table tbody tr:hover {background-color: white;} */
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form" lay-filter="save">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>联系人：</label>
+		<div class="layui-input-block">
+			<input name="contact_name" type="text" required lay-verify="required" placeholder="请输入联系人姓名" class="layui-input len-long" autocomplete="off">
+		</div>
+	</div>
+	<div class="layui-form-item customer_service">
+		<label class="layui-form-label"><span class="required">*</span>手机号：</label>
+		<div class="layui-input-block">
+			<input name="mobile" type="text" required lay-verify="mobile" placeholder="请填写手机号码" class="layui-input len-long len-mar" autocomplete="off" maxlength="11">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">邮政编码：</label>
+		<div class="layui-input-block">
+			<input name="postcode" type="text" lay-verify="postcode" placeholder="请输入邮政编码" class="layui-input len-long len-mar" autocomplete="off" maxlength="6">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>联系地址：</label>
+		<div class="layui-input-block" >
+			<div class="layui-input-inline len-mid area-select">
+				<select name="province_id" lay-filter="province_id" lay-verify="province_id">
+					<option value="">请选择省份</option>
+					{foreach $province_list as $k => $v}
+					<option value="{$v.id}">{$v.name}</option>
+					{/foreach}
+				</select>
+			</div>
+			<div class="layui-input-inline len-mid area-select">
+				<select name="city_id" lay-filter="city_id" lay-verify="city_id">
+					<option value="">请选择城市</option>
+				</select>
+			</div>
+			<div class="layui-input-inline len-mid area-select">
+				<select name="district_id" lay-filter="district_id" lay-verify="district_id">
+					<option value="">请选择区/县</option>
+				</select>
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>详细地址：</label>
+		<div class="layui-input-block">
+			<input name="address" type="text" required lay-verify="required" lay-filter="address" placeholder="请填写详细地址，如街道名称，门牌号等信息" class="layui-input len-long" autocomplete="off">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">地址类型：</label>
+		<div class="layui-input-block" lay-filter="address_type">
+			<div>
+				<input type="checkbox" name="is_delivery" value="0" title="发货地址" lay-filter="is_delivery" lay-verify="send_address" lay-skin="primary">
+			</div>
+			<div>
+				<input type="checkbox" name="is_return" value="0" title="退货地址" lay-filter="is_return" lay-verify="is_return" lay-skin="primary">
+				<div id="show" class="show">
+					<input type="checkbox" name="is_return_default" value="0" title="设为默认退货地址" lay-filter="is_return_default" lay-verify="is_return_default" lay-skin="primary">
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 表单操作 -->
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" src="SHOP_JS/address.js"></script>
+<script>
+	var form, repeat_flag = false; //防重复标识
+	layui.use('form', function() {
+		form = layui.form;
+		form.render();
+		form.on('checkbox(is_return)', function(data) {
+			if(data.elem.checked){
+				$('#show').show();
+				$(this).val(1);
+			}else{
+				$('#show').hide();
+				$('input[name=is_return_default]').prop('checked', false);
+				$(this).val(0);
+				$('input[name=is_return_default]').val(0);
+				form.render('checkbox');
+			} 
+		})
+		form.on('checkbox(is_return_default)', function(data) {
+			if(data.elem.checked){
+				$(this).val(1);
+			}else{
+				$(this).val(0);
+			} 
+		})
+		form.on('checkbox(is_delivery)', function(data) {
+			if(data.elem.checked){
+				$(this).val(1);
+			}else{
+				$(this).val(0);
+			} 
+		})
+		form.on('submit(save)', function(data) {
+			var obj = $("#tree_box input:checked"),group_array = [];
+			var province_name = $("select[name=province_id] option:selected").text();
+			var city_name = $("select[name=city_id] option:selected").text();
+			var district_name = $("select[name=district_id] option:selected").text();
+			var address = $("input[name=address]").val();
+			var is_return = $("input[name=is_return]").val();
+			var is_return_default = $("input[name=is_return_default]").val();
+			var is_delivery = $("input[name=is_delivery]").val();
+			//地址id
+			data.field.province = data.field.province_id;
+			data.field.city = data.field.city_id;
+			data.field.district = data.field.district_id;
+			data.field.address = data.field.address;
+			data.field.community = data.field.community_id;
+			//地址name
+			data.field.province_name = province_name;
+			data.field.city_name = city_name;
+			data.field.district_name = district_name;
+			data.field.address = address;
+			data.field.is_return = is_return;
+			data.field.is_return_default = is_return_default;
+			data.field.is_delivery = is_delivery;
+			data.field.full_address = province_name + city_name + district_name + address;
+			for (var i = 0; i < obj.length; i++) {
+				group_array.push(obj.eq(i).val());
+			}
+			var int = $("input:checked").length;
+			if(int<1){
+				layer.msg('请选择一种地址类型');
+				return false;
+			}
+			data.field.menu_array = group_array.toString();
+			if (repeat_flag) return;
+			repeat_flag = true;
+			$.ajax({
+				type: "POST",
+				dataType: "JSON",
+				url: ns.url("shop/siteaddress/addSiteAddress"),
+				data: data.field,
+				success: function(res) {
+					repeat_flag = false;
+
+					if (res.code >= 0) {
+						layer.confirm('添加成功', {
+							title: '操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function() {
+								location.href = ns.url("shop/siteaddress/siteaddress")
+							},
+							btn2: function() {
+								location.href = ns.url("shop/siteaddress/addSiteAddress")
+							}
+						})
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+		//表单验证
+		form.verify({
+			mobile: function (value,item) {
+				if(!$("input[name='mobile']").val()) {
+					return "请输入手机号";
+				}
+			},
+			postcode: function (value,item) {
+				if(value){
+					var reg_code = /^[0-9]{6}$/;
+					if(!reg_code.test(value)){
+						return "请输入正确的邮政编码";
+					}
+				}
+			},
+			province_id : function(value, item){
+			    if(!value){
+			        return '请选择省份';
+			    }
+			},
+			city_id : function(value, item){
+			    if(!value){
+			        return '请选择城市';
+			    }
+			},
+			// district_id : function(value, item){
+			//     if(!value){
+			//         return '请选择区/县';
+			//     }
+			// },
+			community_id : function(value, item){
+			    if(!value){
+			        return '请选择街道';
+			    }
+			},
+			address: function(value) {
+				if (!value) {
+					return '请输入详细地址';
+				}
+			},
+		});
+	});
+	
+	/**
+	 * 地址下拉框（主要用于坐标记录）
+	 */
+	function selectCallBack(){
+	    $("input[name=longitude]").val(map_class.address.longitude);//坐标
+	    $("input[name=latitude]").val(map_class.address.latitude);//坐标
+	}
+	function back() {
+		location.href = ns.url("shop/siteaddress/siteaddress");
+	}
+</script>
+{/block}

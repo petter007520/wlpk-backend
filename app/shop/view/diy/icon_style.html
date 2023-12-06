@@ -1,0 +1,350 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style>
+    .layui-form {
+        padding: 15px;
+    }
+    .icon-block {
+        width: 60px;
+        height: 60px;
+        font-size: 60px;
+        border: 1px dashed #eee;
+    }
+    .main-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 100px;
+    }
+    .icon-block .icon {
+        width: inherit;
+        height: inherit;
+        font-size: 100%;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-block .js-icon {
+        font-size: 50%;
+        line-height:1;
+    }
+    .icon-block .js-icon.gradient {
+        -webkit-background-clip:text!important;
+        -webkit-text-fill-color:transparent;
+    }
+    .icon-style {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .icon-style .icon-block {
+        margin: 0 10px 10px 0;
+        cursor: pointer;
+    }
+    .icon-style .no-style .icon {
+        color: #eee;
+    }
+    .icon-style .active, .icon-style .icon-block:hover {
+        border-color: var(--base-color);
+    }
+    .title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        padding-left: 10px;
+        border-left: 2px solid var(--base-color);
+        line-height: 1;
+        margin-left: 10px;
+    }
+    .slide-wrap {
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+    }
+    .slide-wrap > div {
+        flex: 1;
+    }
+    .icon-color {
+        display: flex;
+    }
+    .icon-color .color-item {
+        border: 2px solid #d7d7d7;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .icon-color .color-item .js-icon {
+        font-size: 12px;
+        color: #aaa;
+    }
+    .icon-color .color-item.disabled {
+        cursor: not-allowed;
+    }
+    .icon-color .color-item.disabled .js-icon {
+        color: #eee;
+        border-color: #eee;
+    }
+    .flexbox-fix-btn .btn {
+        margin: 0px;
+        line-height: 18px;
+        font-size: 12px;
+    }
+</style>
+{/block}
+
+{block name="body"}
+<div id="app" class="layui-form icon-style-set">
+    <div class="layui-form-item">
+        <label class="layui-form-label">图标：</label>
+        <div class="layui-input-block icon-block main-icon">
+            <div class="icon" :style="iconBgStyle">
+                <i class="js-icon {$icon}" :class="{gradient: style.iconColor.length > 1}" :style="iconStyle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">图标风格：</label>
+        <div class="layui-input-block icon-style">
+            <div class="icon-block no-style" :class="{active: styleIndex == -1}" title="无风格" @click="selectStyle(-1)">
+                <div class="icon">
+                    <i class="iconfont iconzhuanliwuxiao"></i>
+                </div>
+            </div>
+            <div class="icon-block" :class="{active: styleIndex == index}" v-for="(item, index) in styleList" :key="index" @click="selectStyle(index)">
+                <iconfont icon="{$icon}" :value="item"></iconfont>
+            </div>
+        </div>
+    </div>
+    <div class="title">图标设置</div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">背景颜色</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="icon-color">
+                <div class="color-item" :id="'iconBgColor' + index" v-show="style.iconBgColor[index]" :style="{background: style.iconBgColor[index] ?? '#fff'}" v-for="(item, index) in 6" :key="index"></div>
+                <div class="color-item" :class="{disabled: style.iconBgColor.length >= 6}" @click="addColor('iconBgColor')">
+                    <i class="iconfont iconjia"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item" v-show="style.iconBgColor.length > 1">
+        <label class="layui-form-label">渐变角度</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="icon-bgcolor-deg"></div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">圆角大小</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="bg-radius"></div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">图标大小</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="font-size"></div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">图标颜色</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="icon-color">
+                <div class="color-item" :id="'iconColor' + index" v-show="style.iconColor[index]" :style="{background: style.iconColor[index] ?? '#fff'}" v-for="(item, index) in 6" :key="index"></div>
+                <div class="color-item" :class="{disabled: style.iconColor.length >= 6}" @click="addColor('iconColor')">
+                    <i class="iconfont iconjia"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item" v-show="style.iconColor.length > 1">
+        <label class="layui-form-label">渐变角度</label>
+        <div class="layui-input-block slide-wrap len-mid">
+            <div class="icon-color-deg"></div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_JS/vue.js"></script>
+{include file="diy/iconfont_component"/}
+<script>
+    var form,slider,colorpicker,vue,_colorPicker = {};
+
+    layui.use(['form', 'slider', 'colorpicker'], function() {
+        form = layui.form;
+        slider = layui.slider;
+        colorpicker = layui.colorpicker;
+
+        vue = new Vue({
+            el: "#app",
+            data: {
+                style: {
+                    fontSize: 50,
+                    iconBgColor: [],
+                    iconBgColorDeg: 0,
+                    iconBgImg: '',
+                    bgRadius: 0,
+                    iconColor: ['#000'],
+                    iconColorDeg: 0,
+                },
+                styleIndex: -1,
+                styleList:{:json_encode($icon_style)}
+            },
+            methods: {
+                addColor(key) {
+                    if (this.style[key].length >= 6) return;
+                    this.style[key].push('#fff');
+                },
+                colorRender(id, color, callback){
+                    if (_colorPicker[id]) {
+                        _colorPicker[id].setColorByInput(color);
+                        return;
+                    }
+                    _colorPicker[id] = Colorpicker.create({
+                        el: id,
+                        color: color,
+                        change: function (elem, hex) {
+                            callback(hex, elem)
+                        }
+                    });
+                },
+                updateArray(key){
+                    this.style[key].push('')
+                    this.style[key].pop()
+                },
+                selectStyle(index){
+                    this.styleIndex = index;
+                    if (index == -1) {
+                        this.style = {
+                            fontSize: 50,
+                            iconBgColor: [],
+                            iconBgColorDeg: 0,
+                            iconBgImg: '',
+                            bgRadius: 0,
+                            iconColor: ['#000'],
+                            iconColorDeg: 0,
+                        }
+                    } else {
+                        this.style = ns.deepclone(this.styleList[index]);
+                    }
+
+                    var self = this;
+                    setTimeout(function () {
+                        self.style.iconBgColor.forEach(function (item, index) {
+                            self.colorRender('iconBgColor' + index, self.style.iconBgColor[index])
+                        })
+                        self.style.iconColor.forEach(function (item, index) {
+                            self.colorRender('iconColor' + index, self.style.iconColor[index])
+                        })
+                    })
+                },
+                img(src){
+                    return ns.img(src);
+                }
+            },
+            mounted(){
+                if (localStorage.getItem('iconStyle')) this.style = JSON.parse(localStorage.getItem('iconStyle'));
+
+                var self = this;
+                slider.render({
+                    elem: '.icon-style-set .font-size',
+                    input: true,
+                    value: self.style.fontSize,
+                    min: 10,
+                    max: 100,
+                    change: function (value) {
+                        self.style.fontSize = value;
+                    }
+                });
+
+                slider.render({
+                    elem: '.icon-style-set .icon-color-deg',
+                    input: true,
+                    max: 360,
+                    value:  self.style.iconColorDeg,
+                    change: function (value) {
+                        self.style.iconColorDeg = value;
+                    }
+                });
+
+                slider.render({
+                    elem: '.icon-style-set .icon-bgcolor-deg',
+                    input: true,
+                    max: 360,
+                    value: self.style.iconBgColorDeg,
+                    change: function (value) {
+                        self.style.iconBgColorDeg = value;
+                    }
+                });
+
+                slider.render({
+                    elem: '.icon-style-set .bg-radius',
+                    input: true,
+                    value: self.style.bgRadius,
+                    max: 50,
+                    change: function (value) {
+                        self.style.bgRadius = value;
+                    }
+                });
+
+                setTimeout(function () {
+                    for (var index = 0; index < 6; index++) {
+                        self.colorRender('iconBgColor' + index, self.style.iconBgColor[index] ? self.style.iconBgColor[index] : '', function (color, elem) {
+                            var _index = $(elem).index();
+                            self.style.iconBgColor[_index] = color;
+                            self.updateArray('iconBgColor')
+                        })
+                        self.colorRender('iconColor' + index, self.style.iconColor[index] ? self.style.iconColor[index] : '', function (color, elem) {
+                            var _index = $(elem).index();
+                            self.style.iconColor[_index] = color;
+                            self.updateArray('iconColor')
+                        })
+                    }
+                })
+            },
+            computed: {
+                iconBgStyle(){
+                    var style = {
+                        'border-radius': this.style.bgRadius + '%',
+                        'background': ''
+                    };
+
+                    if (this.style.iconBgImg) style['background'] += 'url('+ this.img(this.style.iconBgImg) +') no-repeat bottom / contain'
+
+                    if (this.style.iconBgColor.length) {
+                        if (style.background) style.background += ',';
+                        if (this.style.iconBgColor.length == 1) {
+                            style.background += this.style.iconBgColor[0];
+                        } else {
+                            style['background'] += 'linear-gradient('+ this.style.iconBgColorDeg +'deg, '+ this.style.iconBgColor.join(',') +')';
+                        }
+                    }
+                    return style;
+                },
+                iconStyle(){
+                    var style = {
+                        fontSize: this.style.fontSize + '%'
+                    }
+                    if (this.style.iconColor.length == 1) {
+                        style.color = this.style.iconColor[0];
+                    } else {
+                        style['background'] = 'linear-gradient('+ this.style.iconColorDeg +'deg, '+ this.style.iconColor.join(',') +')';
+                    }
+                    return style;
+                }
+            }
+        })
+    })
+
+    function iconStyle(callback) {
+        var data = ns.deepclone(vue._data.style);
+        callback(data);
+    }
+</script>
+{/block}

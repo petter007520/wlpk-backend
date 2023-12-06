@@ -1,0 +1,153 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<!-- <link rel="stylesheet" href="WECHAT_CSS/wx_material.css"> -->
+<style>
+	.news-material>ul{display: flex;flex-wrap: wrap}
+	.news-material>ul>li{border: 1px solid rgb(233, 233, 233);position: relative;margin:14px 14px 0 0 ;width: calc((100% - 16px*5)/ 5);height: 315px;}
+	/* .news-material #newsMaterialContent:after{content:' ';flex: auto;} */
+	.news-material .add-news{text-align: center;display: flex;position: relative;}
+	.news-material .add-news .add-box{margin: auto}
+	.news-material .add-news .iconfont{font-size: 100px; font-weight: 800;color: #606266;}
+	.news-material .add-news:hover .add-li{display: block;}
+	.news-material .add-li{display: none;width: 130px;height: 60px; box-shadow:0px 0px 5px rgb(231, 231, 231) ; background: #fff; position: absolute;left: 50%;top: 85%;transform: translate(-50%,-50%)}
+	.news-material .add-li li{line-height: 30px;}
+	.news-material .add-li li .iconfont{font-size: 16px;}
+	.news-material .add-li li:hover{background: #ff6a00}
+	.news-material .add-li li:hover span{color: #fff;cursor: pointer;}
+	.news-material .add-li li:hover i{color: #fff;}
+	.material-content{padding: 20px}
+    .news-material .meterail-img{height:200px;text-align: center;line-height: 200px;}
+	.meterail-img img{max-width: 100%; max-height: 100%;}
+	.meterail-title {height: 200px;padding: 20px 40px;box-sizing: border-box;text-align: center;display: flex; overflow: hidden}
+	.meterail-title .title{margin: auto ;}
+	.meterail-title-text{height: 235px !important;}
+	.material-content .meterail-text {overflow: hidden;height: 35px;;text-overflow: ellipsis;display: -webkit-box;-webkit-line-clamp: 2; overflow:hidden; -webkit-box-orient: vertical;}
+	.material-content .meterail-time{margin-top: 20px ;color: #999}
+	.del-edit{position: absolute;right: 10px;top: 10px;display: none;}
+	.del{margin-right: 5px;}
+	.del,.edit{display: inline-block;background: #fff;height: 30px; width: 30px;text-align: center;border-radius: 50%;line-height: 30px;box-shadow:0px 0px 5px rgb(231, 231, 231) ;}
+	.news-material>ul>li:hover .del-edit{display: inline-block}
+	.del:hover,.edit:hover {color: #ff6a00;cursor: pointer;}
+	#MaterailList{display: flex;justify-content: flex-end;margin-right: 14px;}
+</style>
+{/block}
+{block name="main"}
+ <div class="news-material">
+	<ul id="newsMaterialContent"></ul>
+	<div id="MaterailList"></div>
+ </div>
+{/block}
+{block name='script'}
+<!-- <script src="WECHAT_JS/wx_material.js"></script> -->
+<script>
+
+	//删除
+	function delMaterial(id){
+		$.ajax({
+			url: ns.url('wechat://shop/material/delete'),
+			data: {
+				id,
+			},
+			dataType: "JSON",
+			success: function(res) {
+				window.location.reload()
+			}
+		});
+	}
+	function add_tuwen(){
+		window.open(ns.url("wechat://shop/material/add"));
+	}
+	function add_text(){
+		window.open(ns.url("wechat://shop/material/addtextmaterial"));
+	}
+	var data = '';
+	function getMaterailList(page){
+		$.ajax({
+			url: ns.url('wechat://shop/material/lists'),
+			data: {
+				page,
+			},
+			dataType: "JSON",
+			success: function(res) {
+				this.data = res.data.list;
+				//列表渲染
+				var str = ``;
+				if(page == undefined || page == 1 || !page){
+					str += `
+					<li class="add-news">
+						<div class="add-box">
+							<i class="iconfont iconadd_light icon-hover"></i><br>
+							<span>添加素材</span>
+							<div class="add-li">
+								<ul>
+									<li onclick="add_tuwen()">
+										<i class="iconfont icondoc_plaintext"></i> <span>添加图文</span>
+									</li>
+									<li onclick="add_text()">
+										<i class="iconfont icontext"></i> <span>添加文字</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</li>
+				`;
+
+				}
+				$.each(this.data, function(index, item) {
+					if(item.type == 1){
+						str += `
+							<li>
+								<div class="del-edit">
+									<a class="del" onclick="delMaterial(`+ item.id +`)" ><i class="iconfont iconshanchu"></i></a>
+									<a href="`+ ns.url('wechat://shop/material/edit',{"id": item.id,'media_id':item.media_id,'type':item.type}) +`"  target='_blank' class="edit"><i class="iconfont iconbianji-copy"></i></a>
+								</div>
+								<div class="meterail-img">
+									<img src=" `+ item.value[0].cover.path +` " alt="">
+								</div>
+								<div class="material-content">
+									<p class="meterail-text">`+ item.value[0].title +`</p>
+									<p class="meterail-time">更新于<span>`+ ns.time_to_date(item.update_time) +`</span></p>
+								</div>
+							</li>
+							`
+					}else{
+						str += `
+							<li>
+								<div class="del-edit">
+									<a class="del" onclick="delMaterial(`+ item.id +`)"><i class="iconfont iconshanchu"></i></a>
+									<a href="`+ ns.url('wechat://shop/material/edittextmaterial',{"id": item.id,'media_id':item.media_id,'type':item.type}) +`"  target='_blank' class="edit"><i class="iconfont iconbianji-copy"></i></a>
+								</div>
+								<div class="meterail-title meterail-title-text">
+									<p class="title">`+ item.value.content +`</p>
+								</div>
+								<div class="material-content">
+									<p class="meterail-time">更新于<span>`+ ns.time_to_date(item.update_time) +`</span></p>
+								</div>
+							</li>
+							`
+					}
+
+				});
+                $("#newsMaterialContent").html(str);
+                //分页
+                layui.use('laypage', function(){
+                    var laypage = layui.laypage;
+                    laypage.render({
+                        elem: 'MaterailList' ,
+                        curr: page, //当前页
+                        count: res.data.count,
+                        layout: ['count', 'prev', 'page', 'next'],
+                        jump: function(obj, first){
+                            //首次不执行
+                            if(!first){
+                                getMaterailList(obj.curr);
+                            }
+                        }
+                    });
+                });
+			}
+		});
+	}
+	getMaterailList();
+</script>
+{/block}

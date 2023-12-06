@@ -1,0 +1,196 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="__STATIC__/ext/video/video.css">
+<link rel="stylesheet" type="text/css" href="__STATIC__/ext/searchable_select/searchable_select.css" />
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/goods_edit.css" />
+<style type="text/css">
+	.data_load {display: flex;flex-direction: column;align-items: center;margin-top:100px;}
+	.data_load-img {width: 60px;height: 60px;}
+	.data_load-img img {width: 100%;height: 100%;}
+	.data_load-title {color: #333;font-size: 18px;margin-top: 15px;}
+	.data_load-content {color: #333;font-size: 14px;margin-top: 20px;}
+	.data_load-footer {color:#418afb;font-size: 14px;}
+	.data_load-content span {display:inline-block;color: #ff4949;}
+
+	.body-content {background: none !important;padding: 0 !important;margin: 0 !important;}
+	.footer {padding-bottom: 0px !important;}
+	.common-wrap {position: relative;display: flex;padding: 25px 140px;margin: 15px 15px 0 15px;background:#fff}
+	.common-wrap .tips-wrap {margin: 0px 20px;min-width: 130px;background-color: #ffffff;border-color: #ffffff;border-radius: 2px;}
+    .common-wrap .tips-wrap>span{display: block;width: 30px;height: 30px;line-height: 30px;text-align: center;color: #105CFB;border-radius: 50px;border: 1px solid #105CFB;font-size: 18px;margin: 0 auto;font-weight: bolder;margin-bottom: 15px;}
+    .common-wrap .tips-wrap>p{text-align: center;}
+    .common-wrap .interval-wrap{width: 300px;height: 45px;position: relative;border-bottom: 1px solid #e6e6e6;}
+    .common-wrap .interval-wrap>span{display: block;position: absolute;bottom: -5px;right: 0px;width: 8px;height: 8px;border: 1px solid #e6e6e6;transform: rotateZ(45deg);border-bottom: 0px;border-left: 0px;}
+    .layui-tab-brief {margin: 15px 15px 0px 15px;}
+
+</style>
+{/block}
+{block name="main"}
+<form class="layui-form">
+<div class="layui-form">
+	<div class="common-wrap">
+		<div class="tips-wrap">
+			<span>1</span>
+			<p>提前在系统内维护好</p>
+			<p><a class="text-color" href="{:addon_url('shop/goodscategory/lists')}">商品分类</a></p>
+		</div>
+		<div class="interval-wrap">
+			<span></span>
+		</div>
+		<div class="tips-wrap">
+			<span>2</span>
+			<p>按商品类型下载商品导入模板，录入商品信息。</p>
+		</div>
+		<div class="interval-wrap">
+			<span></span>
+		</div>
+		<div class="tips-wrap">
+			<span>3</span>
+			<p>设置商品发布渠道，上传文件进行导入。</p>
+		</div>
+	</div>
+	<!--<div class="layui-collapse tips-wrap">-->
+		<!--<div class="layui-colla-item">-->
+			<!--<h2 class="layui-colla-title">操作提示</h2>-->
+			<!--<ul class="layui-colla-content layui-show">-->
+				<!--<li>第 1 步：提前在系统内维护好<a href="{:addon_url('shop/goodscategory/lists')}" class="text-color">商品分类</a></li>-->
+			<!--</ul>-->
+			<!--<ul class="layui-colla-content layui-show">-->
+				<!--<li>第 2 步：按商品类型下载商品导入模板，录入商品信息。</li>-->
+			<!--</ul>-->
+			<!--<ul class="layui-colla-content layui-show">-->
+				<!--<li>第 3 步：设置商品发布渠道，上传文件进行导入。</li>-->
+			<!--</ul>-->
+		<!--</div>-->
+	<!--</div>-->
+	<div class="layui-tab-brief" lay-filter="goods_tab">
+		<div>
+			<div class="layui-tab-item layui-show">
+				<div class="layui-card card-common">
+					<div class="layui-card-header">
+						<span class="card-title">商品导入</span><a href="" id="contine" style="display:none;"><span style="color:#155bd4">继续导入</span></a><a href="{:addon_url('shop/goods/importrecordlist')}" id="list" ><span style="color:#155bd4">导入历史</span></a>
+					</div>
+					<div class="layui-card-body">
+						<div class="layui-card-body" id="import">
+
+							<div class="layui-form-item">
+								<label class="layui-form-label">商品类型配置：</label>
+								<div class="layui-input-block">
+									<ul>
+										<li><input type="radio" lay-filter="encrypt" title="实物商品" class="type" name="type" value="1" checked><a class="text-color" href="{:img('public/static/img/goods_csv/goods.xlsx')}">下载模板</a>
+										</li>
+									</ul>
+									<ul>
+										<li><input type="radio" lay-filter="encrypt" title="虚拟商品" class="type" name="type" value="2"><a class="text-color" href="{:img('public/static/img/goods_csv/virtualgoods.xlsx')}">下载模板</a></li>
+									</ul>
+									<ul>
+										<li><input type="radio" lay-filter="encrypt" title="电子卡密" class="type" name="type" value="3"><a class="text-color" href="{:img('public/static/img/goods_csv/virtualcard.xlsx')}">下载模板</a></li>
+									</ul>
+								</div>
+							</div>
+							<div class="layui-form-item goods-image-wrap" style="margin-top: 20px">
+								<label class="layui-form-label">商品图片：</label>
+								<div class="layui-input-block">
+									<div>在导入前请先将商品图片上传到商品相册，<a href="{:addon_url('shop/album/lists')}" class="text-color" target="_blank">去上传</a></div>
+								</div>
+							</div>
+							<div class="layui-form-item" style="margin-top: 30px">
+								<label class="layui-form-label">上传数据：</label>
+								<div class="layui-input-block">
+									<div class="upload-img-block">
+										<div class="upload-img-box" id="xlsUpload">
+
+											<div class="upload-default">
+												<div class="upload">
+													<i class="iconfont iconshangchuan"></i>
+													<p>上传商品导入数据</p>
+												</div>
+											</div>
+
+										</div>
+									</div>
+								</div>
+								<div class="word-aux">请上传xlsx文件，最大不要超过10M</div>
+							</div>
+						</div>
+
+						<!-- 商品导入成功 -->
+						<div class="data_load" style="display: none"  id="success">
+							<div class="data_load-img"><img src="SHOP_IMG/success.png" /></div>
+							<div class="data_load-title">商品导入完成</div>
+							<div class="data_load-content">成功导入<span class="success-count">0</span>条数据，导入失败<span class="error-count">0</span>条数据</div>
+<!--							<div class="data_load-footer" style="cursor:pointer;"><span id="exportError" style="display:none" onclick="exportError();">下载失败记录</span></div>-->
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- 商品详情 -->
+			<div class="layui-tab-item">
+				<script type="text/javascript" charset="utf-8" src="__STATIC__/ext/ueditor/ueditor.config.js"></script>
+				<script type="text/javascript" charset="utf-8" src="__STATIC__/ext/ueditor/ueditor.all.js"> </script>
+				<script type="text/javascript" charset="utf-8" src="__STATIC__/ext/ueditor/lang/zh-cn/zh-cn.js">
+				</script>
+			</div>
+		</div>
+	</div>
+</div>
+</form>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'upload'], function() {
+		var form = layui.form,
+			upload = layui.upload,
+			type = 1;
+
+		form.on('radio(encrypt)', function(data){
+			type = data.value;
+		});
+
+		form.render();
+
+		//商品导入
+		var uploadInst = upload.render({
+			elem: '#xlsUpload',
+			url: ns.url("shop/goods/import"),
+			data:{type:function () {
+					return type
+				}},
+			field: 'xlsx',
+			accept:'file',
+			acceptMime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			exts: 'xlsx',
+			before: function(obj) { //obj参数包含的信息，跟 choose回调完全一致，可参见上文。
+				var index = layer.load(1, {
+					shade: [0.1, '#fff'], //0.1透明度的白色背景
+					time: 0
+				});
+			},
+			done: function(res) {
+				layer.closeAll();
+				if (res.code >= 0) {
+					$("#upload").attr("style","display:none;");//隐藏div
+					$("#import").attr("style","display:none;");//隐藏div
+					$("#contine").attr("style","display:flex;");//显示div
+					$("#list").attr("style","display:none;");//显示div
+					$("#success").attr("style","display:flex;");//显示div
+					$(".success-count").text(res.data.success_count);
+					$(".error-count").text(res.data.error_count);
+					if (res.data.error_count > 0) {
+						$("#exportError").attr("style","display:flex;");
+					} else {
+						$("#exportError").attr("style","display:none;");
+					}
+
+				} else {
+					layer.msg(res.message);
+				}
+
+			}
+		});
+
+	});
+</script>
+<script src="__STATIC__/ext/drag-arrange.js"></script>
+<script src="__STATIC__/ext/video/video.min.js"></script>
+<script src="__STATIC__/ext/searchable_select/searchable_select.js"></script>
+{/block}

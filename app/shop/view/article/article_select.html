@@ -1,0 +1,164 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.select-article{margin: 20px;}
+	.select-article .single-filter-box{padding: 0;}
+	.select-article .single-filter-box .layui-form{margin: inherit;}
+	.select-article .single-filter-box .layui-form div{margin: 0;}
+</style>
+{/block}
+{block name="body"}
+<div class="select-article">
+	<div class="single-filter-box">
+		<div class="layui-form">
+			<div class="layui-input-inline">
+				<input type="text" name="search_text" placeholder="请输入文章名称" autocomplete="off" class="layui-input">
+				<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<table id="article_list" lay-filter="article_list"></table>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="checkbox">
+	<input type="checkbox" data-article-id="{{d.article_id}}" name="article_checkbox" lay-skin="primary" lay-filter="article_checkbox">
+	<input type="hidden" data-article-id="{{d.article_id}}" name="article_json" value='{{ JSON.stringify(d) }}' />
+</script>
+<script>
+	var select_id = "{$select_id}", //选中文章id
+			articleList ={:json_encode($article_list)},
+			selectList = {}, //选中文章所有数据res
+			articleIdArr = select_id.length ? select_id.split(',') : [],   //已选中的文章id
+			table, form,laytpl,element;
+	$(function () {
+
+		for (var k in articleList) {
+			selectList['article_id_' + articleList[k].article_id] = {
+				article_id: articleList[k].article_id,
+				article_title: articleList[k].article_title,
+				cover_img: articleList[k].cover_img,
+				article_abstract: articleList[k].article_abstract,
+				read_num: articleList[k].read_num,
+			}
+		}
+
+		layui.use(['form', 'laytpl', 'element'], function () {
+			form = layui.form;
+			laytpl = layui.laytpl;
+			element = layui.element;
+			table = new Table({
+				elem: '#article_list',
+				url: '{:addon_url("shop/article/articleselect")}',
+				cols: [
+					[
+						{
+							title: '<input type="checkbox" name="article_checkbox_all" lay-skin="primary" lay-filter="article_checkbox_all">',
+							width: "8%",
+							templet: '#checkbox'
+						},
+						{
+							field: 'article_title',
+							title: '文章名称',
+							width: '35%'
+						},
+						{
+							field: 'category_name',
+							title: '文章分类',
+							width: '30%'
+						},
+						{
+							field: 'cover_img',
+							title: '封面图',
+							width: '20%',
+							templet: function (d) {
+								return `<img layer-src src="${ns.img(d.cover_img)}"/>`;
+							}
+						},
+					]
+				],
+				callback: function (res) {
+					// 更新复选框状态
+					for (var i = 0; i < articleIdArr.length; i++) {
+						var selected_article = $("input[name='article_checkbox'][data-article-id='" + articleIdArr[i] + "']");
+						if (selected_article.length) {
+							selected_article.prop("checked", true);
+						}
+					}
+					form.render();
+					dealWithTableSelectedNum();
+				}
+			});
+
+			form.on('submit(search)', function (data) {
+				formSearch();
+				return false;
+			});
+
+			//公共搜索方法
+			function formSearch() {
+				var data = {};
+				data.search_text = $("input[name='search_text']").val();
+				data.article_ids = articleIdArr.toString();
+				table.reload({
+					page: {
+						curr: 1
+					},
+					where: data
+				});
+			}
+
+			// 勾选文章
+			form.on('checkbox(article_checkbox_all)', function (data) {
+				var all_checked = data.elem.checked;
+				$("input[name='article_checkbox']").each(function () {
+					var checked = $(this).prop('checked');
+					if (all_checked != checked) {
+						$(this).next().click();
+					}
+				})
+			});
+
+			// 勾选文章
+			form.on('checkbox(article_checkbox)', function (data) {
+				var article_id = $(data.elem).attr("data-article-id");
+				var spuLen = $("input[name='article_checkbox'][data-article-id=" + article_id + "]:checked").length;
+				if (spuLen) {
+					var item = JSON.parse($("input[name='article_json'][data-article-id=" + article_id + "]").val());
+					delete item.LAY_INDEX;
+					delete item.LAY_TABLE_INDEX;
+					selectList['article_id_' + article_id] = item;
+				} else {
+					delete selectList['article_id_' + article_id];
+				}
+				dealWithTableSelectedNum();
+			});
+
+		});
+
+	});
+
+	function selectArticle(callback) {
+		articleIdArr = [];
+		for (var key in selectList){
+			articleIdArr.push(selectList[key].article_id);
+		}
+
+		if(articleIdArr.length == 0) {
+			layer.msg('请选择文章');
+			return;
+		}
+		callback({
+			articleIds: articleIdArr,
+			list: selectList
+		});
+	}
+
+	//在表格底部增加了一个容器
+	function dealWithTableSelectedNum() {
+		$(".layui-table-bottom-left-container").html('已选择 '+ Object.keys(selectList).length +' 个文章');
+	}
+</script>
+{/block}

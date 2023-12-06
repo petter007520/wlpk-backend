@@ -1,0 +1,625 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/order_list.css"/>
+<style>
+    .layui-tab-content .order-operation-btn{display: flex;align-items: center;margin-top: 10px}
+    .layui-tab-content .order-operation-all-btn{width: 4%;text-align: center; }
+    .layui-tab-content .btn-box{ width: 96%;}
+    .layui-tab-content .order-operation-btn .btn-box span{padding: 0px 5px;font-size: 12px;line-height: 2;height: auto;display: inline-block; border: 1px solid #C9C9C9;cursor: pointer;}
+    .sub-selected-checkbox{display: flex;justify-content: center;align-items: center;}
+    .layui-layout-admin.admin-style-2 .layui-table-cell{height: 32px; line-height: 32px;}
+    .layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+</style>
+{/block}
+{block name="main"}
+<div class="screen layui-collapse" lay-filter="selection_panel">
+    <div class="layui-colla-item">
+        <form class="layui-colla-content layui-form layui-show"  lay-filter="order_list">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">搜索方式</label>
+                    <div class="layui-input-inline">
+                        <select name="order_label" >
+                            {foreach $order_label_list as $k => $label_val}
+                            <option value="{$k}">{$label_val}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-form-mid">&nbsp;</div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="search" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">订单类型</label>
+                    <div class="layui-input-inline">
+                        <select name="order_type" lay-filter="order_type">
+                            {foreach $order_type_list as $order_type_k => $order_type_val}
+                            {if $order_type_val.type}
+                            <option value="{$order_type_val.type}">{$order_type_val.name}</option>
+                            {/if}
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                {if addon_is_exit('store') == 1}
+                <div class="layui-inline">
+                    <label class="layui-form-label">来源门店</label>
+                    <div class="layui-input-inline">
+                        <select name="store_id" lay-filter="store_id">
+                            <option value="">全部</option>
+                            {foreach $store_list as $k => $v}
+                            <option value="{$v.store_id}">{$v.store_name}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                {/if}
+                <div class="layui-inline">
+                    <label class="layui-form-label">订单状态</label>
+                    <div class="layui-input-inline">
+                        <select name="order_status" lay-filter="order_status">
+                            <option value="">全部</option>
+                            {foreach $order_status_list as $k => $status_val}
+                            <option value="{$k}">{$status_val}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">订单来源</label>
+                    <div class="layui-input-inline">
+                        <select name="order_from">
+                            <option value="">全部</option>
+                            {foreach $order_from_list as $order_from_k => $order_from_v}
+                            <option value="{$order_from_k}">{$order_from_v['name']}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">付款方式</label>
+                    <div class="layui-input-inline">
+                        <select name="pay_type" >
+                            <option value="">全部</option>
+                            {foreach pay_type_list as $pay_type_k => $pay_type_v}
+                            <option value="{$pay_type_k}">{$pay_type_v}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">营销类型</label>
+                    <div class="layui-input-inline">
+                        <select name="promotion_type" lay-filter="promotion_type">
+                            <option value="">全部</option>
+                            {foreach $promotion_type as $promotion_type_k => $promotion_type_val}
+                            <option value="{$promotion_type_val.type}">{$promotion_type_val.name}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">下单时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                    <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-seven" onclick="datePick(7, this);return false;">近7天</button>
+                    <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-thirty" onclick="datePick(30, this);return false;">近30天</button>
+                </div>
+                <div class="layui-inline layui-hide" id="delivery_time_box">
+                    <label class="layui-form-label">自提时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="delivery_start_time" placeholder="开始时间" id="delivery_start_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="delivery_end_time" placeholder="结束时间" id="delivery_end_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <button class="layui-btn" lay-submit id="btn_search"lay-filter="btn_search">筛选</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                <button class="layui-btn layui-btn-primary" lay-submit lay-filter="batch_export_order_goods" >导出订单商品</button>
+                <button class="layui-btn layui-btn-primary" lay-submit lay-filter="batch_export_order" >导出订单</button>
+                <a class="layui-btn layui-btn-primary" href="{:addon_url('shop/order/export')}" target="_blank">查看导出记录</a>
+            </div>
+            <input type="hidden" name="status"/>
+            <input type="hidden" name="page"/>
+        </form>
+    </div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="order_tab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="">全部</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!-- 列表 -->
+        <div class="layui-form order-operation-btn all-selected-checkbox" style="display: none">
+            <div class="order-operation-all-btn">
+                <input type="checkbox" name="" lay-skin="primary" lay-filter="allCheckbox">
+                <input type="hidden" name="allOrderId">
+            </div>
+            <div class="btn-box">
+                <span class="btn-deliver">批量收货</span>
+            </div>
+        </div>
+        <div id="order_list"></div>
+    </div>
+</div>
+
+<div id="order_page"></div>
+<div id="order_operation"></div>
+{/block}
+{block name="script"}
+{include file="order/order_common_action" /}
+<!-- 修改订单收货地址 -->
+{include file="order/order_action" /}
+<!-- 发货 -->
+{include file="order/order_delivery_action" /}
+<!-- 外卖发货 -->
+{include file="order/order_delivery_local_action" /}
+<!-- 主动退款 -->
+{include file="order/shop_active_refund" /}
+<!-- 虚拟订单发货 -->
+{include file="virtualorder/virtual_order_delivery_action" /}
+
+<script src="SHOP_JS/order_list.js"></script>
+<script src="SHOP_JS/lodop_funcs.js"></script>
+<script>
+    var laypage,element, form, hash_url;
+    var is_refresh = false;
+    var laypage_util;
+    var orderIdAll = [];
+    var order_type_status_json = {:json_encode($order_type_list)};
+
+    /**
+     *通过hash获取页数
+     */
+    function getHashPage(){
+        var page = 1;
+        var hash = location.hash;
+        var startTime = '';
+        var endTime = '';
+
+        var hash_arr = hash.substr(2).split("&");
+        $.each(hash_arr,function(index, itemobj){
+            var item_arr = itemobj.split("=");
+            if(item_arr.length == 2){
+                switch(item_arr[0]){
+                    case "page":
+                        page = item_arr[1];
+                        break;
+                    case "start_time":
+                        startTime = ns.date_to_time(item_arr[1].split("%")[0]);
+                        break;
+                    case "end_time":
+                        endTime = ns.date_to_time(item_arr[1].split("%")[0]);
+                        break;
+                }
+            }
+        });
+
+        var _time = (endTime - startTime) / (24 * 60 * 60);
+        if (_time == 6) {
+            $(".date-picker-btn-seven").addClass("selected");
+            $(".date-picker-btn-thirty").removeClass("selected");
+        } else if (_time == 29) {
+            $(".date-picker-btn-thirty").addClass("selected");
+            $(".date-picker-btn-seven").removeClass("selected");
+        } else {
+            $(".date-picker-btn-seven").removeClass("selected");
+            $(".date-picker-btn-thirty").removeClass("selected");
+        }
+
+        return page;
+    }
+
+    //从hash中获取数据
+    function getHashData() {
+        var hash = ns.urlReplace(location.hash);
+        var hash_arr = hash.substr(2).split("&");
+
+        var form_json = {
+            "end_time": "",
+            "delivery_end_time": "",
+            "order_from": "",
+            "order_label": $("select[name=order_label]").val(),
+            "order_name": "",
+            "order_status": "",
+            "promotion_type": "",
+            "pay_type": "",
+            "search": "",
+            "start_time": "",
+            "delivery_start_time": "",
+            "order_type": 'all',
+            'page_size': '',
+            "page": "",
+            "store_id": $("select[name=store_id]").val(),
+        };
+        if (hash_arr.length > 0) {
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr, function (index, itemobj) {
+                var item_arr = itemobj.split("=");
+                if (item_arr.length == 2) {
+                    $.each(form_json, function (key, form_val) {
+                        if (item_arr[0] == key) {
+                            form_json[key] = item_arr[1];
+                        }
+                    })
+                }
+            })
+        }
+
+        resetOrderStatus(form_json.order_type, 2);
+        switchOrderType(form_json.order_type);
+        setOrderStatusTab(form_json.order_status);
+        form.val("order_list", form_json);
+        return form_json;
+    }
+
+    /**
+     * 获取哈希值order_type
+     */
+    function getHashOrderType(){
+        var hash = ns.urlReplace(location.hash);
+        var hash_arr = hash.split("&");
+        var order_type = "all";
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    if(item_arr[0].indexOf("order_type") != "-1") {
+                        order_type = item_arr[1];
+                    }
+                }
+            })
+        }
+        return order_type;
+    }
+    layui.use(['laypage','laydate','form', 'element'], function(){
+        form = layui.form;
+        laypage = layui.laypage;
+        element = layui.element;
+        var laydate = layui.laydate;
+        form.render();
+
+        //渲染时间
+        laydate.render({
+            elem: '#start_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+        laydate.render({
+            elem: '#end_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        laydate.render({
+            elem: '#delivery_start_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        laydate.render({
+            elem: '#delivery_end_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        //监听筛选事件
+        form.on('submit(btn_search)', function(data){
+            is_refresh = true;
+            data.field.page = 1;
+            resetOrderStatus(data.field.order_type, 2);
+            setHashOrderList(data.field);
+            setOrderStatusTab(data.field.order_status);
+            return false;
+        });
+
+        //批量导出（订单项）
+        form.on('submit(batch_export_order_goods)', function(data){
+            data.field.order_ids = orderIdAll.toString(); // 选择要导出的订单
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: ns.url("shop/order/exportordergoods"),
+                data: data.field,
+                success: function (res) {
+                }
+            })
+            window.open(ns.url("shop/order/export",{}))
+            return false;
+        });
+
+        //批量导出（订单）
+        form.on('submit(batch_export_order)', function(data){
+            data.field.order_ids = orderIdAll.toString(); // 选择要导出的订单
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: ns.url("shop/order/exportorder"),
+                data: data.field,
+                success: function (res) {
+
+                }
+            })
+            window.open(ns.url("shop/order/export",{}))
+            return false;
+        });
+
+        //订单类型
+        form.on('select(order_type)', function(data){
+            switchOrderType(data.value);
+            resetOrderStatus(data.value, 1);
+            return false;
+        });
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(order_tab)', function(){
+            $(".all-selected-checkbox input").prop("checked",false);
+            var status = this.getAttribute('lay-id');
+            form.val("order_list", {"order_status":status});
+
+            var hash_data = getHashList();
+            hash_data.order_status = status;
+            hash_data.page = 1;
+            setHashOrderList(hash_data);
+        });
+        getHashData();
+        getOrderList();//筛选
+    });
+
+    function switchOrderType(value){
+        if(value == 2 || value == 3){
+            var time_type = value == 2 ? '要求自提时间：': '要求送达时间：';
+            $("#delivery_time_box").removeClass('layui-hide').find('label').text(time_type);
+        }else{
+            $("#delivery_time_box").addClass('layui-hide');
+        }
+    }
+
+    function setOrderStatusTab(order_status){
+        $(".layui-tab-title li").removeClass("layui-this");
+        $(".layui-tab-title li").each(function(){
+            var status = $(this).attr("lay-id");
+            if(status == order_status){
+                $(this).addClass("layui-this")
+            }
+        });
+    }
+
+    //重置状态tab 选项卡
+    function resetOrderStatus(order_type, is_tab){
+        var hash_order_type = getHashOrderType();
+        if(hash_order_type != order_type || is_refresh == false){
+            if(is_tab != 1 || is_refresh == false) {
+                $(".layui-tab-title li").not(':first').remove();
+                $(".layui-tab-title li").find(":first").addClass("layui-this");
+            }
+            if(is_tab != 2 || is_refresh == false){
+                $("select[name=order_status] option").not(':first').remove();
+            }
+            var status_item = order_type_status_json[order_type]["status"];
+            $.each(status_item,function(index, itemobj){
+                if(is_tab != 1 || is_refresh == false) {
+                    $(".layui-tab-title").append('<li lay-id="' + index + '">' + itemobj + '</li>');
+                }
+                if(is_tab != 2 || is_refresh == false) {
+                    $("select[name=order_status]").append('<option value="' + index + '">' + itemobj + '</option>');
+                }
+            });
+            form.render('select');
+        }
+    }
+
+    //哈希值 订单数据
+    function setHashOrderList(data){
+        var hash = "";
+        $.each(data,function(index, itemobj){
+            if(itemobj != "" && itemobj != "all"){
+                if(hash == ""){
+                    hash += "#!"+index +"="+itemobj;
+                }else{
+                    hash += "&"+index +"="+itemobj;
+                }
+            }
+        });
+        // window.location.href = hash;
+        hash_url = hash;
+        location.hash = hash;
+        getOrderList();
+    }
+
+    function getHashList(){
+        var hash = ns.urlReplace(location.hash);
+        var hash_arr = hash.split("&");
+
+        var form_json = {
+            "end_time" : "",
+            "delivery_end_time" : "",
+            "order_from" : "",
+            "order_label" : $("select[name=order_label]").val(),
+            "order_name" : "",
+            "order_status" : "",
+            "promotion_type" : "",
+            "pay_type" : "",
+            "search" : "",
+            "start_time" : "",
+            "delivery_start_time" : "",
+            "order_type" : 'all',
+            'page_size':'',
+            "page" : "",
+            "store_id" : $("select[name=store_id]").val()
+        };
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    $.each(form_json,function(key, form_val){
+                        if(item_arr[0].indexOf(key) != "-1"){
+                            form_json[key] = item_arr[1];
+                        }
+                    })
+                }
+            })
+        }
+
+        return form_json;
+    }
+
+    var order = new Order();
+    function getOrderList(){
+        var url = ns.url("shop/order/lists", ns.urlReplace(location.hash.replace('#!', '')));
+
+        $.ajax({
+            type : 'get',
+            dataType: 'json',
+            url :url,
+            success : function(res){
+                if(res.code == 0){
+                    setOrderInfo(res.data.list);
+                    order.setData(res.data);
+                    $("#order_list").html(order.fetch());
+
+                    if(res.data.order_status == 3){
+                        $(".order-operation-btn.all-selected-checkbox").show();
+                    } else{
+                        $(".order-operation-btn.all-selected-checkbox").hide();
+                    }
+
+                    form.render();
+                    //批量选择
+                    form.on('checkbox(allCheckbox)', function(data){
+                        $(".sub-selected-checkbox input").prop("checked",data.elem.checked);
+                        $(".all-selected-checkbox input").prop("checked",data.elem.checked);
+
+                        $(".sub-selected-checkbox input").each(function(index,item){
+                            if($(item).attr('disabled') == 'disabled'){
+                                $(item).prop("checked",false);
+                            }
+                        });
+                        form.render("checkbox");
+                        getOrderId();
+                    });
+
+                    //全选选择
+                    form.on('checkbox(subCheckbox)', function(data){
+                        var subLen = $(".sub-selected-checkbox input:checked").length;
+                        $(".all-selected-checkbox input").prop("checked",false);
+                        if (subLen == 10){
+                            $(".all-selected-checkbox input").prop("checked",true);
+                        }
+
+                        $(".sub-selected-checkbox input").each(function(index,item){
+                            if($(item).attr('disabled') == 'disabled'){
+                                $(item).prop("checked",false);
+                            }
+                        });
+
+                        form.render("checkbox");
+                        getOrderId();
+                    });
+
+                    //获取选中的id
+                    function getOrderId(){
+                        var lists = $(".sub-selected-checkbox input:checked");
+                        orderIdAll = [];
+                        lists.each(function(index,item){
+                            if($(item).parents(".sub-selected-checkbox").attr("disabled") != "disabled"){
+                                orderIdAll.push(JSON.parse($(item).parents(".sub-selected-checkbox").attr("data-id")));
+                            }
+                        });
+                    }
+                    laypage_util = new Page({
+                        elem: 'order_page',
+                        count: res.data.count,
+                        curr: getHashPage(),
+                        limit:getHashData()['page_size'] || 10,
+                        callback: function(obj){
+                            var hash_data = getHashData();
+                            hash_data.page = obj.curr;
+                            hash_data.page_size = obj.limit;
+                            setHashOrderList(hash_data);
+                        }
+                    });
+
+                }else{
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+
+    /**
+     * 七天时间
+     */
+    function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+        // alert(new Date().format("yyyy-MM-dd hh:mm"));
+        var now_date = new Date();
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+
+    }
+
+    //批量收货
+    $("body").on("click",".layui-tab-content .btn-deliver", function () {
+        var subLen = $(".sub-selected-checkbox input:checked").length;
+        if (subLen <=0 ) {
+            layer.msg("请选择订单");
+            return false;
+        }
+        takeDelivery(orderIdAll.toString(), 1);
+    });
+</script>
+{/block}

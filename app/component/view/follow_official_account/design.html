@@ -1,0 +1,65 @@
+<nc-component :data="data[index]" class="follow-official-account-wrap">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="site-info-box" :style="{ borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0), borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0), borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0) }" data-disabled="1">
+			<div class="site-info" data-disabled="1">
+				<div class="img-box" data-disabled="1">
+					<img :src="changeImgUrl('public/static/img/default_img/square.png')" />
+				</div>
+				<div class="info-box" :style="{ color: '#ffffff' }" data-disabled="1">
+					<span class="font-size-base">店铺名称</span>
+					<span>{{ nc.welcomeMsg }}</span>
+				</div>
+			</div>
+			<button class="layui-btn layui-btn-primary text-color">关注公众号</button>
+		</div>
+
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<follow-official-account-sources></follow-official-account-sources>
+		</template>
+
+		<div class="template-edit-title">
+			<h3>内容设置</h3>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label sm">欢迎语</label>
+				<div class="layui-input-block">
+					<input type="text" v-model="nc.welcomeMsg" placeholder="请输入欢迎语" class="layui-input" maxlength="20">
+				</div>
+			</div>
+
+			<div class="layui-form-item checkbox-wrap">
+				<label class="layui-form-label sm">展示开关</label>
+				<div class="layui-input-block">
+					<span v-if="nc.isShow == true">显示</span>
+					<span v-else>隐藏</span>
+					<div v-if="nc.isShow == true" @click="nc.isShow = false" class="layui-unselect layui-form-checkbox layui-form-checked" lay-skin="primary">
+						<i class="layui-icon layui-icon-ok"></i>
+					</div>
+					<div v-else @click="nc.isShow = true" class="layui-unselect layui-form-checkbox" lay-skin="primary">
+						<i class="layui-icon layui-icon-ok"></i>
+					</div>
+				</div>
+				<div class="word-aux diy-word-aux">该组件只会在微信内部展示，在普画浏览器或者小程序不展示，需要配置微信公众号，同时用户关注后会自动隐藏</div>
+			</div>
+
+		</div>
+
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style"></template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

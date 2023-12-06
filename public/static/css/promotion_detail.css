@@ -1,0 +1,20 @@
+/*面板结构,背景移除*/
+.layui-layout-admin .layui-body .body-content{background:0 0;padding:0}
+/*活动整体框架*/
+.promotion-view{display:flex;flex-wrap:wrap}
+.promotion-view-item{width:33.3%;padding-right:10px;box-sizing:border-box;line-height:30px}
+.promotion-view-item-line{padding-right:10px;box-sizing:border-box;line-height:30px;overflow: hidden;width: 100%}
+.promotion-view-item-custom-label{float:left}
+.promotion-view-item-custom-box{float:left}
+/*活动商品列表相关*/
+.promotion-list-item-title{display:flex;align-items:center}
+.promotion-list-item-title .promotion-list-item-title-icon{display:flex;align-items:center;justify-content:center;width:55px;height:55px;margin-right:5px}
+.promotion-list-item-title .promotion-list-item-title-icon img{max-height:100%;max-width:100%}
+.promotion-list-item-title .promotion-list-item-title-name{flex:1;line-height:1.6}
+
+/*统计相关*/
+.promotion-stat-view{display:flex;flex-wrap:wrap}
+.promotion-stat-view .promotion-stat-item{width:25%;padding:0 15px 10px 15px;box-sizing:border-box}
+.promotion-stat-view .promotion-stat-item .promotion-stat-item-title{color:#909399;font-size:14px;margin-top:5px}
+.promotion-stat-view .promotion-stat-item .promotion-stat-item-value{color:#303133;font-size:26px;margin-top:10px}
+.todo-list .promotion-stat-item{flex:1;width:0;cursor:pointer}

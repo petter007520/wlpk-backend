@@ -1,0 +1,319 @@
+<nc-component :data="data[index]" class="component-title">
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="preview-box" :style="{ backgroundColor: nc.componentBgColor,
+			     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+			     borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0) }">
+
+			<!-- 图一 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-if="nc.style == 'style-1'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, padding: '0 7px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<span class="line-left" :style="{ background: nc.textColor }"></span>
+					<span class="line-right" :style="{ background: nc.textColor }"></span>
+				</div>
+			</div>
+
+			<!-- 图二 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-2'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+				</div>
+				<div :class="'text-title-'+ nc.style">
+					<span class="inner-line" :style="{ background: nc.textColor }"></span>
+					<span class="line-triangle" :style="{ borderColor: nc.textColor, opacity: nc.textColor ? 1 : 0 }"></span>
+				</div>
+			</div>
+
+			<!-- 图三 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-3'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+				</div>
+				<div :class="'text-title-'+ nc.style">
+					<span class="inner-line" :style="{ background: nc.textColor }"></span>
+					<span class="line-short" :style="{ background: nc.textColor, opacity: nc.textColor ? 1 : 0 }"></span>
+				</div>
+			</div>
+
+			<!-- 图四 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-4'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+				</div>
+				<div class="text-title-line">
+					<span class="line-left" :style="{ background: nc.textColor }"></span>
+					<span class="line-center" :style="{ borderColor: nc.textColor, opacity: nc.textColor ? 1 : 0 }"></span>
+					<span class="line-right" :style="{ background: nc.textColor }"></span>
+				</div>
+			</div>
+
+			<!-- 图五 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-5'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-block" :style="{ borderColor: nc.textColor, opacity: nc.textColor ? 1 : 0 }">
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', borderColor: nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<span class="line-left" :style="{ background: nc.textColor }"></span>
+						<span class="line-right" :style="{ background: nc.textColor }"></span>
+					</span>
+				</div>
+			</div>
+
+			<!-- 图六 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-6'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-outer" :style="{ borderColor: nc.textColor }">
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', borderColor: nc.textColor, background: '#fff', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<span class="text-title-con-2" :style="{ borderColor: nc.textColor, opacity: nc.textColor ? 1 : 0 }"></span>
+					</span>
+				</div>
+			</div>
+
+			<!-- 图七 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-7'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="text-title-outer" :style="{ borderColor: nc.textColor }">
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : '#fff', paddingBottom: 3+'px', borderColor: nc.textColor, background: nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<span class="text-title-con-2" :style="{ borderColor: nc.textColor, opacity: nc.textColor ? 1 : 0 }"></span>
+					</span>
+				</div>
+			</div>
+
+			<!-- 图八 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-8'" >
+				<div class="text-title-box" v-show="nc.text" :style="{ textAlign: 'left'}">
+					<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<span class="line-left" :style="{ height: nc.fontSize + 'px', background: nc.textColor}"></span>
+				</div>
+			</div>
+
+			<!-- 图九 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-9'" >
+				<div class="text-title-box" v-show="nc.text">
+					<div class="left"></div>
+					<div class="center">
+						<div><img src="{$resource_path}/img/style9-1.png" /></div>
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<div><img src="{$resource_path}/img/style9-2.png" /></div>
+					</div>
+					<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }">{{nc.more.text}} <i class="iconfont iconyoujiantou"></i></div>
+				</div>
+				<div class="text-subTitle-box" v-show="nc.subTitle.text">
+					<p v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 1 : 0 }">{{ nc.subTitle.text }}</p>
+				</div>
+			</div>
+
+			<!-- 图十 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-10'" >
+				<div class="text-title-box" v-show="nc.text">
+					<div class="left"></div>
+					<div class="center">
+						<div><img src="{$resource_path}/img/style10-1.png" /></div>
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<div><img src="{$resource_path}/img/style10-2.png" /></div>
+						<img src="{$resource_path}/img/style10-3.png" />
+					</div>
+					<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }">{{nc.more.text}} <i class="iconfont iconyoujiantou"></i></div>
+				</div>
+				<div class="text-subTitle-box" v-show="nc.subTitle.text">
+					<p v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 1 : 0 }">{{ nc.subTitle.text }}</p>
+				</div>
+			</div>
+
+			<!-- 图十一 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-11'" >
+				<div class="text-title-box" v-show="nc.text">
+					<div class="left">
+						<span class="text-title-con" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, paddingBottom: 3+'px', fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<div class="text-subTitle-box" v-show="nc.subTitle.text">
+							<p v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 1 : 0 }">{{ nc.subTitle.text }}</p>
+						</div>
+					</div>
+					<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }"><span>{{nc.more.text}}</span> <i class="iconfont iconyoujiantou"></i></div>
+					<img class="left-img" src="{$resource_path}/img/style11-1.png" />
+					<img class="right-img" src="{$resource_path}/img/style11-2.png" />
+				</div>
+			</div>
+
+			<!-- 图十二 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-if="nc.style == 'style-12'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="title" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<span class="sub-title" v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 1 : 0 }">{{nc.subTitle.text}}</span>
+					<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }"><span>{{nc.more.text}}</span> <i class="iconfont iconyoujiantou"></i></div>
+				</div>
+			</div>
+
+			<!-- 图十三 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-13'" >
+				<div class="text-title-box" v-show="nc.text">
+					<img class="left-img" src="{$resource_path}/img/style13-1.png" />
+					<span class="text-title" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, opacity: nc.textColor ? 1 : 0,fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<img class="right-img" src="{$resource_path}/img/style13-1.png" />
+				</div>
+			</div>
+
+			<!-- 图十四 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-14'">
+				<div class="title-wrap">
+					<div class="text">
+						<span :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+						<span class="zone" :style="{ fontSize : nc.fontSize + 'px', fontWeight: nc.fontWeight }">专区</span>
+					</div>
+					<i class="iconfont icondanxuan-xuanzhong" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></i>
+					<i class="iconfont icondanxuan-xuanzhong" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></i>
+					<i class="iconfont icondanxuan-xuanzhong" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></i>
+					<div class="sub-title" v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 0.6 : 0 }">{{nc.subTitle.text}}</div>
+				</div>
+				<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }"><span>{{nc.more.text}}</span> <i class="iconfont iconyoujiantou"></i></div>
+			</div>
+
+			<!-- 图十五 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-else-if="nc.style == 'style-15'">
+				<div class="title-wrap">
+					<div class="ornament" style="margin-right: 20px;">
+						<span class="line" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></span>
+						<span class="line" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></span>
+						<span class="my">
+							<i class="yuan" :style="{ backgroundColor : nc.textColor,fontWeight: nc.fontWeight }"></i>
+							<i class="vertical" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></i>
+						</span>
+					</div>
+					<span :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<div class="ornament" style="margin-left: 20px;">
+						<span class="line" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></span>
+						<span class="line" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></span>
+						<span class="my">
+							<i class="yuan" :style="{ backgroundColor : nc.textColor,fontWeight: nc.fontWeight }"></i>
+							<i class="vertical" :style="{ color : nc.textColor,fontWeight: nc.fontWeight }"></i>
+						</span>
+					</div>
+				</div>
+				<div class="sub-title" v-show="nc.subTitle.text" :style="{ fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 0.6 : 0 }">{{nc.subTitle.text}}</div>
+			</div>
+
+			<!-- 图十六 -->
+			<div class="text-title" :class="'text-'+ nc.style" v-if="nc.style == 'style-16'">
+				<div class="text-title-box" v-show="nc.text">
+					<span class="title" :style="{ fontSize : nc.fontSize + 'px', color : nc.textColor, fontWeight: nc.fontWeight }">{{ nc.text }}</span>
+					<div class="sub-title" v-show="nc.subTitle.text" :style="{ backgroundColor: nc.subTitle.bgColor, fontSize : nc.subTitle.fontSize + 'px', color: nc.subTitle.color, opacity: nc.subTitle.color ? 1 : 0 }">
+						<i :class="[nc.subTitle.icon]" :style="{ backgroundColor: nc.subTitle.bgColor}"></i>
+						<span :style="{ fontWeight: nc.subTitle.fontWeight}">{{nc.subTitle.text}}</span>
+					</div>
+					<div v-show="nc.more.isShow == 1" class="more" :style="{ color: nc.more.color, opacity: nc.more.color ? 1 : 0 }"><span>{{nc.more.text}}</span> <i class="iconfont iconyoujiantou"></i></div>
+				</div>
+			</div>
+
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>风格设置</h3>
+				<text-style></text-style>
+			</div>
+
+			<div class="template-edit-title">
+				<h3>标题内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">标题名称</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.text" maxlength="15" placeholder="请输入标题" class="layui-input">
+					</div>
+				</div>
+				<nc-link :data="{ field : nc.link }"></nc-link>
+
+			</div>
+
+			<div class="template-edit-title" v-if="nc.subTitle.isElementShow">
+				<h3>副标题内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">副标题名称</label>
+					<div class="layui-input-block">
+						<input type="text" maxlength="30" v-model="nc.subTitle.text" placeholder="请输入副标题名称" class="layui-input">
+					</div>
+				</div>
+			</div>
+
+			<!-- “更多”按钮设置 -->
+			<div class="template-edit-title" v-if="nc.more.isElementShow">
+				<h3>“更多”按钮内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">按钮文字</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.more.text" maxlength="8" placeholder="查看更多" class="layui-input">
+					</div>
+				</div>
+				<nc-link :data="{ field : nc.more.link }"></nc-link>
+			</div>
+
+			<!-- 弹框 -->
+			<article class="style-list-box-text">
+				<div class="style-list-text layui-form">
+					<div class="style-list-con-text">
+						<div class="style-li-text" v-for="(value,name,index) in nc.tempData.styleList" :key="name" :class="{'selected border-color': nc.style == name}" :data_key="name">
+							<span class="layui-hide">风格{{index + 1}}</span>
+							<img :src="'{$resource_path}/img/style' + (index+1) + '.png'" />
+						</div>
+					</div>
+					<input type="hidden" name="style">
+					<input type="hidden" name="style_name" />
+				</div>
+			</article>
+
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>标题样式</h3>
+				<slide :data="{ field : 'fontSize', label : '文字大小', min: 12, max : 20 }"></slide>
+				<text-font-weight></text-font-weight>
+				<color :data="{ field : 'textColor', label : '文字颜色',defaultColor : '#303133'}"></color>
+			</div>
+
+			<div class="template-edit-title" v-if="nc.subTitle.isElementShow">
+				<h3>副标题样式</h3>
+				<slide :data="{ field : 'fontSize',parent:'subTitle', label : '文字大小', min: 12, max : 16 }"></slide>
+				<color :data="{ field : 'color', label : '文字颜色', parent : 'subTitle',defaultColor : '#999999'}"></color>
+				<div v-show="nc.style == 'style-16'">
+					<color :data="{ field : 'bgColor', label : '背景颜色', parent : 'subTitle',defaultColor: ''}"></color>
+					<text-font-weight :weight-data="{ parent : 'subTitle' }"></text-font-weight>
+					<nc-icon :data="{ field : 'icon' , label:'选择图标', parent : 'subTitle'}"></nc-icon>
+				</div>
+			</div>
+
+			<!-- “更多”按钮设置 -->
+			<div class="template-edit-title" v-show="nc.more.isElementShow">
+				<h3>“更多”按钮样式</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">是否显示</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.more.isShow = nc.more.isShow ? 0 : 1" :class="{ 'layui-form-checked' : nc.more.isShow == 1 }">
+							<span>{{ nc.more.isShow == 1 ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+				<color :data="{ field : 'color', 'label' : '文字颜色',parent : 'more',defaultColor : '#999999'}"></color>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var textResourcePath = "{$resource_path}"; // http路径
+			var textRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

@@ -1,0 +1,350 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.contraction span{cursor: pointer;display: inline-block;width: 17px;height: 17px;text-align: center;line-height: 14px;user-select: none;}
+	.sku-list{overflow: hidden;padding: 0 45px;max-width: 100%;}
+	.sku-list li .img-wrap{vertical-align: middle;margin-right: 8px;width: 120px;height: 120px;text-align: center;line-height: 120px;}
+	.sku-list li .img-wrap img{max-width: 100%;max-height: 100%;}
+	.sku-list li .info-wrap span.sku-name{-webkit-line-clamp: 2;margin-bottom: 5px;}
+	.sku-list li .info-wrap span{display: -webkit-box;margin-bottom: 5px;overflow: hidden;text-overflow: ellipsis;white-space: normal;word-break: break-all;-webkit-box-orient: vertical;-webkit-line-clamp: 1;}
+	.sku-list li{float: left;display: flex;padding: 10px;margin-right: 10px;margin-bottom: 10px;border: 1px solid #EFEFEF;width: 294px;height: 180px;align-items: center;}
+	.layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+	.layui-layout-admin.admin-style-2 .table-tab .layui-tab-title{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="single-filter-box">
+	<button class="layui-btn" onclick="add()">添加商品</button>
+</div>
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">商品名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="goods_name" placeholder="请输入商品名称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">活动时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button type="button" class="layui-btn" lay-filter="search" lay-submit>筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="discount_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">所有商品</li>
+		<li lay-id="1">进行中</li>
+		<li lay-id="2">已结束</li>
+		<li lay-id="-1">已关闭</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="discount_list" lay-filter="discount_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<!-- 未开始 -->
+	<div class="table-btn">
+		{{#  if(d.status == 0){ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{#  } }}
+		<!-- 进行中  时间不能编辑-->
+		{{#  if(d.status == 1){ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="close">关闭</a>
+		{{#  } }}
+		<!-- 已结束 -->
+		{{#  if(d.status == 2){ }}
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{#  } }}
+		<!-- 已关闭 -->
+		{{#  if(d.status == -1){ }}
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{#  } }}
+	</div>
+</script>
+
+<!-- 时间 -->
+<script id="time" type="text/html">
+	<div class="layui-elip">开始：{{ns.time_to_date(d.start_time)}}</div>
+	<div class="layui-elip">结束：{{ns.time_to_date(d.end_time)}}</div>
+</script>
+
+<script type="text/html" id="discount_name">
+	<div class="table-title">
+
+		<div class="contraction" data-id="{{d.discount_id}}" data-open="0">
+			<span>+</span>
+		</div>
+
+		<div class="title-pic">
+			{{#  if(d.goods_image){  }}
+			<img layer-src="{{ns.img(d.goods_image.split(',')[0],'big')}}" src="{{ns.img(d.goods_image.split(',')[0],'small')}}"/>
+			{{#  }  }}
+		</div>
+		<div class="title-content">
+			<a href="javascript:;" class="multi-line-hiding text-color-sub" title="{{d.goods_name}}">{{d.goods_name}}</a>
+		</div>
+	</div>
+</script>
+
+<script type="text/html" id="skuList">
+	<tr class="js-list-{{d.index}}" id="sku_img_{{d.index}}">
+		<td colspan="10">
+			<ul class="sku-list">
+				{{# for(var i=0; i<d.list.length; i++){ }}
+				<li>
+					<div class="img-wrap">
+						<img layer-src src="{{ns.img(d.list[i].sku_image)}}">
+					</div>
+					<div class="info-wrap">
+						<span class="sku-name" title="{{d.list[i].sku_name}}">{{d.list[i].sku_name}}</span>
+						<span class="price">商品价格：￥{{d.list[i].price}}</span>
+						<span class="sale_num">折扣价：{{d.list[i].discount_price}}</span>
+						<span class="price">库存：{{d.list[i].stock}}</span>
+					</div>
+				</li>
+				{{# } }}
+			</ul>
+		</td>
+	</tr>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+	$("body").on("click", ".contraction", function () {
+
+		var discount_id = $(this).attr("data-id");
+		var open = $(this).attr("data-open");
+		var tr = $(this).parent().parent().parent().parent();
+		var index = tr.attr("data-index");
+		if (open == 1) {
+			$(this).children("span").text("+");
+			$(".js-list-" + index).remove();
+		} else {
+			$(this).children("span").text("-");
+			$.ajax({
+				url: ns.url("discount://shop/discount/getSkuList"),
+				data: {discount_id: discount_id},
+				dataType: 'JSON',
+				type: 'POST',
+				async: false,
+				success: function (res) {
+
+					var sku_list = $("#skuList").html();
+					var data = {
+						list: res.data,
+						index: index
+					};
+					laytpl(sku_list).render(data, function (html) {
+						tr.after(html);
+					});
+					layer.photos({
+						photos: '.img-wrap',
+						anim: 5
+					});
+				}
+			});
+		}
+		$(this).attr("data-open", (open == 0 ? 1 : 0));
+	});
+
+	layui.use(['form', 'element', 'laytpl','laydate'], function() {
+		laytpl = layui.laytpl;
+		var table,
+			form = layui.form,
+            laydate = layui.laydate,
+			element = layui.element,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(discount_tab)', function() {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': this.getAttribute('lay-id')
+				}
+			});
+		});
+
+		table = new Table({
+			elem: '#discount_list',
+			url: ns.url("discount://shop/discount/lists"),
+			cols: [
+				[{
+					title: '商品名称',
+					unresize: 'false',
+					width: '30%',
+					templet: '#discount_name'
+				}, {
+					field: 'price',
+					title: '原价',
+					unresize: 'false',
+					width: '10%'
+				}, {
+					field: 'discount_price',
+					title: '折扣价',
+					unresize: 'false',
+					width: '10%'
+				}, {
+					title: '活动时间',
+					unresize: 'false',
+					widht: '20%',
+                    templet: '#time'
+				}, {
+					field: 'status_name',
+					title: '状态',
+					unresize: 'false',
+					width: '10%'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					align : 'right',
+					width: '20%'
+				}]
+			]
+		});
+
+        //开始时间
+        laydate.render({
+            elem: '#start_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                start_time = ns.date_to_time(value);
+
+            }
+        });
+        //结束时间
+        laydate.render({
+            elem: '#end_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                end_time = ns.date_to_time(value);
+            }
+        });
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("discount://shop/discount/edit", {
+						"discount_id": data.discount_id,
+						"site_id": data.site_id
+					});
+					break;
+				case 'del': //删除
+					layer.confirm('您确定要删除该限时折扣活动吗?', function() {
+						if (repeat_flag) return;
+						repeat_flag = true;
+
+						$.ajax({
+							url: ns.url("discount://shop/discount/delete"),
+							data: data,
+							dataType: 'JSON',
+							type: 'POST',
+							success: function(res) {
+								layer.msg(res.message);
+								repeat_flag = false;
+								if (res.code == 0) {
+									table.reload({
+										page: {
+											curr: 1
+										},
+									});
+								}
+							}
+						});
+					}, function() {
+						layer.close();
+						repeat_flag = false;
+					});
+					break;
+				case 'close': //关闭
+					layer.confirm('您确定要关闭吗?', function() {
+						if (repeat_flag) return;
+						repeat_flag = true;
+
+						$.ajax({
+							url: ns.url("discount://shop/discount/close"),
+							data: data,
+							dataType: 'JSON',
+							type: 'POST',
+							success: function(res) {
+								repeat_flag = false;
+								layer.msg(res.message);
+								if (res.code == 0) {
+									table.reload();
+								}
+							}
+						});
+					}, function() {
+						layer.close();
+						repeat_flag = false;
+					});
+
+					break;
+				case 'add': //详情
+					location.href = ns.url("discount://shop/discount/add");
+					break;
+				case 'detail': //详情
+					location.href = ns.url("discount://shop/discount/detail", {
+						"discount_id": data.discount_id
+					});
+					break;
+			}
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+
+	function add() {
+		location.href = ns.url("discount://shop/discount/add");
+	}
+</script>
+{/block}

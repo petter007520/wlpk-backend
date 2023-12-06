@@ -1,0 +1,308 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.vip-name{
+		color: #b38f47;
+	}
+	.level-equity{
+		line-height: 1.6;
+	}
+	.pattern-weight{font-weight: 700;}
+	 .stat-list{color: #999;}
+	.stat-list .textcourse{cursor: pointer;}
+	.layui-table-view .layui-table .layui-table-cell .titleVip{color: #b38f47;}
+	.main-wrap .stat-list{padding: 0 20px;}
+	.stat-list .levellistTip{height: 48px;line-height: 48px;background: #FFF5ED;color: #666;font-weight: 400;padding: 0 16px;box-sizing:border-box;}
+	.stat-list .tanhao{color: #FA5B14FF;}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+{if $is_update}
+<div class="stat-list">
+	<div class="levellistTip">
+		<span class="iconfont icongantanhao tanhao"></span>
+		你已手动修改了等级规则，新会员已生效，老会员未实时生效，如需对所有会员一起生效，请
+		<span onclick="memberlevel()" class="text-color textcourse">更新会员等级</span>
+	</div>
+	<br>
+</div>
+{/if}
+<table id="level_list" lay-filter="level_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		{{# if(d.level_id > 0){ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# } }}
+		{{# if(d.is_show == 1 && d.status == 0){ }}
+		<a class="layui-btn" lay-event="sale">启用</a>
+		{{# } }}
+		{{# if(d.is_show == 1 && d.status == 1){ }}
+		<a class="layui-btn" lay-event="offsale">停用</a>
+		{{# } }}
+		{{# if(d.is_add == 1){ }}
+		<a class="layui-btn"  lay-event="add">待配置</a>
+		{{# } }}
+
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table,
+			form = layui.form,
+			repeat_flag = false; //防重复标识
+
+		table = new Table({
+			elem: '#level_list',
+			url: ns.url("shop/memberlevel/levelList"),
+			page: false,
+			cols: [
+				[{
+					title: '会员等级',
+					width: '10%',
+					unresize: 'false',
+					templet: function (data) {
+						return "<span class='vip-name'>"+data.level_vip+'</span>';
+					}
+				},{
+					field: 'level_name',
+					title: '等级名称',
+					width: '13%',
+					unresize: 'false',
+					templet: function (data) {
+						if(parseInt(data.level_id) > 0) {
+							return data.level_name;
+						}else{
+							return '';
+						}
+					}
+				},{
+					field: 'growth',
+					title: '成长值',
+					width: '15%',
+					unresize: 'false',
+					templet: function (data) {
+						if(parseInt(data.level_id) > 0) {
+							return parseInt(data.growth);
+						}else{
+							return '';
+						}
+					}
+				},{
+					field: '',
+					title: '等级权益',
+					width: '20%',
+					unresize: 'false',
+					templet: function (data) {
+						if(parseInt(data.level_id) > 0) {
+							var text = '<div class="level-equity">';
+							if (data.is_free_shipping == 1) text += '<div>购物享商品包邮</div>';
+							if (data.consume_discount != 100) text += '<div>购物享' + (data.consume_discount / 10) + '折优惠</div>';
+							if (data.point_feedback > 0) text += '<div>购物享' + data.point_feedback + '倍积分回馈</div>';
+							text += '</div>'
+							return text;
+						}else{
+							return '';
+						}
+					}
+				},{
+					field: '',
+					title: '等级礼包',
+					width: '20%',
+					unresize: 'false',
+					templet: function (data) {
+						if(parseInt(data.level_id) > 0) {
+							var text = '<div class="level-equity">';
+							if (data.send_balance > 0) text += '<div>获赠' + data.send_balance + '积分</div>';
+							if (data.send_balance > 0) text += '<div>获赠' + data.send_balance + '元红包</div>';
+							if (data.send_coupon != '') text += '<div>获赠' + data.send_coupon.split(',').length + '张优惠券</div>';
+							text += '</div>'
+							return text;
+						}else{
+							return '';
+						}
+					}
+				},{
+					field: 'member_num',
+					title: '持有人数',
+					width: '10%',
+					unresize: 'false',
+					templet: function (data) {
+						if(parseInt(data.level_id) > 0) {
+							return parseInt(data.member_num);
+						}else{
+							return '';
+						}
+					}
+				}, {
+					title: '操作',
+					unresize: 'false',
+					toolbar: '#operation',
+					align : 'right'
+					
+				}]
+			]
+		});
+	 	
+		
+		/**
+		 * 工具栏操作，编辑、删除
+		 */
+		table.tool(function(obj) {
+			var data = obj.data,
+				event = obj.event;
+				
+			switch (event) {
+				case 'add':
+					location.href = ns.url("shop/memberlevel/addlevel");
+					break;
+				case 'edit':
+					location.href = ns.url("shop/memberlevel/editLevel?level_id=" + data.level_id);
+					break;
+				case 'del':
+					delMemberLevel(data.level_id);
+					break;
+				case 'sale':
+					saleMemberCard(data.level_id);
+					break;
+				case 'offsale':
+					offsaleMemberCard(data.level_id);
+					break;
+
+			}
+		});
+
+		/**
+		 * 停用状态
+		 */
+		function offsaleMemberCard(level_id) {
+			layer.confirm('停用等级将对已有会员造成影响，如需停用请提前公告，以免造成不必要客诉，请谨慎操作。', function() {
+				if (repeat_flag) return;
+				repeat_flag = true;
+
+				$.ajax({
+					url: ns.url("shop/memberlevel/statuslevel"),
+					data: {
+						level_id: level_id,
+						status: 0,
+						type: 'level'
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+
+		function saleMemberCard(level_id) {
+			layer.confirm('启用等级后，会员等级将重新计算，原会员可能会发生等级变动，变动将在一段时间内完成 ！', function() {
+				if (repeat_flag) return;
+				repeat_flag = true;
+
+				$.ajax({
+					url: ns.url("shop/memberlevel/statuslevel"),
+					data: {
+						status: 1,
+						level_id: level_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload( {
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		// 删除方法
+		function delMemberLevel(level_id) {
+			if(repeat_flag) return false;
+			repeat_flag = true;
+				
+			layer.confirm('确定要删除该等级吗?', function() {
+				$.ajax({
+					type: 'POST',
+					url: ns.url("shop/memberlevel/deleteLevel"),
+					data: {level_id},
+					dataType: 'JSON',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if(res.code == 0){
+							table.reload();
+						}
+						
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+	});
+
+	/**
+	 * 点击跳转添加会员卡页面
+	 */
+	function addLevel() {
+		location.href = ns.url("shop/memberlevel/addLevel");
+	}
+	//更新会员等级
+	function memberlevel(){
+		layer.confirm('更新会员等级会对所有会员的等级进行更新，需要一定的时间，并且更新过程中无法编辑等级，建议完成所有规则调整后，再进行更新', function() {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/memberlevel/startlevel"),
+				data: {
+					status: 0
+				},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					location.reload();
+				}
+			});
+		}, function() {
+			layer.close();
+			repeat_flag = false;
+		});
+	}
+</script>
+{/block}

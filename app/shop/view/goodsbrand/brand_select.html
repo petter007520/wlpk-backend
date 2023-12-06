@@ -1,0 +1,157 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.select-goods-brand{margin: 20px;}
+	.select-goods-brand .single-filter-box{padding: 0;}
+	.select-goods-brand .single-filter-box .layui-form{margin: inherit;}
+	.select-goods-brand .single-filter-box .layui-form div{margin: 0;}
+</style>
+{/block}
+{block name="body"}
+<div class="select-goods-brand">
+	<div class="single-filter-box">
+		<div class="layui-form">
+			<div class="layui-input-inline">
+				<input type="text" name="search_text" placeholder="请输入品牌名称" autocomplete="off" class="layui-input">
+				<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<table id="goods_brand_list" lay-filter="goods_brand_list"></table>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="checkbox">
+	<input type="checkbox" data-brand-id="{{d.brand_id}}" name="brand_checkbox" lay-skin="primary" lay-filter="brand_checkbox">
+	<input type="hidden" data-brand-id="{{d.brand_id}}" name="brand_json" value='{{ JSON.stringify(d) }}' />
+</script>
+<script>
+	var select_id = "{$select_id}", //选中商品品牌id
+			brandList ={:json_encode($brand_list)},
+			selectList = {}, //选中商品品牌所有数据res
+			brandIdArr = select_id.length ? select_id.split(',') : [],   //已选中的商品品牌id
+			table, form,laytpl,element;
+	$(function () {
+
+		for (var k in brandList) {
+			selectList['brand_id_' + brandList[k].brand_id] = {
+				brand_id: brandList[k].brand_id,
+				brand_name: brandList[k].brand_name,
+				image_url: brandList[k].image_url,
+			}
+		}
+
+		layui.use(['form', 'laytpl', 'element'], function () {
+			form = layui.form;
+			laytpl = layui.laytpl;
+			element = layui.element;
+			table = new Table({
+				elem: '#goods_brand_list',
+				url: '{:addon_url("shop/goodsbrand/brandselect")}',
+				cols: [
+					[
+						{
+							title: '<input type="checkbox" name="brand_checkbox_all" lay-skin="primary" lay-filter="brand_checkbox_all">',
+							width: "8%",
+							templet: '#checkbox'
+						},
+						{
+							field: 'brand_name',
+							title: '品牌名称',
+							width: '60%'
+						},
+						{
+							field: 'image_url',
+							title: '品牌图片',
+							width: '30%',
+							templet: function (d) {
+								return `<img layer-src src="${ns.img(d.image_url)}"/>`;
+							}
+						},
+					]
+				],
+				callback: function (res) {
+					// 更新复选框状态
+					for (var i = 0; i < brandIdArr.length; i++) {
+						var selected_brand = $("input[name='brand_checkbox'][data-brand-id='" + brandIdArr[i] + "']");
+						if (selected_brand.length) {
+							selected_brand.prop("checked", true);
+						}
+					}
+					form.render();
+					dealWithTableSelectedNum();
+				}
+			});
+
+			form.on('submit(search)', function (data) {
+				formSearch();
+				return false;
+			});
+
+			//公共搜索方法
+			function formSearch() {
+				var data = {};
+				data.search_text = $("input[name='search_text']").val();
+				data.brand_ids = brandIdArr.toString();
+				table.reload({
+					page: {
+						curr: 1
+					},
+					where: data
+				});
+			}
+
+			// 勾选商品品牌
+			form.on('checkbox(brand_checkbox_all)', function (data) {
+				var all_checked = data.elem.checked;
+				$("input[name='brand_checkbox']").each(function () {
+					var checked = $(this).prop('checked');
+					if (all_checked != checked) {
+						$(this).next().click();
+					}
+				})
+			});
+
+			// 勾选商品品牌
+			form.on('checkbox(brand_checkbox)', function (data) {
+				var brand_id = $(data.elem).attr("data-brand-id");
+				var spuLen = $("input[name='brand_checkbox'][data-brand-id=" + brand_id + "]:checked").length;
+				if (spuLen) {
+					var item = JSON.parse($("input[name='brand_json'][data-brand-id=" + brand_id + "]").val());
+					delete item.LAY_INDEX;
+					delete item.LAY_TABLE_INDEX;
+					selectList['brand_id_' + brand_id] = item;
+				} else {
+					delete selectList['brand_id_' + brand_id];
+				}
+				dealWithTableSelectedNum();
+			});
+
+		});
+
+	});
+
+	function selectGoodsBrand(callback) {
+		brandIdArr = [];
+		for (var key in selectList){
+			brandIdArr.push(selectList[key].brand_id);
+		}
+
+		if(brandIdArr.length == 0) {
+			layer.msg('请选择商品品牌');
+			return;
+		}
+		callback({
+			brandIds: brandIdArr,
+			list: selectList
+		});
+	}
+
+	//在表格底部增加了一个容器
+	function dealWithTableSelectedNum() {
+		$(".layui-table-bottom-left-container").html('已选择 '+ Object.keys(selectList).length +' 个商品品牌');
+	}
+</script>
+{/block}

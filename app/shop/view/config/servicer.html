@@ -1,0 +1,276 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin .layui-body .body-content{
+		background-color: transparent;
+		padding: 0;
+	}
+	.input-text span{margin-right: 15px;}
+	.form-wrap {margin-top: 0; position: relative;background: none;padding: 0}
+	.layui-layout-admin .layui-body .body-content{margin: 0 !important;}
+	.form-wrap .top{background: #f5f5f5;margin-top: 10px}
+	.layui-form-item.top .layui-form-label{text-align: left;font-weight: bold;padding-left: 15px;}
+	.layui-form-label{width: 100px ;}
+	.layui-form-label + .layui-input-block{margin-left: 94px ;}
+	.layui-form-item.top .border-left{border-left: 3px solid;padding-right: 5px;}
+	.layui-unselect.layui-form-radio.layui-form-radioed.layui-radio-disbaled i:after{background:#eee !important;}
+	.shop-information{width: 100%;background: white;padding: 20px;box-sizing: border-box;margin-bottom: 20px;}
+	.shop-information .layui-input-block{margin-left: 0 !important;}
+	.shop-information .main-title{display: flex;align-items: center;justify-content: space-between;margin-bottom: 18px;}
+	.shop-information .title{color:#333333;margin-bottom: 0;width: 50%;height: 16px;line-height: 16px;padding-left: 10px;border-left: 3px solid var(--base-color);box-sizing: border-box;font-size: 17px;}
+	.shop-information .main-title span{cursor: pointer;}
+	.word-aux{margin-left: 100px}
+	.all-box-left{margin-left: 100px;}
+	.card-common{margin-top: 0;}
+	.layui-layout-admin.admin-style-2 .body-content{margin: 15px !important;}
+	.layui-layout-admin.admin-style-2 .form-wrap{padding-top: 0;}
+	.input-text span{margin-right: 15px;}
+	.layui-form-item.top .layui-form-label{text-align: left;font-weight: bold;padding-left: 15px;}
+	.layui-form-item.top .border-left{border-left: 3px solid;padding-right: 5px;}
+	.layui-unselect.layui-form-radio.layui-form-radioed.layui-radio-disbaled i:after{background:#eee !important;}
+	.service-box .box .layui-form-label{width: 158px !important;height: 38px;line-height: 38px;}
+	.service-popup-box .layui-form-label{width: 140px;}
+	.service-popup-box .layui-form-label + .layui-input-block {margin-left: 140px}
+	.service-popup-box .word-aux{margin-left: 140px;}
+	.service-popup-box .all-box-left{margin-left: 140px;}
+	.service-box .box .top {margin-bottom: 0;}
+	.service-box{padding-bottom: 40px; width: calc(100% / 3);}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap card-common">
+	<div class="shop-information service-box">
+		<div class="main-title">
+			<div class="title">客服设置</div>
+			<span class="text-color" onclick="editService()">编辑</span>
+		</div>
+		<div class="box">
+			<div class="layui-form-item">
+				<label class="layui-form-label">H5/微信公众号端：</label>
+				<div class="layui-input-block">
+					{switch name="$config.h5.type"}
+					{case value="none"}未启用{/case}
+					{case value="niushop"}Niushop客服{/case}
+					{case value="wxwork"}企业微信客服{/case}
+					{case value="third"}第三方客服{/case}
+					{/switch}
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">微信小程序端：</label>
+				<div class="layui-input-block">
+					{switch name="$config.weapp.type"}
+					{case value="none"}未启用{/case}
+					{case value="niushop"}Niushop客服{/case}
+					{case value="wxwork"}企业微信客服{/case}
+					{case value="weapp"}小程序客服{/case}
+					{/switch}
+				</div>
+			</div>
+			{if $pc_is_exit}
+			<div class="layui-form-item">
+				<label class="layui-form-label">PC端：</label>
+				<div class="layui-input-block">
+					{switch name="$config.pc.type"}
+					{case value="none"}未启用{/case}
+					{case value="third"}第三方客服{/case}
+					{/switch}
+				</div>
+			</div>
+			{/if}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	function refreshArea(_formWin) {
+		var _formWinObj = $("#layui-layer" + _formWin);
+		var w = _formWinObj.outerWidth();
+		var h = _formWinObj.outerHeight();
+		var l = ($(document).width() - w) / 2;
+		var t = ($(window).height() - h) / 2;
+		_formWinObj.css({
+			"left": l,
+			"top": t
+		});
+	}
+</script>
+<script type="text/html" id="contentService">
+	<div class="layui-form form-wrap service-popup-box">
+		<div class="layui-form-item top">
+			<label class="layui-form-label"><span class="border-left border-color"></span>H5/微信公众号端</label>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">客服类型：</label>
+			<div class="layui-input-block">
+				<input type="radio" name="h5[type]" lay-filter="serviceType" lay-type="h5" value="none" title="不启用" {if condition="$config.h5.type == 'none'"} checked {/if}>
+				{if addon_is_exit('servicer')}<input type="radio" name="h5[type]" lay-filter="serviceType" lay-type="h5" value="niushop" title="Niushop客服" {if condition="$config.h5.type == 'niushop'"} checked  {/if}>{/if}
+				<input type="radio" name="h5[type]" lay-filter="serviceType" lay-type="h5" value="wxwork" title="企业微信客服" {if condition="$config.h5.type == 'wxwork'"} checked {/if}>
+				<input type="radio" name="h5[type]" lay-filter="serviceType" lay-type="h5" value="third" title="第三方客服" {if condition="$config.h5.type == 'third'"} checked {/if}>
+			</div>
+		</div>
+		<div class="h5-wrap wxwork" {if $config.h5.type != 'wxwork'} style="display: none" {/if}>
+		<div class="layui-form-item">
+			<label class="layui-form-label"><span class="required">*</span>企微客服链接：</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input len-mid" name="h5[wxwork_url]" value="{$config.h5.wxwork_url ?? ''}" lay-verify="h5WxworkUrl">
+			</div>
+		</div>
+		<div class="word-aux">H5中如何接入企业微信客服请查看<a href="https://work.weixin.qq.com/nl/act/p/3f8820e724cb44c5" target="_blank" class="text-color">在微信内网页中接入</a></div>
+	</div>
+	<div class="h5-wrap third" {if $config.h5.type != 'third'} style="display: none" {/if}>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>第三方客服链接：</label>
+		<div class="layui-input-block">
+			<input type="text" class="layui-input len-mid" name="h5[third_url]" value="{$config.h5.third_url ?? ''}" lay-verify="h5ThirdUrl">
+		</div>
+	</div>
+	<div class="word-aux">请填写客服链接，聊天时跳转至第三方聊天窗口。例如：<a href="https://meiqia.com/zt/livechat?utm_source=tian&amp;utm_medium=baidu&amp;utm_term=pinzhuan" target="_blank" class="text-color">美洽</a>、<a href="https://shang.qq.com/v3/widget.html" target="_blank" class="text-color">腾讯</a>等。</div>
+	</div>
+	<div class="layui-form-item top">
+		<label class="layui-form-label"><span class="border-left border-color"></span>微信小程序端</label>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">客服类型：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="weapp[type]" lay-filter="serviceType" lay-type="weapp" value="none" title="不启用" {if condition="$config.weapp.type == 'none'"} checked {/if}>
+			{if addon_is_exit('servicer')}<input type="radio" name="weapp[type]" lay-filter="serviceType" lay-type="weapp" value="niushop" title="Niushop客服" {if condition="$config.weapp.type == 'niushop'"} checked  {/if}>{/if}
+			<input type="radio" name="weapp[type]" lay-filter="serviceType" lay-type="weapp" value="weapp" title="小程序客服" {if condition="$config.weapp.type == 'weapp'"} checked {/if}>
+			<input type="radio" name="weapp[type]" lay-filter="serviceType" lay-type="weapp" value="wxwork" title="企业微信客服" {if condition="$config.weapp.type == 'wxwork'"} checked {/if}>
+		</div>
+	</div>
+	<div class="weapp-wrap wxwork" {if $config.weapp.type != 'wxwork'} style="display: none" {/if}>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>企业ID：</label>
+		<div class="layui-input-block">
+			<input type="text" class="layui-input len-mid" name="weapp[corpid]" value="{$config.weapp.corpid ?? ''}" lay-verify="weappCorpid">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>企微客服链接：</label>
+		<div class="layui-input-block">
+			<input type="text" class="layui-input len-mid" name="weapp[wxwork_url]" value="{$config.weapp.wxwork_url ?? ''}" lay-verify="weappWxworkUrl">
+		</div>
+	</div>
+	<div class="word-aux">小程序中如何接入企业微信客服请查看<a href="https://work.weixin.qq.com/nl/act/p/a733314375294bdd" target="_blank" class="text-color">在小程序中接入</a></div>
+	</div>
+	{if $pc_is_exit}
+	<div class="layui-form-item top">
+		<label class="layui-form-label"><span class="border-left border-color"></span>PC端</label>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">客服类型：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="pc[type]" lay-filter="serviceType" lay-type="pc" value="none" title="不启用" {if condition="$config.pc.type == 'none'"} checked {/if}>
+			<input type="radio" name="pc[type]" lay-filter="serviceType" lay-type="pc" value="third" title="第三方客服" {if condition="$config.pc.type == 'third'"} checked {/if}>
+		</div>
+	</div>
+	<div class="pc-wrap third" {if $config.pc.type != 'third'} style="display: none" {/if}>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>第三方客服链接：</label>
+		<div class="layui-input-block">
+			<input type="text" class="layui-input len-mid" name="pc[third_url]" value="{$config.pc.third_url ?? ''}" lay-verify="pcThirdUrl">
+		</div>
+	</div>
+	<div class="word-aux">请填写客服链接，聊天时跳转至第三方聊天窗口。例如：<a href="https://meiqia.com/zt/livechat?utm_source=tian&amp;utm_medium=baidu&amp;utm_term=pinzhuan" target="_blank" class="text-color">美洽</a>、<a href="https://shang.qq.com/v3/widget.html" target="_blank" class="text-color">腾讯</a>等。</div>
+	</div>
+	{/if}
+	<div class="form-row all-box-left">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+	</div>
+</script>
+<script>
+	var _system = {if !empty($config.system) && $config.system == 1} 1 {else/} 0 {/if},form,serviceOpen;
+	layui.use(['form'], function() {
+		form = layui.form;
+		repeat_flag = false; //防重复标识
+
+		form.render();
+
+		form.verify({
+			h5WxworkUrl: function(value){
+				if ($('[name="h5[type]"]:checked').val() == 'wxwork' && !/[\S]+/.test(value)) {
+					return '请输入客服链接';
+				}
+			},
+			h5ThirdUrl: function(value){
+				if ($('[name="h5[type]"]:checked').val() == 'third' && !/[\S]+/.test(value)) {
+					return '请输入客服链接';
+				}
+			},
+			weappCorpid: function(value){
+				if ($('[name="weapp[type]"]:checked').val() == 'wxwork' && !/[\S]+/.test(value)) {
+					return '请输入企业ID';
+				}
+			},
+			weappWxworkUrl: function(value){
+				if ($('[name="weapp[type]"]:checked').val() == 'wxwork' && !/[\S]+/.test(value)) {
+					return '请输入客服链接';
+				}
+			},
+			pcThirdUrl: function(value){
+				if ($('[name="pc[type]"]:checked').val() == 'third' && !/[\S]+/.test(value)) {
+					return '请输入客服链接';
+				}
+			}
+		})
+
+		form.on('radio(serviceType)',function(data){
+			var type = $(data.elem).attr('lay-type'),
+					value = data.value;
+			$('.' + type + '-wrap').hide();
+			$('.' + type + '-wrap.' + value).show();
+		})
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/config/servicer"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					if (res.code == 0) {
+						layer.msg('编辑成功');
+						location.reload();
+					}else{
+						repeat_flag = false;
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+	function showDemo(){
+		layer.open({
+			title: '查看示例',
+			type: 1,
+			area: ['700px', '660px'],
+			content: '<img style="margin:15px;" src="SHOP_IMG/chat1.png"><img style="margin:15px;" src="SHOP_IMG/chat2.png">'
+		})
+	}
+
+	function editService(){
+		serviceOpen= layer.open({
+			title:'客服设置',
+			type:1,
+			area: 'auto',
+			fixed:true,
+			maxWidth:1000,
+			maxHeight:800,
+			content:$("#contentService").html(),
+			success:function(layero,index){
+				form.render();
+			}
+		})
+	}
+</script>
+{/block}

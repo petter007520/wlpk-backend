@@ -1,0 +1,504 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css" />
+<link rel="stylesheet" href="SHOP_CSS/goods_service.css" />
+{/block}
+{block name="main"}
+
+<!-- 搜索框 -->
+<div class="single-filter-box">
+	<button class="layui-btn" onclick="addService()">添加商品服务</button>
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="请输入商品服务名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div id="table_app">
+	<!-- 列表 -->
+	<table id="attr_class_list" lay-filter="attr_class_list"></table>
+</div>
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<script type="text/html" id="addService">
+
+	<div class="layui-form" id="app">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>商品服务：</label>
+			<div class="layui-input-block">
+				<input name="service_name" type="text" placeholder="请输入商品服务名称" lay-verify="required" class="layui-input len-mid" maxlength="20">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">描述：</label>
+			<div class="layui-input-block">
+				<textarea name="desc" class="layui-textarea len-mid" maxlength="150"></textarea>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">图标：</label>
+			<div class="layui-input-block img-upload">
+				<div class="img-icon-box">
+					<img-icon-upload :data="{data:myData}"></img-icon-upload>
+					<div class="action-box">
+						<div class="action" v-if="myData.iconType == 'icon' && myData.icon" title="风格" @click="iconStyle($event)"><i class="iconfont iconpifu"></i></div>
+						<div class="action" v-if="myData.iconType == 'icon' && myData.icon" title="背景" @click="selectColor('icon-color-' +id)" :id="'icon-color-' +id"><i class="iconfont iconyanse"></i></div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeAttrLayer()">返回</button>
+		</div>
+	</div>
+
+</script>
+
+<script type="text/html" id="editService">
+
+	<div class="layui-form" id="app">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>商品服务：</label>
+			<div class="layui-input-block">
+				<input name="service_name" type="text" value="{{ d.service_name }}" placeholder="请输入商品服务名称" lay-verify="required" class="layui-input len-mid" maxlength="20">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">描述：</label>
+			<div class="layui-input-block">
+				<textarea name="desc" class="layui-textarea len-mid" maxlength="150">{{ d.desc }}</textarea>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">图标：</label>
+			<div class="layui-input-block img-upload">
+				<div class="img-icon-box">
+					<img-icon-upload :data="{data:myData}"></img-icon-upload>
+					<div class="action-box">
+						<div class="action" v-if="myData.iconType == 'icon' && myData.icon" title="风格" @click="iconStyle($event)"><i class="iconfont iconpifu"></i></div>
+						<div class="action" v-if="myData.iconType == 'icon' && myData.icon" title="背景" @click="selectColor('icon-color-' +id)" :id="'icon-color-' +id"><i class="iconfont iconyanse"></i></div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<input type="hidden" name="id" value="{{ d.id }}">
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="edit_save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeAttrLayer()">返回</button>
+		</div>
+	</div>
+
+</script>
+
+{/block}
+{block name="script"}
+
+<script src="STATIC_JS/vue.js"></script>
+{include file="diy/iconfont_component"/}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+
+
+<script>
+		var laytpl, add_attr_index = -1,
+				form, table,vue;
+		layui.use(['form', 'laytpl'], function() {
+			var repeat_flag = false; //防重复标识
+			laytpl = layui.laytpl;
+			form = layui.form;
+			form.render();
+
+			table = new Table({
+				elem: '#attr_class_list',
+				url: ns.url("shop/goodsservice/lists"),
+				cols: [
+					[ {
+						field: 'service_name',
+						title: '商品服务',
+						unresize: 'false',
+						width: '15%'
+					},{
+						title: '图标',
+						unresize: 'false',
+						width: '15%',
+						align: 'center',
+						templet: function (data) {
+							return iconHtml(data);
+						},
+
+					}, {
+						field:'desc',
+						unresize: 'false',
+						title: '描述',
+						width: '55%',
+						templet:'<div><span title="{{d.desc}}">{{d.desc}}</span></div>'
+					},  {
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						align : 'right'
+					}]
+				],
+				callback: function (){
+
+				}
+			});
+
+			/**
+			 * 监听工具栏操作
+			 */
+			table.tool(function(obj) {
+				var data = obj.data;
+
+				switch (obj.event) {
+					case 'edit':
+						editService(data);
+						break;
+					case 'delete':
+						deleteService(data.id);
+						break;
+				}
+			});
+
+			/**
+			 * 删除
+			 */
+			function deleteService(id) {
+				layer.confirm('确认删除该服务吗？', function() {
+					$.ajax({
+						url: ns.url("shop/goodsservice/delete"),
+						data: {
+							id:id
+						},
+						dataType: 'JSON',
+						type: 'POST',
+						success: function(res) {
+							layer.msg(res.message);
+							if (res.code == 0) {
+								table.reload();
+							}
+						}
+					});
+				});
+			}
+
+			/**
+			 * 搜索功能
+			 */
+			form.on('submit(search)', function(data) {
+				table.reload({
+					page: {
+						curr: 1
+					},
+					where: data.field
+				});
+			});
+
+			form.on('submit(save)', function(data) {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				data.field.icon = JSON.stringify(vue.myData)
+				$.ajax({
+					url: '{:addon_url("shop/goodsservice/add")}',
+					data: data.field,
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(data) {
+						layer.msg(data.message);
+						if (data.code == 0) {
+							table.reload();
+							layer.close(add_attr_index);
+						}
+						repeat_flag = false;
+					}
+				});
+				return false;
+			});
+
+			form.on('submit(edit_save)', function(data) {
+
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				data.field.icon = JSON.stringify(vue.myData)
+
+				$.ajax({
+					url: '{:addon_url("shop/goodsservice/edit")}',
+					data: data.field,
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(data) {
+						layer.msg(data.message);
+						if (data.code == 0) {
+							table.reload();
+							layer.close(add_attr_index);
+						}
+						repeat_flag = false;
+					}
+				});
+				return false;
+			});
+
+			/**
+			 * 表单验证
+			 */
+			form.verify({
+				num: function(value) {
+					if (value == '') {
+						return;
+					}
+					if (value % 1 != 0) {
+						return '排序数值必须为整数';
+					}
+					if (value < 0) {
+						return '排序数值必须为大于0';
+					}
+				}
+			});
+		});
+
+		function iconHtml(data){
+			var id = ns.gen_non_duplicate(10);
+			let iconData = JSON.parse(data.icon);
+
+			var html = '';
+
+			if(iconData.iconType == 'img'){
+				html += `
+					<div class="td-box">
+						<div class="icon-img-box">
+							<img src="${ns.img(iconData.imageUrl)}" alt="">
+						</div>
+
+					</div>
+				`;
+
+			}else if(iconData.iconType == 'icon') {
+				let iconBgStyle = '';
+				let iconStyle = '';
+				if(iconData.style) {
+					var style = {
+						'border-radius': iconData.style.bgRadius + '%',
+						'background': ''
+					};
+
+					if (iconData.style.iconBgImg) style['background'] += 'url(' + ns.img(iconData.style.iconBgImg) + ') no-repeat bottom / contain'
+					if (iconData.style.iconBgColor.length) {
+						if (style.background) style.background += ',';
+						if (iconData.style.iconBgColor.length == 1) {
+							style.background += iconData.style.iconBgColor[0];
+						} else {
+							style['background'] += 'linear-gradient(' + iconData.style.iconBgColorDeg + 'deg, ' + iconData.style.iconBgColor.join(',') + ')';
+						}
+					}
+					for (let i in style){
+						iconBgStyle += i+':'+style[i]+';';
+					}
+
+					var style = {
+						'font-size': iconData.style.fontSize + '%'
+					}
+					if (iconData.style.iconColor.length == 1) {
+						style.color = iconData.style.iconColor[0];
+					} else {
+						style['background'] = 'linear-gradient('+ iconData.style.iconColorDeg +'deg, '+ iconData.style.iconColor.join(',') +')';
+					}
+					for (let i in style){
+						iconStyle += i+':'+style[i]+';';
+					}
+				}
+
+				let iconClass = iconData.icon;
+				if (iconData.style && iconData.style.iconColor.length > 1) iconClass += ' gradient';
+				html += `
+					<div class="td-box">
+						<div class="icon-img-box">
+							<div class="icon-wrap" style="${iconBgStyle}">
+								<i class="js-icon ${iconClass}"  style="${iconStyle}"></i>
+							</div>
+						</div>
+					</div>
+				`;
+			}
+			return html;
+		}
+
+
+
+		function addService() {
+			var add_attr = $("#addService").html();
+			laytpl(add_attr).render({}, function(html) {
+				add_attr_index = layer.open({
+					title: '添加商品服务',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['500px', '500px'],
+					content: html,
+					success: function(){
+						init({
+							"imageUrl": "",
+							"icon" : "",
+							"iconType": "icon",
+							"style": '',
+						});
+					}
+				});
+			});
+
+		}
+
+		function editService(data) {
+			var add_attr = $("#editService").html();
+			laytpl(add_attr).render(data, function(html) {
+				add_attr_index = layer.open({
+					title: '编辑商品服务',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['500px', '500px'],
+					content: html,
+					success: function(){
+						if(data.icon){
+							if(isJSON(data.icon)){
+								init(JSON.parse(data.icon));
+							}else{
+								init({
+									"imageUrl": data.icon,
+									"icon" : "",
+									"iconType": "img",
+									"style": '',
+								});
+							}
+						}else{
+							init({
+								"imageUrl": "",
+								"icon" : "",
+								"iconType": "icon",
+								"style": '',
+							});
+						}
+					}
+				});
+			});
+		}
+		function isJSON(str) {
+			if (typeof str == 'string') {
+				try {
+					var obj = JSON.parse(str);
+					if (typeof obj == 'object' && obj) {
+						return true;
+					} else {
+						return false;
+					}
+
+				} catch (e) {
+					return false;
+				}
+			}
+		}
+
+		function closeAttrLayer() {
+			layer.close(add_attr_index);
+		}
+
+		function init(data){
+			vue = new Vue({
+				el: "#app",
+				data: {
+					myData: {},
+					id : '',
+					colorPicker:{}
+				},
+				created: function (){
+					this.id = ns.gen_non_duplicate(10);
+					this.myData = data;
+					loadImgMagnify();
+				},
+				methods: {
+					// 选择图标风格
+					iconStyle(event) {
+						var self = this;
+						selectIconStyle({
+							elem: event.currentTarget,
+							icon: self.myData.icon,
+							callback: function (data) {
+								if (data) {
+									self.myData.style = data;
+								} else {
+									iconStyleSet({
+										style: JSON.stringify(self.myData.style),
+										query: {
+											icon: self.myData.icon
+										}
+									}, function (style) {
+										self.myData.style = style;
+									})
+								}
+							}
+						})
+					},
+					/**
+					 * 渲染颜色组件
+					 * @param id
+					 * @param color
+					 * @param callback
+					 */
+					colorRender(id, color, callback) {
+						var self = this;
+						if (this.colorPicker[id]) return;
+						setTimeout(function () {
+							self.colorPicker[id] = Colorpicker.create({
+								el: id,
+								color: color,
+								change: function (elem, hex) {
+									callback(elem, hex)
+								}
+							});
+							$('#' + id).click();
+						}, 10)
+					},
+					selectColor(id) {
+						let self = this;
+						this.colorRender(id, '', function (elem, color) {
+							if (self.myData.style['iconBgImg'] || self.myData.style['iconBgColor'].length) {
+								self.myData.style['iconBgColor'] = [color];
+							} else {
+								self.myData.style['iconColor'] = [color];
+							}
+							self.$forceUpdate();
+						})
+					},
+					previewImg(id){
+						$('#'+id).find('div>img').click();
+					},
+
+				},
+				mounted(){
+
+				},
+				computed: {
+
+				}
+			})
+		}
+
+</script>
+
+{/block}

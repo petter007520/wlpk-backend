@@ -1,0 +1,40 @@
+<nc-component :data="data[index]" class="component-title-extend">
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="preview-box" :style="{ backgroundColor: nc.componentBgColor,
+			     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+			     borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0) }">
+			<h2>我是扩展标题组件</h2>
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>风格设置</h3>
+				<text-extend-style></text-extend-style>
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>标题样式</h3>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

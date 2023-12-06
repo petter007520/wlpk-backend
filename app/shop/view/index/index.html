@@ -1,0 +1,604 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/index.css">
+{/block}
+
+{block name="main"}
+{if isset($sms_num) && $sms_num < 500}
+<div class="top-tips">
+    <i class="iconfont icongantanhao"></i>
+    <div>店铺剩余短信条数 <span>{$sms_num}</span> 条，如需正常发送短信，请订购短信套餐<a href="{:addon_url('niusms://shop/sms/index?buy=1')}">立即订购</a></div>
+</div>
+{/if}
+
+{if $is_new_version == 1}
+<div class="top-tips">
+    <i class="iconfont icongantanhao"></i>
+    <div>小程序已更新，为了不影响您的使用请尽快下载小程序上传<a href="{:addon_url('shop/config/sitedeploy')}" target="_blank" style="margin-left: 0;">更新</a></div>
+</div>
+{/if}
+
+<div class="top-tips check-cron layui-hide">
+    <i class="iconfont icongantanhao"></i>
+    <div></div>
+</div>
+
+{if $is_new_domain == 1}
+<div class="top-tips">
+    <i class="iconfont icongantanhao"></i>
+    <div>检测到店铺域名发生变化，为了不影响您的使用，请尽快 <a href="{:addon_url('shop/config/sitedeploy')}" target="_blank" style="margin-left: 0;">部署网站</a>（手机端、电脑端、手机商家管理端、微信小程序等上传更新）独立部署除外</div>
+</div>
+{/if}
+
+{if $shop_status.shop_pc_status == 0 || $shop_status.shop_h5_status == 0 || $shop_status.shop_weapp_status == 0}
+<div class="top-tips">
+    <i class="iconfont icongantanhao"></i>
+    <div>该商城{if $shop_status.shop_pc_status == 0}pc端、{/if}{if $shop_status.shop_h5_status == 0}h5端、{/if}{if $shop_status.shop_weapp_status == 0}小程序端{/if}为关闭状态，用户无法访问。  <a href="{:addon_url('shop/shop/config')}" target="_blank" style="margin-left: 0;">点击跳转开启</a></div>
+</div>
+{/if}
+
+{if $img_extension_error}
+<div class="top-tips">
+    <i class="iconfont icongantanhao"></i>
+    <div>检测到当前配置的图片处理引擎为imagemagick，但未检测到该扩展，为了不影响您的使用，请安装该扩展或切换为使用GD库</div>
+</div>
+{/if}
+
+{if !$guide_close}
+<div class="common-wrap guide">
+    <div class="head">
+        <div class="title">新手导向</div>
+        <i class="iconfont iconclose_light"></i>
+    </div>
+    <div class="body guide-wrap">
+        <div class="guide-item">
+            <a href="{:url('shop/shop/config')}">
+                <div class="box">
+                    <div class="info-wrap">
+                        <div class="icon">
+                            <div class="bg-box"></div>
+                            <i class="iconfont icondianpu_"></i>
+                        </div>
+                        <div class="info">
+                            <div>完善店铺信息</div>
+                            <div class="desc">完善店铺基础信息等</div>
+                        </div>
+                        {if $site_complete}
+                        <div class="action complete"><i class="iconfont iconduihao"></i>完成</div>
+                        {else/}
+                        <div class="action">去完善</div>
+                        {/if}
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="guide-item">
+            <a href="{:url('shop/config/pay')}">
+                <div class="box">
+                    <div class="info-wrap">
+                        <div class="icon">
+                            <div class="bg-box"></div>
+                            <i class="iconfont iconzhifu"></i>
+                        </div>
+                        <div class="info">
+                            <div>设置支付配置</div>
+                            <div class="desc">支付方式配置(支付宝/微信)</div>
+                        </div>
+                        {if $pay_complete}
+                        <div class="action complete"><i class="iconfont iconduihao"></i>完成</div>
+                        {else/}
+                        <div class="action">去完善</div>
+                        {/if}
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="guide-item">
+            <a href="{:url('shop/diy/management')}">
+                <div class="box">
+                    <div class="info-wrap">
+                        <div class="icon">
+                            <div class="bg-box"></div>
+                            <i class="iconfont iconzhuangxiu1"></i>
+                        </div>
+                        <div class="info">
+                            <div>店铺装修</div>
+                            <div class="desc">店铺可实现自定义模板装修</div>
+                        </div>
+                        <div class="action complete"><i class="iconfont iconduihao"></i>完成</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="guide-item">
+            <a href="{:url('shop/goods/lists')}">
+                <div class="box">
+                    <div class="info-wrap">
+                        <div class="icon">
+                            <div class="bg-box"></div>
+                            <i class="iconfont iconshangpinguanli1"></i>
+                        </div>
+                        <div class="info">
+                            <div>上传商品</div>
+                            <div class="desc">商品管理中添加商品上传</div>
+                        </div>
+                        {if $goods_complete}
+                        <div class="action complete"><i class="iconfont iconduihao"></i>完成</div>
+                        {else/}
+                        <div class="action">去完善</div>
+                        {/if}
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="guide-item">
+            <a href="{:addon_url('wechat://shop/wechat/setting')}">
+                <div class="box">
+                    <div class="info-wrap">
+                        <div class="icon">
+                            <div class="bg-box"></div>
+                            <i class="iconfont iconqudaoshujufenxi"></i>
+                        </div>
+                        <div class="info">
+                            <div>设置渠道管理</div>
+                            <div class="desc">微信公众号/微信小程序</div>
+                        </div>
+                        {if $wechat_complete || $weapp_complete}
+                        <div class="action complete"><i class="iconfont iconduihao"></i>完成</div>
+                        {else/}
+                        <div class="action">去完善</div>
+                        {/if}
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{/if}
+
+<div class="common-wrap">
+    <div class="head">
+        <div class="title">实时概况</div>
+        <div class="sub-title">更新时间：{:date('Y-m-d H:i:s')}</div>
+    </div>
+    <div class="body summary-wrap">
+        <div class="summary-item">
+            <div class="title">今日订单数 <span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，店铺订单总数"></span></div>
+            <div class="value" id="order_pay_count">0</div>
+            <div class="bottom-title">昨日：<span id="stat_yesterday_order_pay_count">0</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日销售额<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，订单销售金额"></span></div>
+            <div class="value" id="stat_day_earnings_total_money">0.00</div>
+            <div class="bottom-title">昨日：<span id="stat_yesterday_earnings_total_money">0.00</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日新增会员数<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，新增加的会员数据"></span></div>
+            <div class="value" id="stat_day_member_count">0</div>
+            <div class="bottom-title">昨日：<span id="stat_yesterday_member_count">0</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日浏览量<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，会员的浏览量"></span></div>
+            <div class="value" id="stat_day_visit_count">0</div>
+            <div class="bottom-title">昨日：<span id="stat_yesterday_visit_count">0</span></div>
+        </div>
+    </div>
+    <div class="body summary-wrap">
+        <div class="summary-item">
+            <div class="title">订单总数</div>
+            <div class="value" id="shop_stat_sum_order_pay_count">0</div>
+        </div>
+        <div class="summary-item">
+            <div class="title">销售总额（元）</div>
+            <div class="value" id="shop_stat_sum_earnings_total_money">0.00</div>
+        </div>
+        <div class="summary-item">
+            <div class="title">会员总数</div>
+            <div class="value" id="shop_stat_sum_member_count">0</div>
+        </div>
+        <div class="summary-item">
+            <div class="title">总浏览量</div>
+            <div class="value" id="shop_stat_sum_visit_count">0</div>
+        </div>
+    </div>
+</div>
+
+<div class="common-wrap">
+    <div class="head">
+        <div class="title">待办事项</div>
+    </div>
+    <div class="body summary-wrap todo-list">
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/order/lists')}#!order_status=0'">
+            <div class="title">待付款订单<span class="iconfont iconwenhao js-prompt-top" data-tips="线上订单未支付订单数"></span></div>
+            <div class="value" id="waitpay">0</div>
+        </div>
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/order/lists')}#!order_status=1'">
+            <div class="title">待发货订单</div>
+            <div class="value" id="waitsend">0</div>
+        </div>
+
+        {if $is_fenxiao eq 0}
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/order/lists')}#!order_status=3'">
+            <div class="title">待收货订单</div>
+            <div class="value" id="waitconfirm">0</div>
+        </div>
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/order/lists')}#!order_status=10'">
+            <div class="title">已完成订单</div>
+            <div class="value" id="complete">0</div>
+        </div>
+        {/if}
+
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/orderrefund/lists')}'">
+            <div class="title">退款中订单</div>
+            <div class="value" id="refund">0</div>
+        </div>
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/goods/lists?stockalarm=1')}'">
+            <div class="title">库存预警</div>
+            <div class="value" id="goods_stock_alarm">0</div>
+        </div>
+
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/goods/lists', ['state' => 1])}'">
+            <div class="title">出售中商品</div>
+            <div class="value" id="goods_total">0</div>
+        </div>
+        <div class="summary-item" onclick="location.href='{:addon_url('shop/goods/lists', ['state' => 0])}'">
+            <div class="title">仓库中商品</div>
+            <div class="value" id="warehouse_goods">0</div>
+        </div>
+
+        {if $is_fenxiao eq 1}
+        <div class="summary-item" onclick="location.href='{:addon_url('fenxiao://shop/fenxiao/apply')}'">
+            <div class="title">分销商申请</div>
+            <div class="value" id="apply_count"></div>
+        </div>
+        <div class="summary-item" onclick="location.href='{:addon_url('fenxiao://shop/withdraw/lists')}'">
+            <div class="title">提现待审核</div>
+            <div class="value" id="withdraw_count">0</div>
+        </div>
+        {/if}
+    </div>
+</div>
+
+<div class="echart-wrap">
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">订单趋势（近十日）</div>
+        </div>
+        <div class="body">
+            <div id="order" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">销售额（元）</div>
+        </div>
+        <div class="body">
+            <div id="money" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="common-wrap">
+    <div class="head">
+        <div class="title">常用功能</div>
+    </div>
+    <div class="body common-function">
+        <div class="function-item" onclick="location.href = '{:url(\'shop/goods/addgoods\')}'">
+            <img src="SHOP_IMG/menu_icon/issue_good.png" alt="" class="icon">
+            <div class="title">发布商品</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:url(\'shop/diy/index\')}'">
+            <img src="SHOP_IMG/menu_icon/page_decoration.png" alt="" class="icon">
+            <div class="title">店铺装修</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:url(\'shop/shop/config\')}'">
+            <img src="SHOP_IMG/menu_icon/shop_settings.png" alt="" class="icon">
+            <div class="title">店铺设置</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:url(\'shop/order/lists\')}'">
+            <img src="SHOP_IMG/menu_icon/order_select.png" alt="" class="icon">
+            <div class="title">订单查询</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:url(\'shop/member/index\')}'">
+            <img src="SHOP_IMG/menu_icon/member_manage.png" alt="" class="icon">
+            <div class="title">会员管理</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:url(\'shop/memberwithdraw/lists\')}'">
+            <img src="SHOP_IMG/menu_icon/member_withdraw.png" alt="" class="icon">
+            <div class="title">会员提现</div>
+        </div>
+        {if $is_fenxiao == 1}
+        <div class="function-item" onclick="location.href = '{:addon_url(\'fenxiao://shop/order/lists\')}'">
+            <img src="SHOP_IMG/menu_icon/fenxiao_order.png" alt="" class="icon">
+            <div class="title">分销订单</div>
+        </div>
+        <div class="function-item" onclick="location.href = '{:addon_url(\'fenxiao://shop/fenxiao/index\')}'">
+            <img src="SHOP_IMG/menu_icon/fenxiao_config.png" alt="" class="icon">
+            <div class="title">分销管理</div>
+        </div>
+        {/if}
+    </div>
+</div>
+
+<div class="promotion-wrap">
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">营销活动</div>
+        </div>
+        <div class="body">
+            {foreach name="promotion" item="item" index="k"}
+            {if $k <7}
+            <div class="promotion-item">
+                <a href="{:addon_url($item.url)}">
+                    <div class="box">
+                        <div class="info-wrap">
+                            <img src="{:img($item.icon)}" alt="" class="icon">
+                            <div class="info">
+                                <div>{$item.title}</div>
+                                <div class="desc">{$item.description}</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {/if}
+            {/foreach}
+        </div>
+    </div>
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">应用工具</div>
+        </div>
+        <div class="body">
+            {foreach name="tool" item="item" index="k"}
+            {if $k < 7}
+            <div class="promotion-item">
+                <a href="{:addon_url($item.url)}">
+                    <div class="box">
+                        <div class="info-wrap">
+                            <img src="{:img($item.icon)}" alt="" class="icon">
+                            <div class="info">
+                                <div>{$item.title}</div>
+                                <div class="desc">{$item.description}</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {/if}
+            {/foreach}
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script src="SHOP_JS/echarts.min.js"></script>
+<script>
+
+    // 今日昨日统计
+    getDayCount();
+
+    // 综合统计
+    getSumCount();
+
+    // 图形统计
+    getChartCount();
+
+    function getDay(day){
+        var today = new Date();
+        var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+        today.setTime(targetday_milliseconds); //注意，这行是关键代码
+        var tYear = today.getFullYear();
+        var tMonth = today.getMonth();
+        var tDate = today.getDate();
+        tMonth = doHandleMonth(tMonth + 1);
+        tDate = doHandleMonth(tDate);
+        return tMonth + "-" + tDate;
+    }
+
+    function doHandleMonth(month) {
+        var m = month;
+        if (month.toString().length == 1) {
+            m = "0" + month;
+        }
+        return m;
+    }
+
+    //今日昨日统计
+    function getDayCount(){
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            url: ns.url("shop/index/dayCount"),
+            success: function (res) {
+                $('#order_pay_count').html(res.stat_day.order_pay_count);
+                $('#day_rate_order_pay_count').html(res.day_rate.order_pay_count);
+                $('#stat_yesterday_order_pay_count').html(res.stat_yesterday.order_pay_count);
+                $('#shop_stat_sum_order_pay_count').html(res.shop_stat_sum.order_pay_count);
+
+                $('#stat_day_order_total').html(res.stat_day.order_total);
+                $('#stat_yesterday_order_total').html(res.stat_yesterday.order_total);
+                $('#shop_stat_sum_order_total').html(res.shop_stat_sum.order_total);
+
+                $('#stat_day_earnings_total_money').html(res.stat_day.earnings_total_money);
+                $('#stat_yesterday_earnings_total_money').html(res.stat_yesterday.earnings_total_money);
+                $('#shop_stat_sum_earnings_total_money').html(res.shop_stat_sum.earnings_total_money);
+
+                $('#stat_yesterday_order_totals').html(res.stat_yesterday.order_total);
+                $('#stat_yesterday_order_pay_counts').html(res.stat_yesterday.order_pay_count);
+                $('#stat_day_member_count').html(res.stat_day.member_count);
+                $('#stat_yesterday_member_count').html(res.stat_yesterday.member_count);
+                $('#shop_stat_sum_member_count').html(res.member_count);
+                $('#stat_yesterday_member_counts').html(res.stat_yesterday.member_count);
+                $('#stat_day_visit_count').html(res.stat_day.visit_count);
+                $('#stat_yesterday_visit_count').html(res.stat_yesterday.visit_count);
+                $('#shop_stat_sum_visit_count').html(res.shop_stat_sum.visit_count);
+                $('#stat_yesterday_visit_counts').html(res.stat_yesterday.visit_count);
+                $('#day_rate_order_total').html(res.day_rate.order_total);
+                $('#day_rate_visit_count').html(res.day_rate.visit_count);
+                $('#day_rate_member_count').html(res.day_rate.member_count);
+            }
+        })
+    }
+
+    //综合统计
+    function getSumCount() {
+        $.ajax({
+            type:'post',
+            dataType:'json',
+            url:ns.url('shop/index/sumCount'),
+            success:function(res){
+                $('#waitpay').html(res.waitpay);
+                $('#apply_count').html(res.apply_count);
+                $('#goods_stock_alarm').html(res.goods_stock_alarm);
+                $('#goods_total').html(res.goods_total);
+                $('#refund').html(res.refund);
+                $('#waitsend').html(res.waitsend);
+                $('#warehouse_goods').html(res.warehouse_goods);
+                $('#withdraw_count').html(res.withdraw_count);
+            }
+        })
+    }
+
+    //图形统计
+    function getChartCount() {
+        $.ajax({
+            type:'post',
+            dataType:'json',
+            url:ns.url('shop/index/chartCount'),
+            success:function(res){
+                dealWithChart(res);
+            }
+        })
+    }
+
+    function dealWithChart(ten_day_json){
+        var data = [getDay(-9), getDay(-8), getDay(-7), getDay(-6), getDay(-5), getDay(-4), getDay(-3), getDay(-2), getDay(-1), getDay(0)];
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('order'));
+        var baseColor = getComputedStyle(document.documentElement).getPropertyValue('--base-color');
+        // 指定图表的配置项和数据
+        option = {
+            xAxis: {
+                type: 'category',
+                data: data
+            },
+            yAxis: {
+                type: 'value'
+            },
+            tooltip: {
+                formatter: function(params, ticket, callback) {
+                    return "日期：" + data[params.dataIndex] + '<br />' + params.seriesName + "：" + params.value;
+                },
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                padding: [5, 10],
+                textStyle: {
+                    color: '#fff',
+                    lineHeight: 30,
+                }
+            },
+            grid: {
+                top: '8%',
+                bottom: '9%',
+                left: '6%',
+                right: '4%'
+            },
+            series: [{
+                name: ['订单数'],
+                data: ten_day_json.order_pay_count,
+                type: 'bar',
+                showBackground: true,
+                barCategoryGap: '50%',
+                itemStyle: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: baseColor},
+                            {offset: 1, color: baseColor}
+                        ]
+                    )
+                }
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+
+        // 基于准备好的dom，初始化echarts实例
+        var moneyChart = echarts.init(document.getElementById('money'));
+
+        // 指定图表的配置项和数据
+        moneyOption = {
+            xAxis: {
+                type: 'category',
+                data: data
+            },
+            yAxis: {
+                type: 'value'
+            },
+            grid: {
+                top: '8%',
+                bottom: '9%',
+                left: '8%',
+                right: '4%'
+            },
+            tooltip: {
+                trigger: 'axis',
+                showContent: true,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                padding: [5, 10],
+                textStyle: {
+                    color: '#fff',
+                    lineHeight: 30,
+                },
+                formatter: function(params, ticket, callback) {
+                    return "日期：" + params[0].axisValue + '<br />' + params[0].seriesName + "：" + params[0].value + "元";
+                },
+            },
+            series: [{
+                name: ['销售额'],
+                data: ten_day_json.order_total,
+                type: 'line',
+                smooth: true,
+                itemStyle: {
+                    color: baseColor
+                },
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                        offset: 0,
+                        color: baseColor
+                    }, {
+                        offset: 1,
+                        color: '#fff'
+                    }])
+                }
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        moneyChart.setOption(moneyOption);
+    }
+
+    $('.guide .iconclose_light').click(function () {
+        $.cookie('guideClose', 1, { expires: 365 });
+        $('.guide').slideUp();
+    });
+
+    //检测自动任务标识缓存是否已过期
+    checkCron(); 
+    function checkCron() {
+        $.ajax({
+            type:'post',
+            dataType:'json',
+            url:ns.url('cron/task/checkCron'),
+            success:function(res){
+                if(res.code < 0){
+                    $(".check-cron").removeClass("layui-hide");
+                    let data = `因${res.message}，请联系客服解决。`;
+                    $(".check-cron > div").text(data);
+                }
+            }
+        })
+    }
+</script>
+{/block}

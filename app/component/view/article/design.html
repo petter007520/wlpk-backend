@@ -1,0 +1,105 @@
+<nc-component :data="data[index]" class="article-wrap">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div :class="['list-wrap',nc.style]" :style="{ backgroundColor: nc.componentBgColor,
+		borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		}">
+			<template v-if="nc.previewList && Object.keys(nc.previewList).length">
+				<div class="item" v-for="(item, previewIndex) in nc.previewList" :key="previewIndex" :style="{
+					     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+					     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+					     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+					     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+					     backgroundColor: nc.elementBgColor,
+					     boxShadow:  nc.ornament.type == 'shadow' ? ('0 0 5px ' + nc.ornament.color) : '',
+				         border: nc.ornament.type == 'stroke' ?  '1px solid ' + nc.ornament.color : ''
+				     }">
+					<div class="img-wrap">
+						<img :src="item.cover_img ? changeImgUrl(item.cover_img) : changeImgUrl('public/static/img/default_img/square.png')" />
+					</div>
+					<div class="info-wrap">
+						<div class="title">{{ item.article_title }}</div>
+						<div class="read-wrap">
+							<span class="category-icon bg-color" v-if="item.category_name"></span>
+							<span v-if="item.category_name">{{ item.category_name }}</span>
+							<span class="date">{{ nc.tempData.methods ? nc.tempData.methods.timeFormat(item.create_time, 'YYYY-MM-DD') : '' }}</span>
+						</div>
+					</div>
+				</div>
+			</template>
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<article-sources></article-sources>
+
+			<div class="template-edit-title">
+				<h3>文章数据</h3>
+				<div class="layui-form-item" v-if="nc.tempData.goodsSources">
+					<label class="layui-form-label sm">数据来源</label>
+					<div class="layui-input-block">
+						<div class="source-selected">
+							<div class="source">{{ nc.tempData.goodsSources[nc.sources].text }}</div>
+							<div v-for="(item,sourcesKey) in nc.tempData.goodsSources" :key="sourcesKey" class="source-item" :title="item.text" @click="nc.sources=sourcesKey" :class="{ 'text-color border-color' : (nc.sources == sourcesKey) }">
+								<i class='iconfont' :class='item.icon'></i>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item" v-if="nc.sources == 'diy'">
+					<label class="layui-form-label sm">手动选择</label>
+					<div class="layui-input-block">
+						<div class="selected-style" @click="nc.tempData.methods.addArticle()">
+							<span v-if="nc.articleIds.length == 0">请选择</span>
+							<span v-if="nc.articleIds.length > 0" class="text-color">已选{{ nc.articleIds.length }}个</span>
+							<i class="iconfont iconyoujiantou"></i>
+						</div>
+					</div>
+				</div>
+
+				<slide :data="{ field : 'count', label: '文章数量', min:1, max: 30}" v-if="nc.sources != 'diy'"></slide>
+
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>文章样式</h3>
+
+				<div class="layui-form-item tag-wrap">
+					<label class="layui-form-label sm">边框</label>
+					<div class="layui-input-block">
+						<div v-for="(item,ornamentIndex) in nc.tempData.ornamentList" :key="ornamentIndex" @click="nc.ornament.type=item.type" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.ornament.type==item.type) }">
+							<i class="layui-anim layui-icon">{{ nc.ornament.type == item.type ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<color v-if="nc.ornament.type != 'default'" :data="{ field : 'color', 'label' : '边框颜色', parent : 'ornament', defaultColor : '#EDEDED' }"></color>
+
+				<color :data="{ field : 'elementBgColor', 'label' : '文章背景' }"></color>
+
+				<slide v-show="nc.elementAngle == 'round'" :data="{ field : 'topElementAroundRadius', label : '上圆角', max : 50 }"></slide>
+				<slide v-show="nc.elementAngle == 'round'" :data="{ field : 'bottomElementAroundRadius', label : '下圆角', max : 50 }"></slide>
+			</div>
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

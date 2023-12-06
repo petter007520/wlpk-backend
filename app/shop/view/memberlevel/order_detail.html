@@ -1,0 +1,129 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-colla-content li { line-height: 30px; }
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">订单详情</span>
+	</div>
+
+	<div class="layui-card-body">
+		<div class="layui-form-item">
+			<label class="layui-form-label">订单号：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.order_no}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">交易号：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.out_trade_no}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">订单类型：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.order_type == 1 ? '开卡' : '续费'}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">订单状态：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">
+					{switch name="$order.data.order_status"}
+						{case value="0"}待支付{/case}
+						{case value="1"}已支付{/case}
+						{case value="-1"}已关闭{/case}
+					{/switch}
+				</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">客户头像：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">
+					<img class="member_img" src="{:img($order.data.headimg)}"  width="40px" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+				</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">客户昵称：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.nickname}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">会员卡名称：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.level_name}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">购买时长：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">
+					{switch name="$order.data.period_unit"}
+						{case value="week"}一周{/case}
+						{case value="month"}一月{/case}
+						{case value="quarter"}一季{/case}
+						{case value="year"}一年{/case}
+					{/switch}
+				</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">订单金额：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.order_money}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">下单时间：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{:time_to_date($order.data.create_time)}</p>
+			</div>
+		</div>
+
+		{if $order.data.order_status eq 1}
+		<div class="layui-form-item">
+			<label class="layui-form-label">支付方式：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{$order.data.pay_type_name}</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">支付时间：</label>
+			<div class="layui-input-block len-mid">
+				<p class="input-text len-mid">{:date('Y-m-d H:i:s', $order.data.pay_time)}</p>
+			</div>
+		</div>
+		{/if}
+		
+		<div class="form-row">
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	function back() {
+		location.href = ns.url("memberrecharge://shop/memberrecharge/order_lists");
+	}
+</script>
+{/block}

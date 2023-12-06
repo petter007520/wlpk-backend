@@ -1,0 +1,131 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-table-view .layui-table[lay-size=lg] .layui-table-cell{line-height: 2}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="single-filter-box">
+	<div class="layui-form">
+
+		<div class="layui-input-inline">
+			<select name="change_type">
+				<option value="">请选择变更方式</option>
+				{foreach $level_change_type as $k => $v}
+				<option value="{$k}">{$v}</option>
+				{/foreach}
+			</select>
+		</div>
+
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入会员名称/手机号" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<script type="text/html" id="member_info">
+	<div class="table-title">
+		<div class="title-pic">
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' "/>
+		</div>
+		<div class="title-content">
+			<a href="javascript:;" class="multi-line-hiding text-color"
+			   title="{{d.nickname}}">{{d.nickname}}</a>
+		</div>
+	</div>
+</script>
+
+<table id="records_list" lay-filter="records_list"></table>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table, form = layui.form;
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#records_list',
+			url: ns.url("shop/memberlevel/levelrecords"),
+			cols: [
+				[{
+					field: 'level_name',
+					title: '会员信息',
+					width: '16%',
+					unresize: 'false',
+					templet: '#member_info'
+				},{
+					field: 'before_level_name',
+					title: '变更前',
+					width: '12%',
+					unresize: 'false',
+					templet: function (data) {
+						let html = '类型：';
+						html += data.before_level_type == 0 ? '免费卡': '付费卡';
+						html += '<br>名称：'+data.before_level_name;
+						return html
+					}
+				},{
+					field: 'after_level_name',
+					title: '变更后',
+					width: '12%',
+					unresize: 'false',
+					templet: function (data) {
+						let html = '类型：';
+						html += data.after_level_type == 0 ? '免费卡': '付费卡';
+						html += '<br>名称：'+data.after_level_name;
+						return html
+					}
+
+				}, {
+					field: 'change_time',
+					title: '变更时间',
+					width: '15%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.change_time);
+					}
+
+				},{
+					field: 'action_type',
+					title: '操作人类型',
+					width: '10%',
+					unresize: 'false',
+					templet: function (data) {
+						return data.action_type == 'user' ? '后台用户': '会员自身';
+					}
+				},{
+					field: 'action_name',
+					title: '操作人',
+					width: '10%',
+					unresize: 'false'
+				}, {
+					field:'change_type_name',
+					title: '变更方式',
+					width: '10%',
+					unresize: 'false',
+				}]
+			]
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload( {
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+</script>
+{/block}

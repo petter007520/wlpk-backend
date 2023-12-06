@@ -1,0 +1,223 @@
+<style>
+    .link-box{font-size:12px;margin-top: 10px;}
+    .link-box .link-center{display:flex;height:480px}
+    .link-box .link-left{overflow-y:auto;width:138px;height:100%;border-right:1px solid #f2f2f2}
+    .link-box .link-left::-webkit-scrollbar{display: none;}
+    .link-box .link-left dt{position:relative;padding-left:15px;height:32px;line-height:32px;cursor:pointer;transition:all .3s}
+    .link-box .link-left dt.triangle:after{content:'';position:absolute;left:0;top:51%;transform:translateY(-50%);border:4px solid transparent;border-right-color:#333;border-bottom-color:#333;cursor:pointer}
+    .link-box .link-left dt.active:after{transform:translateY(-50%) rotate(-45deg)}
+    .link-box .link-left dd{margin-right:25px;padding-left:25px;height:32px;line-height:32px;color:#666;cursor:pointer}
+    .link-box .link-left dd:hover{background-color:#f2f2f2}
+    .link-box .link-right{overflow-y:auto;height:100%;flex:1;padding-left:20px;display: none;}
+    .link-box .link-right dl{overflow:hidden;display: none;}
+    .link-box .link-right dt{height:40px;line-height:40px}
+    .link-box .link-right dd{float:left;margin:5px 5px 5px 0;padding:0 16px;border:1px solid #ededed;border-radius:3px;line-height:30px;color:#666;cursor:pointer}
+    .link-btn{position: relative;top: 10px;padding-top: 10px;margin-top:20px;padding-right:10px;height:45px;line-height:45px;text-align:right;border-top:1px solid #f2f2f2}
+
+    .goods-category-list .layui-table td {border-left: 0;border-right: 0;}
+    .goods-category-list .layui-table .switch {font-size: 16px;cursor: pointer;width: 12px;line-height: 1;display: inline-block;text-align: center;vertical-align: middle;}
+	.goods-category-list .layui-table img {width: 40px;}
+	.layui-layer-page .layui-layer-btn{padding: 0;}
+</style>
+<div class="link-box">
+    <div class="link-center">
+        <div class="link-left">
+            {foreach $list as $k => $link}
+            <dl>
+                <dt data-name="{$link.name}" {notempty name='$link.child_list'}class="triangle"{/notempty}>{$link.title}</dt>
+                {foreach $link.child_list as $child_k => $child_link}
+                <dd data-name="{$child_link.name}" {if !empty($select_link) && !empty($select_link.parent) && $select_link.parent == $child_link.name }class="text-color"{/if}>{$child_link.title}</dd>
+                {/foreach}
+            </dl>
+            {/foreach}
+        </div>
+        <div class="link-right js-system">
+	        {foreach $list as $k => $link}
+		        {foreach $link.child_list as $second_k => $second_link}
+	                {notempty name="$second_link.child_list"}
+		                {foreach $second_link.child_list as $third_k => $third_link}
+				        <dl data-parent="{$third_link.parent}">
+					        <dt>{$third_link.title}</dt>
+					        {notempty name="$third_link.child_list"}
+						        {foreach $third_link.child_list as $four_k => $four_link}
+						            <dd data-name="{$four_link.name}" data-wap-url="{$four_link.wap_url}" {if !empty($select_link) && isset($select_link.name) && $select_link.name == $four_link.name }class="border-color text-color"{/if}>{$four_link.title}</dd>
+						        {/foreach}
+					        {/notempty}
+				        </dl>
+	                    {/foreach}
+	                {/notempty}
+		        {/foreach}
+	        {/foreach}
+        </div>
+	    <div class="link-right js-extend"></div>
+    </div>
+    <div class="link-btn">
+        <button class="layui-btn link-save">确定</button>
+        <button class="layui-btn link-eliminate layui-btn-primary">清空</button>
+        <button class="layui-btn link-cancel layui-btn-primary">取消</button>
+    </div>
+</div>
+
+<!-- 商品分类 -->
+<script type="text/html" id="goodsCategoryHtml">
+	<div class="goods-category-list layui-form">
+		<table class="layui-table">
+			<colgroup>
+				<col width="5%">
+				<col width="3%">
+				<col width="34%">
+				<col width="33%">
+				<col width="25%">
+			</colgroup>
+			<thead>
+				<tr>
+					<th></th>
+					<th></th>
+					<th>分类名称</th>
+					<th>简称</th>
+					<th>图片</th>
+				</tr>
+			</thead>
+			<tbody>
+			{if condition="$category_list"}
+				{foreach name="$category_list" item="vo"}
+				<tr class='category-line'>
+					<td><input type="checkbox" name="category_id" lay-skin="primary" data-category-name="{$vo['category_name']}" value="{$vo['category_id']}" lay-filter="category_id" {if !empty($select_link.category_id) && $select_link.category_id == $vo['category_id']}checked{/if}></td>
+					<td>
+						{notempty name="$vo['child_list']"}
+						<span class="switch text-color js-switch" data-category-id="{$vo['category_id']}" data-operation="off">+</span>
+						{/notempty}
+					</td>
+					<td>{$vo['category_name']}</td>
+					<td>{$vo['short_name']}</td>
+					<td>
+						{notempty name="$vo['image']"}
+						<div class="img-box">
+							<img layer-src src="{:img($vo['image'])}"/>
+						</div>
+						{/notempty}
+					</td>
+				</tr>
+					{notempty name="$vo['child_list']"}
+						{foreach name="$vo['child_list']" item="second"}
+						<tr class='category-line' data-pid="{$second['pid']}" style="display:none;">
+							<td><input type="checkbox" name="category_id" lay-skin="primary" data-category-name="{$second['category_name']}" lay-filter="category_id" value='{$second['category_id']}' {if !empty($select_link.category_id) && $select_link.category_id == $second['category_id']}checked{/if}></td>
+							<td></td>
+							<td style="padding-left: 30px;">
+								{notempty name="$second['child_list']"}
+								<span class="switch text-color js-switch" data-category-id="{$second['category_id']}" data-operation="off" style="padding-right: 20px;">+</span>
+								{/notempty}
+								<span>{$second['category_name']}</span>
+							</td>
+							<td>{$second['short_name']}</td>
+							<td>
+								{notempty name="$second['image']"}
+								<div class="img-box">
+									<img layer-src src="{:img($second['image'])}"/>
+								</div>
+								{/notempty}
+							</td>
+						</tr>
+							{notempty name="$second['child_list']"}
+								{foreach name="$second['child_list']" item="third"}
+								<tr class='category-line' data-pid="{$third['pid']}" style="display:none;">
+									<td><input type="checkbox" name="category_id" lay-skin="primary" data-category-name="{$third['category_name']}" lay-filter="category_id" value='{$third['category_id']}' {if !empty($select_link.category_id) && $select_link.category_id == $third['category_id']}checked{/if}></td>
+									<td></td>
+									<td style="padding-left: 80px;">
+										<span>{$third['category_name']}</span>
+									</td>
+									<td>{$third['short_name']}</td>
+									<td>
+										{notempty name="$third['image']"}
+										<div class="img-box">
+											<img layer-src src="{:img($third['image'])}"/>
+										</div>
+										{/notempty}
+									</td>
+								</tr>
+								{/foreach}
+							{/notempty}
+
+						{/foreach}
+					{/notempty}
+
+				{/foreach}
+			{else/}
+			<tr>
+				<td colspan="5" style="text-align: center">无数据</td>
+			</tr>
+			{/if}
+			</tbody>
+		</table>
+	</div>
+</script>
+
+<script type="text/html" id="goods_info">
+	<div class="table-title">
+		<div class="title-pic" id="goods_img_{{d.goods_id}}">
+			<img layer-src src="{{ns.img(d.goods_image.split(',')[0],'small')}}"/>
+		</div>
+		<div class="title-content">
+			<a href="javascript:;" class="multi-line-hiding" title="{{d.goods_name}}">{{d.goods_name}}</a>
+		</div>
+	</div>
+</script>
+
+<!--自定义链接-->
+<script type="text/html" id="customHtml">
+    <div class="layui-form custom-link">
+        <div class="layui-form-item">
+            <label class="layui-form-label mid"><span class="required">*</span>链接名称</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" value="{{ d.title ? d.title : '' }}" placeholder="请输入链接名称" class="layui-input len-mid" autocomplete="off">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label mid"><span class="required">*</span>跳转路径</label>
+            <div class="layui-input-block">
+                <input type="text" name="wap_url" value="{{ d.wap_url ? d.wap_url : '' }}" placeholder="请输入跳转路径" class="layui-input len-mid" autocomplete="off">
+            </div>
+            <div class="word-aux mid">路径必须以“/”开头，例：/pages/index/index</div>
+            <div class="word-aux mid">跳转外部链接“/”开头，例：https://baidu.com</div>
+        </div>
+    </div>
+</script>
+
+<!--跳转小程序-->
+<script type="text/html" id="appletHtml">
+    <div class="layui-form other-applet">
+        <div class="layui-form-item">
+            <label class="layui-form-label mid"><span class="required">*</span>小程序AppID</label>
+            <div class="layui-input-inline">
+                <input type="text" name="appid" value="{{ d.appid ? d.appid : '' }}" class="layui-input len-mid" placeholder="请输入要打开的小程序的appid" autocomplete="off">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label mid">小程序路径</label>
+            <div class="layui-input-block">
+                <input type="text" name="page" value="{{ d.page ? d.page : '' }}" class="layui-input len-mid" placeholder="请输入要打开的小程序路径" autocomplete="off">
+            </div>
+            <div class="word-aux mid">仅支持小程序之间的跳转，不支持从其他渠道跳转小程序</div>
+            <div class="word-aux mid">小程序路径如果为空则跳转到小程序首页</div>
+            <div class="word-aux mid">小程序路径格式如：page/index/index</div>
+        </div>
+    </div>
+</script>
+
+<!--拨打手机号-->
+<script type="text/html" id="mobileHtml">
+    <div class="layui-form call-mobile">
+        <div class="layui-form-item">
+            <label class="layui-form-label mid"><span class="required">*</span>电话号码</label>
+            <div class="layui-input-inline">
+                <input type="text" name="mobile" value="{{ d.mobile ? d.mobile : '' }}" class="layui-input len-mid" placeholder="请输入电话号码">
+            </div>
+        </div>
+        <div class="word-aux mid">电话号码支持手机号码和固定电话</div>
+    </div>
+</script>
+
+<script>
+	var selectLink = {:json_encode($select_link)};
+</script>
+<script src="STATIC_EXT/diyview/js/link.js"></script>

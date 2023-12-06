@@ -1,0 +1,198 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_graphic_message.css">
+<link rel="stylesheet" href="SHOP_CSS/goods_lists.css">
+<style type="text/css">
+	.new-btn {
+		background-color: #fff !important;
+		border: 1px solid #ff6c04;
+		color: #ff6c04;
+	}
+	
+	.new-btn:hover {
+		color: #ff6c04 !important;
+	}
+	.img-upload{margin-left: 0}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse tips-wrap">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示<i class="layui-icon layui-colla-icon"></i></h2>
+		<ul class="layui-colla-content layui-show">
+			<li>由于微信公众平台的接口规范，仅提供向微信认证服务号商家。如你的公众号同时具有微信支付权限，你还可以在正文内添加超级链接。</li>
+		</ul>
+	</div>
+</div>
+<!-- 按钮容器 -->
+<!-- <div class="single-filter-box">
+	<button class="layui-btn" onclick="add_tuwen()">添加图文</button>
+	<button class="layui-btn new-btn" onclick="add_text()">添加文本</button>
+</div> -->
+<div id='graphic_message'>
+	<div class='graphic-message'>
+		<img src='WECHAT_IMG/mobile_head.png'/>
+		<ul class='graphic-message-list'>
+			<template v-for="(value, index) in article_item_list">
+				<li @click.stop="chooseGraphicMessage(index)" @mouseenter="moveThis(index)" @mouseleave="leaveThis(index)">
+					<content>
+						<template v-if="value.cover.path == ''">
+							<div class='empty-img'></div>
+							<span class='empty-hint'>{{index == 0 ? '封面图片' : '缩略图'}}</span>
+						</template>
+						<img v-else :src="value.cover.path"/>
+						<div class='mask-layer'></div>
+						<h4 class='title'><span>{{value.title == '' ? '标题' : value.title}}</span></h4>
+					</content>
+					<div class='action'>
+						<template v-if="(index == 0 && index == current_msg_index) || (move_index == 0 && index == 0)">
+							<span class='edit' @click.stop="chooseGraphicMessage(index)">编辑</span>
+						</template>
+						<template v-else-if="move_index == index || index == current_msg_index">
+							<span class='edit' @click.stop="chooseGraphicMessage(index)">编辑</span>
+							<span class='delete' @click.stop="deleteGraphicMessage(index)">删除</span>
+						</template>
+					</div>
+				</li>
+			</template>
+		</ul>
+		<div class='add-graphic-message'>
+			<h4>
+				<a @click="addGraphicMessage()">新增</a>
+			</h4>
+		</div>
+		<div class='bottom-botton'>
+			<template v-if="material_id == 0">
+				<button class='layui-btn' @click="saveGraphicMessage()">保存</button>
+			</template>
+			<button class='layui-btn' v-else @click="editGraphicMessage()">保存</button>
+		</div>
+	</div>
+	<div class='editor-box' :style="'margin-top:' + editBoxTopPosition + 'px'">
+		<div class='arrow'></div>
+		<div class='editor-title'>
+			<label>标题<span class='hint'>（必填）</span></label>
+			<input class="layui-input" id="input_title" placeholder="请在这里输入标题" maxlength="64" v-model="inputTitle" max-length="70"/>
+		</div>
+		<div class='editor-author'>
+			<label>作者<span class='hint'>（选填）</span></label>
+			<input class="layui-input" id="input_autor" placeholder="请输入作者" maxlength="16" v-model="inputAutor" max-length="20"/>
+		</div>
+		<div class='editor-cover'>
+			<label>封面<span class='hint'>（图片建议尺寸：900 x 500像素 必填）</span></label>
+			<!--<div class="choose-cover">-->
+				<!--<div class="choose-cover-pic">-->
+					<!--<img :src="coverImg"/>-->
+				<!--</div>-->
+				<!--<template v-if="coverImg == ''">-->
+					<!--<a class="text-color" id="uploadImg" href="javascript:;">上传图片...</a>-->
+				<!--</template>-->
+				<!--<template v-else>-->
+					<!--<a id="uploadImg" style="margin-top: 15px;" href="javascript:;">更换封面图...</a>-->
+				<!--</template>-->
+			<!--</div>-->
+
+			<div class="layui-input-block img-upload">
+				<div class="upload-img-block">
+					<div class="upload-img-box hover" v-if="coverImg">
+						<div class="upload-default" id="uploadImg" >
+							<div id="preview_uploadImg" class="preview_img">
+								<img layer-src :src="coverImg" class="img_prev" :data-img="coverImg"/>
+							</div>
+						</div>
+						<div class="operation">
+							<div>
+								<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+								<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+							</div>
+							<div class="replace_img js-replace">点击替换</div>
+						</div>
+						<input type="hidden" name="logo" id="logo" :value="coverImg"/>
+					</div>
+					<div class="upload-img-box" v-else>
+						<div class="upload-default" id="uploadImg" >
+							<div class="upload">
+								<i class="iconfont iconshangchuan"></i>
+								<p>点击上传</p>
+							</div>
+						</div>
+						<div class="operation">
+							<div>
+								<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+								<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+							</div>
+							<div class="replace_img js-replace">点击替换</div>
+						</div>
+						<input type="hidden" name="logo" id="logo" />
+					</div>
+				</div>
+			</div>
+			<label class="editor-msg-label" :class="checkShowCoverPic ? 'selected' : ''" for="check_show_cover_pic">
+				<input type="checkbox" id="check_show_cover_pic" value="1" v-model="checkShowCoverPic"/>
+				封面图片显示在正文中
+			</label>
+		</div>
+		<div class='editor-content'>
+			<label>正文<span class='hint'>（必填）</span></label>
+			<script id="editor" type="text/plain" style="width:380px; height:300px;"></script>
+		</div>
+ 		<div class='editor-url'>
+			<label>原文链接<span class='hint'>（选填）</span></label>
+			<input class="layui-input" id="original_url" placeholder="例：http://www.example.com" maxlength="100" v-model="inputOriginalUrl"/>
+		</div>
+	</div>
+	<input type='hidden' id='edit_flag' value='{$flag}'/>
+	<input type='hidden' id='material_id' value='{$material_id}'/>
+	<div class="loading" :class="{ show: loading }"><i class=" layui-icon layui-icon-loading layui-icon layui-anim layui-anim-rotate layui-anim-loop"></i></div>
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+<script src='WECHAT_JS/wx_graphic_message.js'></script>
+<script>
+	function add_tuwen()
+	{
+		location.href = ns.url("wechat://shop/material/add");
+		$('.addtext').addClass('new-btn');
+		$('.addtuwen').removeClass('new-btn');
+	}
+	var material_id = $("#material_id").val();
+	if(material_id != 0){
+		var timer_new = setInterval(function () {
+			if($(".img_prev").attr('data-img') && $("#material_id").val()){
+				loadImgMagnify();
+				var logo_upload = new Upload({
+					elem: '#uploadImg',
+					callback:function (res) {
+						if (res.code >= 0) {
+							//成功之后将图片的路径存放再隐藏域中，便于提交使用
+							// $("input[name='web_qrcode']").val(res.data.pic_path);
+							vue_obj.coverImg = ns.img(res.data.pic_path);
+							vue_obj.article_item_list[vue_obj.current_msg_index].cover.path = ns.img(res.data.pic_path);
+							//将图片展示在页面上
+							// $("#webQrcodeUpload").html("<img src=" + ns.img(res.data.pic_path) + " >");
+						}
+					}
+				});
+				clearInterval(timer_new);
+			}
+		}, 1000);
+	}
+
+</script>
+
+<script>
+	function add_text()
+	{
+		location.href = ns.url("wechat://shop/material/addTextMaterial");
+		$('.addtuwen').addClass('new-btn')
+		$('.addtext').removeClass('new-btn')
+	}
+</script>
+
+<!-- 百度编辑器 -->
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+{/block}
+

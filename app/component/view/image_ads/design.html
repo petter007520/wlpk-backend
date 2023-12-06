@@ -1,0 +1,112 @@
+<nc-component :data="data[index]" class="image-ads">
+
+	<!-- 预览 -->
+	<template slot="preview">
+
+		<template v-if="nc.lazyLoad">
+			<image-ads-carouse></image-ads-carouse>
+			<div class="image-ads-warp"  :style="{
+				backgroundColor: nc.componentBgColor,
+				borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0)
+			}">
+				<div class="image-ads-content">
+					<template v-for="(item,index) in nc.list">
+						<div v-if="item.imageUrl" :style="{height: nc.tempData.swiperHeight + 'px'}" :class="['image-ads-item',{'layui-hide': nc.tempData.carouselIndex != index}]">
+							<nc-image :src="changeImgUrl(item.imageUrl)" :mode="item.imageMode"></nc-image>
+						</div>
+ 						<div v-else :style="{backgroundImage: 'url(' + changeImgUrl('public/static/img/default_img/figure.png')  + ')',height: nc.tempData.swiperHeight + 'px'}" :class="['image-ads-item',{'layui-hide': nc.tempData.carouselIndex != index}]"></div>
+					</template>
+				</div>
+				<div class="carousel-btn" v-if="nc.list.length > 1">
+					<div class="arrows">
+						<i class="iconfont iconback_light"  @click="nc.tempData.carouselIndex = (nc.tempData.carouselIndex ? nc.tempData.carouselIndex-1 : nc.tempData.carouselIndex)"></i>
+						<i class="iconfont iconyoujiantou" @click="nc.tempData.carouselIndex = [nc.tempData.carouselIndex < nc.list.length-1  ? +nc.tempData.carouselIndex+1 : nc.list.length-1]"></i>
+					</div>
+					<div :class="['dot-wrap',nc.indicatorLocation,nc.carouselStyle]">
+						<i v-for="(numItem,numIndex) in nc.list.length" :class="{'active': nc.tempData.carouselIndex == numIndex}" :style="[nc.tempData.carouselIndex == numIndex && {'backgroundColor': nc.indicatorColor}]" @click="nc.tempData.carouselIndex = numIndex"></i>
+					</div>
+				</div>
+			</div>
+		</template>
+
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>图片设置</h3>
+				<image-ads-list></image-ads-list>
+				<div class="image-ad-list">
+					<p class="word-aux">建议上传尺寸相同的图片，推荐尺寸750*350</p>
+					<ul class="navigation-set-list">
+						<li v-for="(item,index) in nc.list" :data-sort="index" :data-index="index" :key="item.id">
+							<img-upload :data="{ data: item}" data-disabled="1"></img-upload>
+							<div class="content-block">
+								<nc-link :data="{ field : item.link }"></nc-link>
+								<nc-image-mode :data="item"></nc-image-mode>
+							</div>
+							<div class="error-msg"></div>
+							<i class="del" @click="nc.tempData.methods.deleteItem(index)" data-disabled="1">x</i>
+							<div class="iconfont icontuodong"></div>
+						</li>
+					</ul>
+					<div class="add-item text-color" v-if="nc.list.length < 10" @click="nc.tempData.methods.addItem()">
+						<p>
+							<i>+</i>
+							<span>添加一个图片广告</span>
+						</p>
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title" v-if="nc.list.length > 1">
+				<h3>指示器设置</h3>
+
+				<div class="layui-form-item checkbox-wrap">
+					<label class="layui-form-label sm">展示开关</label>
+					<div class="layui-input-block">
+						<span v-if="nc.indicatorIsShow == true">显示</span>
+						<span v-else>隐藏</span>
+						<div v-if="nc.indicatorIsShow == true" @click="nc.indicatorIsShow = false" class="layui-unselect layui-form-checkbox layui-form-checked" lay-skin="primary"><i class="layui-icon layui-icon-ok"></i></div>
+						<div v-else @click="nc.indicatorIsShow = true" class="layui-unselect layui-form-checkbox" lay-skin="primary"><i class="layui-icon layui-icon-ok"></i></div>
+					</div>
+					<div class="word-aux diy-word-aux">此处控制当前页面导航栏是否显示</div>
+				</div>
+
+				<div class="layui-form-item icon-radio">
+					<label class="layui-form-label sm banner-sm">样式</label>
+					<div class="layui-input-block">
+						<span v-for="(item) in nc.tempData.imgAdsCarousel" :class="[item.value == nc.carouselStyle ? '' : 'layui-hide']">{{item.text}}</span>
+						<ul class="icon-wrap">
+							<li v-for="(item) in nc.tempData.imgAdsCarousel" :class="[item.value == nc.carouselStyle ? 'text-color border-color' : '']" @click="nc.carouselStyle=item.value">
+								<i class="iconfont" :class="[{'text-color': item.value == nc.carouselStyle}, item.src]"></i>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<text-align :data="{ field : 'indicatorLocation', 'label' : '位置' }"></text-align>
+				<color :data="{ field : 'indicatorColor', 'label' : '颜色' }"></color>
+			</div>
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var imageAdsResourcePath = "{$resource_path}"; // http路径
+			var imageAdsRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

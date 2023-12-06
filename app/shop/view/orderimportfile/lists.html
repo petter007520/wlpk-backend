@@ -1,0 +1,249 @@
+	{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin.admin-style-2 .single-filter-box{display: block;}
+	.layui-layout-admin.admin-style-2 .single-filter-box button:nth-child(1){margin-right: 10px;}
+
+	.body-content {background: none !important;padding: 0 !important;margin: 0 !important;}
+	.footer {padding-bottom: 0px !important;}
+	.common-wrap {position: relative;display: flex;padding: 25px 140px;margin: 15px 15px 0 15px;background:#fff}
+	.common-wrap .tips-wrap {margin: 0px 20px;min-width: 130px;background-color: #ffffff;border-color: #ffffff;border-radius: 2px;}
+	.common-wrap .tips-wrap>span{display: block;width: 30px;height: 30px;line-height: 30px;text-align: center;color: #105CFB;border-radius: 50px;border: 1px solid #105CFB;font-size: 18px;margin: 0 auto;font-weight: bolder;margin-bottom: 15px;}
+	.common-wrap .tips-wrap>p{text-align: center;}
+	.common-wrap .interval-wrap{width: 300px;height: 45px;position: relative;border-bottom: 1px solid #e6e6e6;}
+	.common-wrap .interval-wrap>span{display: block;position: absolute;bottom: -5px;right: 0px;width: 8px;height: 8px;border: 1px solid #e6e6e6;transform: rotateZ(45deg);border-bottom: 0px;border-left: 0px;}
+	.layui-tab-brief {margin: 15px 15px 0px 15px;}
+	.layui-tab.table-tab{margin: 15px 15px 0 15px;padding:15px 15px;background:#fff}
+	.order-list-top-line{justify-content:flex-end;}
+	.order-list-top-line a{padding-right: 0px !important;}
+</style>
+{/block}
+{block name="main"}
+<div class="common-wrap">
+	<div class="tips-wrap">
+		<span>1</span>
+		<p>待发货的订单只适用于待发货的普通订单。</p>
+	</div>
+	<div class="interval-wrap">
+		<span></span>
+	</div>
+	<div class="tips-wrap">
+		<span>2</span>
+		<p>先下载发货单和物流公司、电子面单对照表。</p>
+	</div>
+	<div class="interval-wrap">
+		<span></span>
+	</div>
+	<div class="tips-wrap">
+		<span>3</span>
+		<p>对照物流公司和电子面单把待发货表中发货方式、物流公司、物流单号填写清楚。</p>
+	</div>
+	<div class="interval-wrap">
+		<span></span>
+	</div>
+	<div class="tips-wrap">
+		<span>4</span>
+		<p>导入填写好的发货单。</p>
+	</div>
+</div>
+
+
+<div class="layui-tab table-tab" lay-filter="solution_tab">
+	<div class="single-filter-box">
+		<button class="layui-btn" id="order_file">立即导入</button>
+		<button class="layui-btn layui-btn-primary" onclick="downloadOrder()">下载待发货订单</button>
+		<button class="layui-btn layui-btn-primary" onclick="downloadExpressTemplate()">{if $addon_is_exit == 1}下载物流公司/电子面单对照表 {else/} 下载物流公司对照表 {/if}</button>
+	</div>
+	<div class="layui-tab-content">
+		<table id="solution_list" lay-filter="solution_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn order-list-top-line">
+		<a class="layui-btn" lay-event="download">下载</a>
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+{/block}
+
+{block name="script"}
+<script>
+	var table, form, element, repeat_flag = false;// 防重复标识
+	layui.use(['form', 'element'], function () {
+		form = layui.form;
+		element = layui.element;
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(solution_tab)', function () {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': this.getAttribute('data-status')
+				}
+			});
+		});
+
+		//允许上传的文件后缀
+		var upload = new Upload({
+			elem: '#order_file',
+			url: ns.url("shop/upload/file"),
+			accept:'file',
+			acceptMime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			exts: 'xlsx',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$.ajax({
+						url: ns.url("shop/orderimportfile/importOrder"),
+						data: {
+							filename: res.data.name,
+							path:res.data.path
+						},
+						dataType: 'JSON',
+						type: 'POST',
+						success: function (res) {
+							layer.msg(res.message);
+							repeat_flag = false;
+							if (res.code == 0) table.reload();
+						}
+					});
+				}
+			}
+		});
+
+		table = new Table({
+			elem: '#solution_list',
+			url: ns.url("shop/orderimportfile/lists"),
+			cols: [
+				[{
+					field: 'filename',
+					title: '记录编号',
+					unresize: 'false',
+					width:'25%'
+				}, {
+                    field: 'username',
+					title: '操作人',
+                    unresize: 'false'
+				},  {
+					title: '操作时间',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.create_time);
+					}
+				},{
+					field: 'order_num',
+					title: '发货订单数',
+					unresize: 'false'
+				}, {
+                    field: 'success_num',
+                    title: '成功发货数',
+                    unresize: 'false'
+                }, {
+                    field: 'error_num',
+                    title: '失败发货数',
+                    unresize: 'false'
+                }, {
+					title: '操作',
+					toolbar:'#operation',
+					unresize:'false',
+					align:'right'
+				}]
+			]
+
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function (obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'detail':
+
+					orderImportFileLog(data.id);
+					break;
+				case 'delete': //删除
+                    deleteOrderImportFile(data.id);
+					break;
+				case 'download':
+					location.href = ns.img(data.path);
+			}
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function (data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		/**
+		 * 删除
+		 */
+		function deleteOrderImportFile(id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除吗?', function () {
+				$.ajax({
+					url: ns.url("shop/orderimportfile/delete"),
+					data: {
+						id: id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function (res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) table.reload();
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+        /**
+         * 绑定会员
+         */
+        function orderImportFileLog(id)
+        {
+//            var url = ns.url("shop/orderimportfile/detail",{'file_id' : id});
+            location.href = ns.url("shop/orderimportfile/detail",{'file_id' : id});
+            //iframe层-父子操作
+//            var layerIndex = layer.open({
+//                title: "失败明细",
+//                type: 2,
+//                area: ['1200px', '800px'],
+//                // btn: '保存',
+//                content: url
+//            });
+        }
+
+	});
+
+	//下载待发货订单
+	function downloadOrder()
+	{
+        location.href = ns.url("shop/orderimportfile/exportDeliveryOrder");
+	}
+    //下载对照表
+    function downloadExpressTemplate()
+    {
+        location.href = ns.url("shop/orderimportfile/exportExpressTemplate");
+    }
+
+</script>
+{/block}

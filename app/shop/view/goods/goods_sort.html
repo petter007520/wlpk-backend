@@ -1,0 +1,98 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.examples {cursor: pointer;}
+	.layui-carousel {width: 850px !important; height: 580px !important; background: #fff !important;}
+	.layui-carousel>[carousel-item]>* {background: #fff !important;}
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">排序方式：</label>
+		<div class="layui-input-block len-mid">
+			<select name="type">
+				<option value="asc" {if $goods_sort_confog['type'] == 'asc'} selected {/if}>正序排列</option>
+				<option value="desc" {if $goods_sort_confog['type'] == 'desc'} selected {/if}>倒序排列</option>
+			</select>
+		</div>
+		<div class="word-aux">如果选择正序排列,那么前台商品将会优先按照排序号从小到大顺序排列,当序号相同时,按照创建时间倒序排列;<br/>如果选择倒序排列时,那么前台商品会优先按照序号从大到小顺序排列,当序号相同时 ,按照创建时间倒序排列。</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">默认排序值：</label>
+		<div class="layui-input-block len-mid">
+			<input type="number" class="layui-input" name="default_value" value="{$goods_sort_confog['default_value']}">
+		</div>
+		<div class="word-aux">默认排值是当添加商品时,如果没有设置排序值的情况下,则按照该位置设置的默认数值参与排序 <a onclick="showDemo()" class="examples text-color">查看示例</a></div>
+	</div>
+
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/html" id="carouselInner">
+	<div class="layui-carousel" id="carousel">
+		<div carousel-item>
+			<img style="width: 600px; height: 500px; margin: 20px 130px;" src="SHOP_IMG/goods1.png" >
+			<img style="width: 600px; height: 400px; margin: 60px 125px;" src="SHOP_IMG/goods2.png" >
+		</div>
+	</div>
+</script>
+<script>
+	layui.use(['form','carousel'], function() {
+		var form = layui.form;
+		var carousel = layui.carousel;
+		repeat_flag = false; //防重复标识
+		form.render();
+		carousel.render({
+			elem: '#carousel'
+			,width: '100%' //设置容器宽度
+			,arrow: 'always' //始终显示箭头
+		});
+		
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/goods/goodssort"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+					layer.msg(res.message);
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+
+	});
+
+	function showDemo(){
+		layer.open({
+			title: '查看示例',
+			type: 1,
+			area: ['900px', '660px'],
+			content: $('#carouselInner').html(),
+		})
+		layui.use('carousel', function(){
+			var carousel = layui.carousel;
+			//建造实例
+			carousel.render({
+				elem: '#carousel'
+				,width: '100%' //设置容器宽度
+				,arrow: 'always' //始终显示箭头
+			});
+		});
+	}
+</script>
+{/block}

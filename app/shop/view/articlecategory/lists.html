@@ -1,0 +1,317 @@
+{extend name="base" /}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="single-filter-box top">
+	<button class="layui-btn" onclick="addCategory()">添加分类</button>
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="category_name" placeholder="请输入文章分类" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="article_category_list" lay-filter="article_category_list"></table>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.category_id}}, this)" value="{{d.sort}}" class="layui-input edit-sort len-short">
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<script type="text/html" id="addCategory">
+
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>分类名称：</label>
+			<div class="layui-input-block">
+				<input name="category_name" type="text" placeholder="请输入分类名称" lay-verify="required" class="layui-input len-mid">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">排序：</label>
+			<div class="layui-input-block">
+				<input name="sort" type="number" class="layui-input edit-sort len-short">
+			</div>
+		</div>
+
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeAttrLayer()">返回</button>
+		</div>
+	</div>
+
+</script>
+
+<script type="text/html" id="editCategory">
+
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>文章分类：</label>
+			<div class="layui-input-block">
+				<input name="category_name" type="text" value="{{ d.category_name }}" placeholder="请输入文章分类名称" lay-verify="required" class="layui-input len-mid">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">排序：</label>
+			<div class="layui-input-block">
+				<input name="sort" type="number" value="{{ d.sort }}" class="layui-input edit-sort len-short">
+			</div>
+		</div>
+		<input type="hidden" name="category_id" value="{{ d.category_id }}">
+		<div class="form-row mid">
+			<button class="layui-btn" lay-submit lay-filter="edit_save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeAttrLayer()">返回</button>
+		</div>
+	</div>
+
+</script>
+
+{/block}
+{block name="script"}
+<script>
+    var laytpl, add_category_index = -1,
+        form, table;
+    layui.use(['form', 'laytpl'], function() {
+        var repeat_flag = false; //防重复标识
+        laytpl = layui.laytpl;
+        form = layui.form;
+        form.render();
+
+        table = new Table({
+            elem: '#article_category_list',
+            url: ns.url("shop/articlecategory/lists"),
+            cols: [
+                [ {
+                    field: 'category_name',
+                    title: '分类名称',
+                    unresize: 'false'
+                },{
+                    field: 'article_num',
+                    title: '文章总数',
+                    unresize: 'false'
+                },{
+                    field: 'sort',
+                    sort : true,
+                    unresize:'false',
+                    title: '排序',
+                    width: '20%',
+                    align: 'center',
+                    templet: '#editSort'
+                },{
+                    title: '操作',
+                    toolbar: '#operation',
+                    unresize: 'false',
+					align:'right'
+                }]
+            ]
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'edit':
+                    editCategory(data);
+                    break;
+                case 'delete':
+                    deleteGroup(data.category_id);
+                    break;
+            }
+        });
+
+        /**
+         * 删除
+         */
+        function deleteGroup(category_id) {
+            layer.confirm('确认删除该分类吗？', function() {
+                $.ajax({
+                    url: ns.url("shop/articlecategory/delete"),
+                    data: {
+                        category_id:category_id
+                    },
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        if (res.code == 0) {
+							table.reload({
+								page: {
+									curr: 1
+								},
+							});
+                        }
+                    }
+                });
+            });
+        }
+
+        table.on("sort",function (obj) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    order:obj.field,
+                    sort:obj.type
+                }
+            });
+        });
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+
+        form.on('submit(save)', function(data) {
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                url: '{:addon_url("shop/articlecategory/add")}',
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(data) {
+                    layer.msg(data.message);
+                    if (data.code == 0) {
+                        table.reload();
+                        layer.close(add_category_index);
+                    }
+                    repeat_flag = false;
+                }
+            });
+            return false;
+        });
+
+        form.on('submit(edit_save)', function(data) {
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                url: '{:addon_url("shop/articlecategory/edit")}',
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(data) {
+                    layer.msg(data.message);
+                    if (data.code == 0) {
+                        table.reload();
+                        layer.close(add_category_index);
+                    }
+                    repeat_flag = false;
+                }
+            });
+            return false;
+        });
+
+        /**
+         * 表单验证
+         */
+        form.verify({
+            num: function(value) {
+                if (value == '') {
+                    return;
+                }
+                if (value % 1 != 0) {
+                    return '排序数值必须为整数';
+                }
+                if (value < 0) {
+                    return '排序数值必须为大于0';
+                }
+            }
+        });
+    });
+
+    function addCategory() {
+        var add_group = $("#addCategory").html();
+        laytpl(add_group).render({}, function(html) {
+            add_category_index = layer.open({
+                title: '添加文章分类',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['500px'],
+                content: html
+            });
+        });
+
+    }
+
+    function editCategory(data) {
+        var add_group = $("#editCategory").html();
+        laytpl(add_group).render(data, function(html) {
+            add_category_index = layer.open({
+                title: '编辑文章分类',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['500px'],
+                content: html
+            });
+        });
+
+    }
+
+    function closeAttrLayer() {
+        layer.close(add_category_index);
+    }
+
+    // 监听单元格编辑
+    function editSort(category_id, event){
+        var data = $(event).val();
+
+        if (data == '') {
+            $(event).val(0);
+            data = 0;
+        }
+
+        if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+            layer.msg("排序号只能是整数");
+            return ;
+        }
+        if(data<0){
+            layer.msg("排序号必须大于0");
+            return ;
+        }
+        $.ajax({
+            type: 'POST',
+            url: ns.url("notes://shop/group/modifySort"),
+            data: {
+                sort: data,
+                category_id: category_id
+            },
+            dataType: 'JSON',
+            success: function(res) {
+                layer.msg(res.message);
+                if(res.code==0){
+                    table.reload();
+                }
+            }
+        });
+    }
+</script>
+{/block}

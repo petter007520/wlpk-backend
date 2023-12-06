@@ -1,0 +1,392 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.screen {margin-top: 15px;}
+	.layui-table-header tr th{padding:3px 0 !important;}
+	.layui-layout-admin.admin-style-2 .table-tab .layui-tab-title{margin-bottom: 15px;}
+	.layui-layout-admin.admin-style-2 .screen{margin-top: 0;}
+	.layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+	.invoice-content{
+		width: 100%;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		-o-text-overflow: ellipsis;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">订单编号</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="order_no">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">订单类型</label>
+					<div class="layui-input-inline">
+						<select name="order_type" lay-filter="order_type">
+							{foreach $order_type_list as $order_type_k => $order_type_val}
+							<option value="{$order_type_val.type}">{$order_type_val.name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">发票类型</label>
+					<div class="layui-input-inline">
+						<select name="invoice_type" lay-filter="invoice_type">
+							<option value="">全部</option>
+							<option value="1">纸质发票</option>
+							<option value="2">电子发票</option>
+						</select>
+					</div>
+				</div>
+
+			</div>
+			<div class="layui-form-item">
+
+				<div class="layui-inline">
+					<label class="layui-form-label">发票抬头</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="invoice_title">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">纳税人识别号</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="taxpayer_number">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">抬头类型</label>
+					<div class="layui-input-inline">
+						<select name="invoice_title_type" lay-filter="invoice_title_type">
+							<option value="">全部</option>
+							<option value="1">个人</option>
+							<option value="2">企业</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">下单时间</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(7, this);return false;">近7天</button>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(30, this);return false;">近30天</button>
+				</div>
+
+			</div>
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				<button class="layui-btn layui-btn-primary" lay-submit lay-filter="export_invoice">批量导出</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="invoice_list_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		<li lay-id="0">未开票</li>
+		<li lay-id="1">已开票</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="order_list" lay-filter="order_list"></table>
+	</div>
+</div>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		{{# if (d.order_status >0){  }}
+			{{# if (d.invoice_status == 0){  }}
+				<a class="layui-btn" lay-event="edit">开票</a>
+			{{# }else{ }}
+				<a class="layui-btn" lay-event="edit">编辑</a>
+			{{#  }  }}
+		{{#  }  }}
+		<a class="layui-btn" lay-event="detail">查看订单</a>
+	</div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+	var is_refresh = false;
+	var form;
+	var order_type_status_json = {:json_encode($order_type_list)};
+	layui.use(['form', 'laydate', 'element', 'laytpl',], function() {
+		var table,
+			laydate = layui.laydate;
+		element = layui.element;
+		form = layui.form,
+		form.render();
+
+		//渲染时间
+		laydate.render({
+			elem: '#start_time',
+			type: 'datetime'
+		});
+
+		laydate.render({
+			elem: '#end_time',
+			type: 'datetime'
+		});
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(invoice_list_tab)', function () {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where:{
+					'invoice_status':this.getAttribute('lay-id')
+				}
+			});
+		});
+
+		table = new Table({
+			elem: '#order_list',
+			url: ns.url("shop/order/invoiceorderlist"),
+			cols: [
+				[{
+                    field: 'order_no',
+                    title: '订单编号',
+					width: '12%',
+                    unresize: 'false',
+					templet: function (data) {
+						var html = "";
+						html += '<span title="'+ data.order_no +'">'+ data.order_no +'</span>'
+						return html;
+					}
+                }, {
+                    field: 'order_money',
+                    title: '订单总额（元）',
+                    unresize: 'false'
+                }, {
+					title: '发票金额',
+					unresize: 'false',
+					templet: function(data) {
+						var html = '<span title="' + data.invoice_money + '">' + data.invoice_money + '</span>';
+						if(data.invoice_delivery_money > 0){
+							html += '<br/><span title="邮寄费用:'+data.invoice_delivery_money + '">邮寄费用:'+data.invoice_delivery_money + '</span>';
+						}
+						return html;
+					}
+				},{
+                    title: '发票类型',
+                    unresize: 'false',
+                    templet: function(data) {
+                        var name = '';
+                        if(data.invoice_type == 1){
+                            name = '纸质';
+                        }else{
+                            name = '电子';
+                        }
+                        if(data.is_tax_invoice == 1){
+                            name += '专用发票';
+                        }else{
+                            name += '普通发票';
+                        }
+						return name;
+                    }
+                }, {
+					title: '发票抬头',
+					unresize: 'false',
+					// width: '15%',
+					templet: function(data) {
+						var html = '<p class="invoice-content" title="发票抬头:'+ data.invoice_title + '">发票抬头:'+ data.invoice_title + '<p>';
+						var invoice_title_type_name = data.invoice_title_type == 1 ? '个人' : '企业';
+						// var html = '<p title="开票时间:'+ ns.time_to_date(data.create_time) + '">开票时间:'+ ns.time_to_date(data.create_time) + '<p>';
+						html += '<p class="invoice-content" title="抬头类型:'+ invoice_title_type_name + '">抬头类型:'+ invoice_title_type_name + '<p>';
+						if(data.invoice_title_type == 2){
+							html += '<p class="invoice-content" title="纳税人识别号:'+ data.taxpayer_number + '">纳税人识别号:'+data.taxpayer_number + '<p>';
+						}
+						html += '<p class="invoice-content" title="发票内容:'+ data.invoice_content + '">发票内容:'+ data.invoice_content + '<p>';
+						return html;
+					}
+				}, {
+                    field: 'invoice_rate',
+                    title: '发票税率（%）',
+                    unresize: 'false'
+                }, {
+					title: '开票状态',
+					unresize: 'false',
+					templet: function(data) {
+						var name = '';
+						if(data.invoice_status == 0){
+							name = '未开票';
+						}else{
+							name = '已开票';
+						}
+						return name;
+					}
+				}, {
+                    field: 'order_type_name',
+                    title: '订单类型',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '下单时间',
+                    unresize: 'false',
+					templet: function (data) {
+						var create_time = ns.time_to_date(data.create_time)
+						var html = "";
+						html += '<span title="'+ create_time +'">'+ create_time +'</span>'
+						return html;
+					}
+                }, 
+				{
+				    field: 'create_time',
+				    title: '开票时间',
+				    unresize: 'false',
+					templet: function (data) {
+						var invoice_time = ns.time_to_date(data.invoice_time)
+						var html = "";
+						html += '<span title="'+ invoice_time +'">'+ invoice_time +'</span>'
+						return html;
+					}
+				}, 
+				{
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					align : 'right'
+				}]
+			]
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+        //批量导出
+        form.on('submit(export_invoice)', function(data){
+            location.href = ns.url("shop/order/exportInvoice",data.field);
+            return false;
+        });
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data,
+					event = obj.event;
+			switch (event) {
+				case 'detail': //查看
+					location.href = ns.url('shop/order/detail','order_id='+data.order_id);
+					break;
+				case 'edit': //编辑
+					location.href = ns.url('shop/order/invoiceEdit','order_id='+data.order_id);
+					break;
+
+			}
+		});
+
+		//订单类型
+		form.on('select(order_type)', function(data){
+
+			resetOrderStatus(data.value, 1);
+			return false;
+		});
+
+	});
+	/**
+	 * 获取哈希值order_type
+	 */
+	function getHashOrderType(){
+		var hash = ns.urlReplace(location.hash);
+		var hash_arr = hash.split("&");
+		var order_type = "all";
+		if(hash_arr.length > 0){
+			// page = hash_arr[0].replace('#!page=', '');
+			$.each(hash_arr,function(index, itemobj){
+				var item_arr = itemobj.split("=");
+				if(item_arr.length == 2){
+					if(item_arr[0].indexOf("order_type") != "-1") {
+						order_type = item_arr[1];
+					}
+				}
+			})
+		}
+		return order_type;
+	}
+
+	//重置状态tab 选项卡
+	function resetOrderStatus(order_type, is_tab){
+		var hash_order_type = getHashOrderType();
+		if(hash_order_type != order_type || is_refresh == false){
+
+			if(is_tab != 2 || is_refresh == false){
+				$("select[name=order_status] option").not(':first').remove();
+			}
+			var status_item = order_type_status_json[order_type]["status"];
+			$.each(status_item,function(index, itemobj){
+				if(is_tab != 2 || is_refresh == false) {
+					$("select[name=order_status]").append('<option value="' + index + '">' + itemobj + '</option>');
+				}
+			});
+			form.render('select');
+		}
+	}
+    /**
+     * 七天时间
+     */
+    function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+        // alert(new Date().format("yyyy-MM-dd hh:mm"));
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+
+    }
+
+</script>
+{/block}

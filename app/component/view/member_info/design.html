@@ -1,0 +1,196 @@
+<nc-component :data="data[index]" class="diy-member-info-wrap" :data-style="nc.style">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div :style="{ backgroundColor: nc.componentBgColor,
+		borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+		borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+		}">
+
+			<div class="member-info-wrap" :style="nc.tempData.methods ? nc.tempData.methods.getBgStyle() : {}">
+				<div class="info-wrap">
+					<div class="headimg">
+						<img :src="changeImgUrl('public/static/img/default_img/head.png')" alt="">
+					</div>
+					<div class="info">
+						<template v-if="nc.style == 1 || nc.style == 2">
+							<div class="nickname">
+								<span class="name">勇敢的小鱼</span>
+								<span class="member-level"><i class="iconfont iconhuangguan"></i>会员</span>
+							</div>
+							<div class="desc">点击登录 享受更多精彩信息</div>
+						</template>
+						<template v-if="nc.style == 3">
+							<div class="nickname">
+								<span class="name">勇敢的小鱼</span>
+							</div>
+							<div class="member-level">
+								<img src="__PUBLIC__/uniapp/member/supervip_icon.png" alt="" class="level-icon">
+								<span class="level-name">普通会员</span>
+							</div>
+						</template>
+						<template v-if="nc.style == 4">
+							<div class="nickname">
+								<span class="name">勇敢的小鱼</span>
+							</div>
+							<div class="member-level">
+								<img :src="changeImgUrl('{$resource_path}/img/style_4_vip_tag.png')" alt="" class="level-icon">
+								<span class="level-name">普通会员</span>
+							</div>
+						</template>
+					</div>
+					<i class="iconfont iconico member-code"></i>
+				</div>
+				<div class="account-info" v-show="nc.style == 1 || nc.style == 3" :style="{'margin-left': nc.infoMargin + 'px', 'margin-right': nc.infoMargin + 'px' }">
+					<div class="account-item">
+						<div class="value">200</div>
+						<div class="title">余额</div>
+					</div>
+					<div class="solid"></div>
+					<div class="account-item">
+						<div class="value">80</div>
+						<div class="title">积分</div>
+					</div>
+					<div class="solid"></div>
+					<div class="account-item">
+						<div class="value">4</div>
+						<div class="title">优惠券</div>
+					</div>
+				</div>
+
+				<div class="super-member" v-if="nc.style == 1 || nc.style == 2" :style="{'margin-left': nc.infoMargin + 'px', 'margin-right': nc.infoMargin + 'px' }">
+					<div class="super-info">
+						<i class="iconfont iconhuangguan"></i>
+						<span>超级会员</span>
+					</div>
+					<div class="super-text">
+						<span class="see">会员可享更多权益</span>
+						<i class="iconfont iconyoujiantou"></i>
+					</div>
+				</div>
+
+				<div class="super-member" v-if="nc.style == 3" :style="{'margin-left': nc.infoMargin + 'px', 'margin-right': nc.infoMargin + 'px' }">
+					<div class="super-info">
+						<img :src="changeImgUrl('public/uniapp/member/open_member.png')" class="title">
+						<div class="desc">开通可享更多权益</div>
+					</div>
+					<div class="super-text">
+						<span class="see">查看特权</span>
+					</div>
+				</div>
+				<div class="member-info-style4" v-if="nc.style == 4">
+					<div class="super-member">
+						<div class="super-info">
+							<img :src="changeImgUrl('{$resource_path}/img/style_4_vip_huangguan.png')" class="title">
+							<div class="desc">开通会员 享六大权益</div>
+						</div>
+						<div class="super-text">
+							<span class="see">立即开通</span>
+						</div>
+					</div>
+	
+					<div class="account-info" :style="{'margin-left': nc.infoMargin + 'px', 'margin-right': nc.infoMargin + 'px' }">
+						<div class="account-item">
+							<div class="value">200</div>
+							<div class="title">余额</div>
+						</div>
+						<div class="solid"></div>
+						<div class="account-item">
+							<div class="value">80</div>
+							<div class="title">积分</div>
+						</div>
+						<div class="solid"></div>
+						<div class="account-item">
+							<div class="value">4</div>
+							<div class="title">优惠券</div>
+						</div>
+					</div>
+					<div class="style4-other">
+						<div class="style4-btn-wrap">
+							<button :style="{'backgroundColor': nc.tempData.baseColor}">余额充值</button>
+							<button :style="{'color': nc.tempData.baseColor, 'borderColor': nc.tempData.baseColor}">专属顾问</button>
+						</div>
+						<div class="code" :style="{'backgroundColor': nc.tempData.baseColor}">
+							<img :src="changeImgUrl('{$resource_path}/img/style_4_code.png')" alt="">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="account-info" v-show="nc.style == 2" :style="{'margin-left': nc.infoMargin + 'px', 'margin-right': nc.infoMargin + 'px' }">
+				<div class="account-item">
+					<div class="value">200</div>
+					<div class="title">余额</div>
+				</div>
+				<div class="solid"></div>
+				<div class="account-item">
+					<div class="value">80</div>
+					<div class="title">积分</div>
+				</div>
+				<div class="solid"></div>
+				<div class="account-item">
+					<div class="value">4</div>
+					<div class="title">优惠券</div>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<diy-member-info-sources></diy-member-info-sources>
+
+			<div class="layui-form-item" v-if="nc.tempData.styleList">
+				<label class="layui-form-label sm">风格</label>
+				<div class="layui-input-block">
+					<div v-for="(item,styleIndex) in nc.tempData.styleList" :key="styleIndex" @click="nc.style = item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.style==item.value) }">
+						<i class="layui-anim layui-icon">{{ nc.style == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+						<div>{{item.text}}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label sm">背景</label>
+				<div class="layui-input-block">
+					<div @click="nc.theme='default'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.theme == 'default') }">
+						<i class="layui-anim layui-icon">{{ nc.theme == 'default' ? "&#xe643;" : "&#xe63f;" }}</i>
+						<div>跟随主题风格</div>
+					</div>
+					<div @click="nc.theme='diy'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.theme == 'diy') }">
+						<i class="layui-anim layui-icon">{{ nc.theme == 'diy' ? "&#xe643;" : "&#xe63f;" }}</i>
+						<div>自定义</div>
+					</div>
+				</div>
+			</div>
+
+			<div v-show="nc.theme == 'diy'">
+				<color :data="{ field : 'bgColorStart,bgColorEnd', 'label' : '背景颜色', defaultColor : '#FF7130,#FF1542' }"></color>
+				<slide :data="{ field : 'gradientAngle', label: '渐变角度', min:0, max: 365 }"></slide>
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<slide :data="{ field : 'infoMargin', label: '间距', min:0, max: 20 }"></slide>
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var diyMemberInfoSystemColor = {:json_encode($system_color)};
+			var memberInfoResourcePath = "{$resource_path}"; // http路径
+			var memberInfoRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

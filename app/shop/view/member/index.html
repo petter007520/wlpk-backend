@@ -1,0 +1,641 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .body-content {
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .common-wrap {
+        background: #fff;
+        padding: 15px;
+        margin: 15px 15px 0 15px;
+    }
+
+    .common-wrap .head {
+        display: flex;
+        align-items: center
+    }
+
+    .common-wrap .head .title {
+        font-size: 16px;
+        font-weight: bolder
+    }
+
+    .common-wrap .head .sub-title {
+        margin-left: 10px;
+        color: #999
+    }
+
+    .common-wrap .body {
+        margin-top: 15px;
+    }
+
+    .summary-wrap {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .summary-wrap .summary-item {
+        padding: 0 15px;
+        box-sizing: border-box;
+        flex: 1;
+    }
+
+    .summary-wrap .summary-item .title, .summary-wrap .summary-item .bottom-title {
+        color: #909399;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    .summary-wrap .summary-item .value {
+        color: #303133;
+        font-size: 26px;
+        margin-top: 10px;
+    }
+    .summary-wrap .last {
+        width: 240px;
+        flex: none;
+        padding-left: 80px !important;
+        border-left: 1px solid #eee;
+    }
+
+    .trend-wrap, .constitute-wrap, .distribution {
+        display: flex;
+    }
+    .trend-wrap .common-wrap, .constitute-wrap .common-wrap, .distribution .wrap {
+        flex: 1;
+    }
+    .trend-wrap .common-wrap:first-child, .constitute-wrap .common-wrap:first-child{
+        margin-right: 0;
+    }
+    .distribution .wrap:first-child {
+        margin-right: 15px;
+        display: flex;
+        justify-content: center;
+    }
+</style>
+{/block}
+
+{block name="main"}
+<div class="common-wrap">
+    <div class="head">
+        <div class="title">实时概况</div>
+        <div class="sub-title">更新时间：{:date('Y-m-d H:i:s')}</div>
+    </div>
+    <div class="body summary-wrap">
+        <div class="summary-item">
+            <div class="title">今日新增会员数</div>
+            <div class="value">{$today.member_count}</div>
+            <div class="bottom-title">昨日：<span>{$yesterday.member_count}</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日下单会员数</div>
+            <div class="value">{$today.order_member_count}</div>
+            <div class="bottom-title">昨日：<span>{$yesterday.order_member_count}</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日储值会员数</div>
+            <div class="value">{$today.member_recharge_member_count}</div>
+            <div class="bottom-title">昨日：<span>{$yesterday.member_recharge_member_count}</span></div>
+        </div>
+        <div class="summary-item">
+            <div class="title">今日领券会员数</div>
+            <div class="value">{$today.coupon_member_count}</div>
+            <div class="bottom-title">昨日：<span>{$yesterday.coupon_member_count}</span></div>
+        </div>
+        <div class="summary-item last">
+            <div class="title">下单会员数</div>
+            <div class="value" id="pay_member_num">{$data.buyed_count}</div>
+            <div class="bottom-title">未下单会员数：<span>{$data.total_count - $data.buyed_count}</span></div>
+        </div>
+        <div class="echart">
+            <div id="main" style="width: 230px; height: 90px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="trend-wrap">
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">新增会员数</div>
+        </div>
+        <div class="body">
+            <div id="newAdd" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">消费会员数</div>
+        </div>
+        <div class="body">
+            <div id="consume" style="width: 100%; height: 300px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="constitute-wrap">
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">会员注册渠道比率</div>
+        </div>
+        <div class="body">
+            <div id="channel" style="width: 100%; height: 200px;"></div>
+        </div>
+    </div>
+    <div class="common-wrap">
+        <div class="head">
+            <div class="title">会员等级比率</div>
+        </div>
+        <div class="body">
+            <div id="level" style="width: 100%; height: 200px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="common-wrap">
+    <div class="head">
+        <div class="title">会员分布</div>
+    </div>
+    <div class="body distribution">
+        <div class="wrap">
+            <div id="china_echart" style="width: 80%;height: 600px"></div>
+        </div>
+        <div class="wrap">
+            <table id="member_list" lay-filter="member_list" class="layui-table"></table>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="SHOP_JS/echarts.min.js"></script>
+<script src="SHOP_JS/china.js"></script>
+<script>
+    var baseColor = getComputedStyle(document.documentElement).getPropertyValue('--base-color');
+    layui.use('form', function () {
+        var table, form = layui.form;
+        form.render();
+
+        table = new Table({
+            elem: '#member_list',
+            url: ns.url("shop/member/areaCount"),
+            where: {
+                handle: true
+            },
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.message, //解析提示文本
+                    "count": res.data.list.length, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+            },
+            page: false,
+            cols: [
+                [
+                    {
+                        field: 'LAY_INDEX',
+                        title: '排名',
+                        unresize: 'false',
+                        width: '20%',
+                        templet: function (data) {
+                            return data.LAY_INDEX;
+                        }
+                    }, {
+                    field: 'name',
+                    title: '地区',
+                    unresize: 'false',
+                    width: '30%'
+                }, {
+                    field: 'value',
+                    title: '会员数',
+                    unresize: 'false',
+                    width: '25%'
+                }, {
+                    field: 'ratio',
+                    title: '会员占比',
+                    unresize: 'false',
+                    width: '25%',
+                    templet: function (data) {
+                        return data.ratio + '%';
+                    }
+                }
+                ]
+            ]
+        });
+    });
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 指定图表的配置项和数据
+    option = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            right: 0,
+            top: 0,
+            data: ['下单会员数', '未下单会员数']
+        },
+        color: ['#2FCE63', '#F5CC4E'],
+        series: [{
+            width: 100,
+            height: 100,
+            top: -5,
+            left: 0,
+            name: '',
+            type: 'pie',
+            radius: ['50%', '70%'],
+            avoidLabelOverlap: false,
+            label: {
+                show: false,
+                position: 'center'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: '12',
+                    color: baseColor
+                }
+            },
+            labelLine: {
+                show: false
+            },
+            data: [
+                {
+                    value: {$data.buyed_count},
+                    name: '下单会员数',
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                        borderColor: '#999',
+                        borderWidth: 1,
+                        padding: 10,
+                        textStyle: {
+                            fontSize: 12,
+                            color: '#333'
+                        }
+                    }
+                },
+                {
+                    value: {$data.total_count - $data.buyed_count},
+                    name: '未下单会员数',
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                        borderColor: '#999',
+                        borderWidth: 1,
+                        padding: 10,
+                        textStyle: {
+                            color: '#333',
+                            fontSize: 12
+                        }
+                    }
+                }
+            ]
+        }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+
+    var china_echart = echarts.init(document.getElementById('china_echart'));
+    var china_option = {
+        tooltip: {
+            formatter: function (params, ticket, callback) {
+                return params.seriesName + '<br />' + params.name + '：' + params.value
+            }
+        },
+        visualMap: {
+            min: 0,
+            max: 1500,
+            left: 'left',
+            top: 'bottom',
+            text: ['高', '低'],
+            inRange: {
+                color: ['#FFF', '#ff8143']
+            },
+            show: false
+        },
+        geo: {
+            map: 'china',
+            roam: false,
+            zoom: 1.23,
+            label: {
+                normal: {
+                    show: true,
+                    fontSize: '10',
+                    color: 'rgba(0,0,0,0.7)'
+                }
+            },
+            itemStyle: {
+                normal: {
+                    borderColor: 'rgba(0, 0, 0, 0.2)'
+                },
+                emphasis: {
+                    areaColor: '#e0ffff',
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    shadowBlur: 20,
+                    borderWidth: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        },
+        series: [{
+            name: '会员数',
+            type: 'map',
+            geoIndex: 0,
+            data: [{"name": "北京", "value": 0}, {"name": "天津", "value": 0}, {"name": "河北", "value": 0}, {
+                "name": "山西",
+                "value": 0
+            }, {"name": "内蒙古", "value": 0}, {"name": "辽宁", "value": 0}, {"name": "吉林", "value": 0}, {
+                "name": "黑龙江",
+                "value": 0
+            }, {"name": "上海", "value": 0}, {"name": "江苏", "value": 0}, {"name": "浙江", "value": 0}, {
+                "name": "安徽",
+                "value": 0
+            }, {"name": "福建", "value": 0}, {"name": "江西", "value": 0}, {"name": "山东", "value": 0}, {
+                "name": "河南",
+                "value": 0
+            }, {"name": "湖北", "value": 0}, {"name": "湖南", "value": 0}, {"name": "广东", "value": 0}, {
+                "name": "广西",
+                "value": 0
+            }, {"name": "海南", "value": 0}, {"name": "重庆", "value": 0}, {"name": "四川", "value": 0}, {
+                "name": "贵州",
+                "value": 0
+            }, {"name": "云南", "value": 0}, {"name": "西藏", "value": 0}, {"name": "陕西", "value": 0}, {
+                "name": "甘肃",
+                "value": 0
+            }, {"name": "青海", "value": 0}, {"name": "宁夏", "value": 0}, {"name": "新疆", "value": 0}, {
+                "name": "香港",
+                "value": 0
+            }, {"name": "澳门", "value": 0}, {"name": "台湾", "value": 0}]
+        }]
+    };
+    china_echart.setOption(china_option);
+
+    function areaCount() {
+        $.ajax({
+            url: ns.url("shop/member/areaCount"),
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                if (res.data.list.length > 0) {
+                    china_option.series[0].data = res.data.list;
+                }
+                china_echart.setOption(china_option);
+            }
+        })
+    }
+
+    areaCount();
+
+    /**
+     * 获取会员七日趋势数据
+     */
+    function getMemberStatData() {
+        $.ajax({
+            dataType: 'JSON',
+            type: 'POST',
+            url: ns.url("shop/stat/getStatData"),
+            success: function(res) {
+                // 基于准备好的dom，初始化echarts实例
+                var newAddChart = echarts.init(document.getElementById('newAdd'));
+                var consumeChart = echarts.init(document.getElementById('consume'));
+                // 指定图表的配置项和数据
+                var option = {
+                    xAxis: {
+                        type: 'category',
+                        data: []
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    grid: {
+                        top: '8%',
+                        bottom: '9%',
+                        left: '8%',
+                        right: '4%'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        showContent: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        padding: [5, 10],
+                        textStyle: {
+                            color: '#fff',
+                            lineHeight: 30,
+                        },
+                        formatter: function(params, ticket, callback) {
+                            return "日期：" + params[0].axisValue + '<br />' + params[0].seriesName + "：" + params[0].value + "人";
+                        },
+                    },
+                    series: [{
+                        name: [''],
+                        data: [],
+                        type: 'line',
+                        smooth: true,
+                        itemStyle: {
+                            color: baseColor
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                offset: 0,
+                                color: baseColor
+                            }, {
+                                offset: 1,
+                                color: '#fff'
+                            }])
+                        }
+                    }]
+                };
+                option.xAxis.data = res.time;
+                option.series[0].name = '新增会员数';
+                option.series[0].data = res.member_count;
+                newAddChart.setOption(option);
+                option.series[0].name = '消费会员数';
+                option.series[0].data = res.order_member_count;
+                consumeChart.setOption(option);
+            }
+        });
+    }
+    getMemberStatData();
+    
+    function getMemberLevelRatio() {
+        $.ajax({
+            dataType: 'JSON',
+            type: 'POST',
+            url: ns.url("shop/memberlevel/levellist"),
+            data: {
+                page_size: 0,
+            },
+            success: function(res) {
+                var level = res.data.list;
+                var echart = echarts.init(document.getElementById('level'));
+
+                // 指定图表的配置项和数据
+                var option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: '55%',
+                        top: '10%',
+                        align: 'auto',
+                        data: level.map(function (item) {
+                            return {
+                                name: item.level_name,
+                                icon: 'circle',
+                            }
+                        })
+                    },
+                    color: level.map(function (item) {
+                        return getRandomColor();
+                    }),
+                    series: [{
+                        width: 180,
+                        height: 180,
+                        top: 10,
+                        left: '10%',
+                        name: '',
+                        type: 'pie',
+                        radius: ['50%', '70%'],
+                        avoidLabelOverlap: false,
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '12',
+                                color: baseColor
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: level.map(function (item) {
+                            return {
+                                value: item.member_num,
+                                name: item.level_name,
+                                tooltip: {
+                                    trigger: 'item',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    borderColor: '#999',
+                                    borderWidth: 1,
+                                    padding: 10,
+                                    textStyle: {
+                                        fontSize: 12,
+                                        color: '#333'
+                                    }
+                                }
+                            }
+                        })
+                    }]
+                };
+                // 使用刚指定的配置项和数据显示图表。
+                echart.setOption(option);
+            }
+        })
+    }
+    getMemberLevelRatio();
+
+    function getMemberChannelRatio() {
+        $.ajax({
+            dataType: 'JSON',
+            type: 'POST',
+            url: ns.url("shop/member/getRegisterChannelMemberNum"),
+            success: function(res) {
+                var level = res.data;
+                var echart = echarts.init(document.getElementById('channel'));
+
+                // 指定图表的配置项和数据
+                var option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: '55%',
+                        top: '20%',
+                        data: level.map(function (item) {
+                            return {
+                                name: item.name,
+                                icon: 'circle',
+                            }
+                        })
+                    },
+                    color: level.map(function (item) {
+                        return getRandomColor();
+                    }),
+                    series: [{
+                        width: 180,
+                        height: 180,
+                        top: 10,
+                        left: '10%',
+                        name: '',
+                        type: 'pie',
+                        radius: ['50%', '70%'],
+                        avoidLabelOverlap: false,
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '12',
+                                color: baseColor
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: level.map(function (item) {
+                            return {
+                                value: item.member_num,
+                                name: item.name,
+                                tooltip: {
+                                    trigger: 'item',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                    borderColor: '#999',
+                                    borderWidth: 1,
+                                    padding: 10,
+                                    textStyle: {
+                                        fontSize: 12,
+                                        color: '#333'
+                                    }
+                                }
+                            }
+                        })
+                    }]
+                };
+                // 使用刚指定的配置项和数据显示图表。
+                echart.setOption(option);
+            }
+        })
+    }
+    getMemberChannelRatio();
+
+    /**
+     * 随机生成颜色
+     * @returns {string}
+     */
+    function getRandomColor(){
+        return  '#' + (function(color){
+            return (color +=  '0123456789abcdef'[Math.floor(Math.random()*16)])
+            && (color.length == 6) ?  color : arguments.callee(color);
+        })('');
+    }
+</script>
+{/block}

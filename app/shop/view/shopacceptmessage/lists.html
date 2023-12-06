@@ -1,0 +1,353 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.table-btn a {margin-left: 5px}
+	.layui-form-label { width: 110px; }
+	.layui-input-block { margin-left: 110px !important; }
+	.bind-qrcode { height: 68px !important; width:  68px !important; border: 1px dashed; background: #fafafa; padding: 5px; margin-right: 15px; cursor: pointer;}
+	.layui-layout-admin.admin-style-2 .screen{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+
+<!-- 添加会员 -->
+<div class="single-filter-box">
+	<button type="button" class="layui-btn" onclick="recipient()">添加接收人</button>
+</div>
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="nickname">昵称</option>
+							<option value="mobile">手机号</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="昵称/手机号" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 手机号 -->
+<script type="text/html" id="mobile">
+	<div class='table-title'>
+		{{# if(d.mobile){ }}
+			<span>{{ d.mobile }}</span>
+		{{# }else{ }}
+			<span style="color: red;">未绑定（不能接收短信消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 微信公众号 -->
+<script type="text/html" id="wx_openid">
+	<div class='table-title'>
+		{{# if(d.wx_openid != ''){ }}
+		<span style="color: green;">已绑定</span>
+		{{# }else{ }}
+		<span style="color: red;">未绑定（不能接收微信公众号消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="operation text-color" lay-event="edit">编辑</a>
+		<a class="operation text-color" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<script type="text/html" id="addInfo">
+	<div  class="layui-form" lay-filter="save">
+		<input name="id" value="{{d.id?d.id:''}}" type="hidden" />
+		<div class="layui-form-item">
+			<label class="layui-form-label"><span class="required">*</span>昵称：</label>
+			<div class="layui-input-block">
+				<input type="text" class="nickname layui-input" lay-verify="required" required name="nickname" placeholder="请输入昵称" value="{{d.nickname?d.nickname:''}}">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label"><span class="required">*</span>手机号：</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input" name="mobile" lay-verify="mobile" placeholder="请输入手机号" maxlength="11" value="{{d.mobile?d.mobile:''}}"/>
+			</div>
+		</div>
+		{{# if(!d.wx_openid){ }}
+		<div class="layui-form-item">
+			<label class="layui-form-label">授权二维码：</label>
+			<div class="layui-input-block" id="account_qrcode">
+				<img layer-src class="border-color bind-qrcode"/>
+				<span class="tip text-color-tip">如需使用微信通知请扫描二维码</span>
+			</div>
+		</div>
+		{{# } }}
+		<div class="layui-form-item">
+			<label class="layui-form-label">微信openld：</label>
+			<div class="layui-input-block">
+				{{# if(!d.wx_openid){ }}
+				<input type="text" class="openid layui-input" disabled="disabled" placeholder="扫描上方二维码自动填充" name="wx_openid"/>
+				{{# }else{ }}
+				<input type="text" class="openid layui-input" disabled="disabled" name="wx_openid" value="{{d.wx_openid}}">
+				{{# } }}
+			</div>
+		</div>
+		<button id="addaccount" class="layui-btn" lay-submit lay-filter="addaccount" style="display: none;">确定</button>
+		<button id="editaccount" class="layui-btn" lay-submit lay-filter="editaccount" style="display: none;">确定</button>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var table, form, laytpl, bindKey = '', repeat_flag = false, timer;
+
+	layui.use(['form', 'laytpl'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		form.render();
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#member_list',
+			url: ns.url("shop/Shopacceptmessage/lists"),
+			cols: [
+				[
+					{
+						field: 'nickname',
+						title: '昵称',
+						width: '25%',
+						unresize: 'false',
+					}, {
+						title: '手机号',
+						unresize: 'false',
+                        templet: "#mobile"
+					}, {
+						title: '微信openid',
+						unresize: 'false',
+						templet: "#wx_openid"
+					}, {
+						title: '操作',
+						unresize: 'false',
+						toolbar: '#operation',
+						align:'right'
+					}
+				]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		 table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'delete': //删除
+					delMember(data.id);
+					break;
+				case 'edit': //编辑
+					editNotifier(data);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function delMember(id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除吗！', function() {
+				$.ajax({
+					url: ns.url("shop/shopacceptmessage/delete"),
+					data: {id:id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+		form.on('submit(addaccount)', function(data) {
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/shopacceptmessage/add"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code >= 0) {
+						layer.closeAll();
+						table.reload({
+							url: ns.url("shop/shopacceptmessage/lists")
+						});
+					}
+				}
+			});
+		});
+
+		form.on('submit(editaccount)', function(data) {
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/shopacceptmessage/edit"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code >= 0) {
+						layer.closeAll();
+						table.reload();
+					}
+				}
+			});
+		});
+
+		form.verify({
+			mobile: function (value,item) {
+				if(!$("input[name='mobile']").val()) {
+					return "请输入手机号";
+				}else if(!ns.parse_mobile(value.trim())){
+					return "请输入正确的手机号";
+				}
+			},
+		});
+	});
+
+	//获取绑定二维码
+	function getQrcode(){
+		$.ajax({
+			type: 'post',
+			dataType: 'json',
+			url: ns.url("shop/shopacceptmessage/createbindqrcode"),
+			success: function (res) {
+				if (res.code >= 0) {
+					bindKey = res.data.key;
+					timer = setInterval(getBindData, 1000);
+					$('.bind-qrcode').attr('src', ns.img(res.data.path));
+					loadImgMagnify();
+				} else {
+					layer.msg(res.message);
+				}
+			}
+		})
+	}
+
+	function getBindData(){
+		$.ajax({
+			type: 'post',
+			dataType: 'json',
+			url: ns.url("shop/shopacceptmessage/getbinddata"),
+			data: {
+				key: bindKey
+			},
+			success: function (res) {
+				if (res.code >= 0) {
+					$('.openid').val(res.data.openid);
+					$('.nickname').val(res.data.nickname);
+					clearInterval(timer);
+					bindKey = '';
+				}
+			}
+		})
+	}
+
+	function recipient(data = {}){
+		getQrcode();
+		var content = $("#addInfo").html();
+		laytpl(content).render(data, function(html) {
+			layer.open({
+				type: 1,
+				area: '500px',
+				title: '添加卖家接收人',
+				btn: ['确定','取消'],
+				content: html,
+				success:function(){
+					repeat_flag = false;
+					form.render();
+				},
+				yes: function() {
+					$('#addaccount').click();
+					form.render();
+				},
+				end: function(index, layero){
+					form.render();
+					clearInterval(timer);
+				}
+			});
+			form.render();
+		});
+	}
+
+	//编辑
+	function editNotifier(data){
+		var content = $("#addInfo").html();
+		if (!data.wx_openid) getQrcode();
+		laytpl(content).render(data, function(html) {
+			layer.open({
+				type: 1,
+				area: '500px',
+				title: '编辑卖家接收人',
+				btn: ['确定','取消'],
+				content: html,
+				success:function(){
+					repeat_flag = false;
+					form.render();
+				},
+				yes: function() {
+					$('#editaccount').click();
+				},
+				end: function(index, layero){
+					form.render();
+					clearInterval(timer);
+				}
+			});
+			form.render();
+		});
+	}
+
+</script>
+{/block}

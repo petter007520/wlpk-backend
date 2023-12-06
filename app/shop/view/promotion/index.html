@@ -1,0 +1,301 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style>
+    .layui-layout-admin .layui-body .body-content {background: #EFF0F4;padding: 0}
+    .summary-wrap {background: #fff;padding: 15px}
+    .summary-wrap .layui-card-body{display: flex;padding: 10px!important;flex-wrap: wrap;}
+    .summary-wrap .layui-card-body .content{width: 33.3%;display: flex;flex-direction: column;justify-content: center;}
+    .summary-wrap .layui-card-body .num{font-size: 26px;color: #666;margin-top: 10px;max-width: 250px;}
+    .summary-wrap .layui-card-body .title{color: #909399;  font-size: 14px; margin-top: 5px;}
+    .summary-wrap .head {display: flex;align-items: center}
+    .summary-wrap .head .title {font-size: 16px;font-weight: bolder}
+    .summary-wrap .head .sub-title {margin-left: 10px;color: #999}
+
+    .empty {text-align: center;padding: 200px 0}
+    .loading {background: rgba(255,255,255,.5);position: absolute;left: 0; top: 0;text-align: center;width: 100%;height: 100%;box-sizing: border-box;padding-top: 300px;display: none}
+    .loading i {font-size: 25px}
+
+    /* 时间选择 */
+    .time-screen {margin-left: 50px}
+    .time-screen .screen{display: flex}
+    .time-screen .screen .item {height: 32px;line-height: 32px;padding: 0 20px;border: 1px solid #D2D2D2;cursor: pointer;border-right: none;border-left: none;position: relative}
+    .time-screen .screen .item:after{content: '';position: absolute;top: -1px;left: 0;bottom: -1px;right: -1px;border-right: 1px solid #D2D2D2;border-left: 1px solid #D2D2D2;}
+    .time-screen .screen .selected,.time-screen .item:hover{color: #fff;background: var(--base-color);border-color: var(--base-color) }
+    .time-screen .screen .selected:after, .time-screen .item:hover:after {border-right: 1px solid var(--base-color);border-left: 1px solid var(--base-color);}
+    .layui-layer-content .layui-form-label {width: 100px}
+    /* 营销日历 */
+    .promotion-calendar {background: #fff;padding: 15px;margin-top: 15px;position: relative}
+    .promotion-calendar .head {font-size: 16px;font-weight: bolder;text-align: center;line-height: 40px}
+    .promotion-calendar .head .month {width: 150px;text-align: center;display: inline-block}
+    .promotion-calendar .head .iconfont {cursor: pointer;}
+    .promotion-calendar .head .iconfont:hover {color: var(--base-color)}
+    .promotion-calendar .body .group {border-bottom: 1px solid #eee}
+    .promotion-calendar .body .list {display: flex;line-height: 40px;height: 40px;}
+    .promotion-calendar .body .promotion {width: 180px;border-right: 1px solid #eee;padding-right: 10px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+    .promotion-calendar .body .days {width: 0;flex: 1;display: flex}
+    .promotion-calendar .days div {flex: 1;text-align: center;display: flex;align-items: center;justify-content: center;}
+    .promotion-calendar .body .top-wrap {background: #F2F3F5;margin-top: 15px;line-height: 36px;height: 36px;}
+    .promotion-calendar .promotion-tag {color: #fff;font-size: 12px;background: var(--base-color);padding: 2px 5px;line-height: 1;border-radius: 3px}
+    .promotion-calendar .progress {width: 100%;height: 15px;background: var(--base-color);}
+    .promotion-calendar .progress.start {border-bottom-left-radius: 15px;border-top-left-radius: 15px;}
+    .promotion-calendar .progress.end {border-bottom-right-radius: 15px;border-top-right-radius: 15px;}
+
+    .promotion-list {background: #fff;padding: 15px;margin-top: 15px;}
+    .promotion-list .head {display: flex;align-items: center;justify-content: space-between;}
+    .promotion-list .head .title {font-size: 16px;font-weight: bolder}
+    .promotion-list .body {display: flex;flex-wrap: wrap;}
+    .promotion-list .body .promotion-item {width: 25%;margin-top: 15px}
+    .promotion-list .promotion-item .box {border: 1px solid #eee;margin-right: 15px;}
+    .promotion-list .promotion-item .info-wrap {display: flex;padding: 10px}
+    .promotion-list .info-wrap .info {cursor:pointer;flex: 1;width: 0;display: flex;flex-direction: column;justify-content: space-between;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}
+    .promotion-list .info-wrap .icon {cursor:pointer;width: 40px;height: 40px;margin-right: 10px}
+    .promotion-list .info-wrap .desc {color: #999;font-size: 12px;}
+    .promotion-list .layui-form-switch {margin-top: 0;cursor: pointer!important;}
+    .promotion-list .promotion-item .detail {cursor: pointer;border-top: 1px solid #eee;padding: 10px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;line-height: 1}
+</style>
+{/block}
+
+{block name="main"}
+<div class="summary-wrap">
+    <div class="head">
+        <div class="title">营销数据</div>
+        <div class="sub-title">{:date('Y-m-d')}</div>
+    </div>
+    <div class="layui-card-body">
+        <div class="content">
+            <p class="title">进行中活动数（个）</p>
+            <p class="num">{$summary.in_progress_num}</p>
+        </div>
+        <div class="content">
+            <p class="title">订单数量（笔）</p>
+            <p class="num">{$order_num}</p>
+        </div>
+        <div class="content">
+            <p class="title">当前营销工具数（个）</p>
+            <p class="num">{$summary.promotion_num}</p>
+        </div>
+    </div>
+</div>
+
+<div class="promotion-list">
+    <div class="head">
+        <span class="title">营销配置</span>
+    </div>
+    <div class="body layui-form">
+        {foreach name="$summary.unlimited_time" item="promotion"}
+        <div class="promotion-item">
+            <div class="box">
+                <div class="info-wrap">
+                    <img src="{:img($promotion.icon)}" alt="" class="icon" onclick="location.href = ns.url('{$promotion.url}')">
+                    <div class="info" onclick="location.href = ns.url('{$promotion.url}')">
+                        <div>{$promotion.title}</div>
+                        <div class="desc">{$promotion.description}</div>
+                    </div>
+                    {if $promotion.switch_type == 'switch'}
+                    <input type="checkbox" lay-skin="switch" data-keyword="{$promotion.config_key}" {if $promotion.status}checked{/if} lay-filter="promotion">
+                    {else/}
+                    <a href="{:addon_url($promotion.url)}" target="_blank">
+                        <input type="checkbox" lay-skin="switch" {if $promotion.status}checked{/if} disabled>
+                    </a>
+                    {/if}
+                </div>
+                <div class="detail" title="{$promotion.detail}" onclick="location.href = ns.url('{$promotion.url}')">{$promotion.detail}</div>
+            </div>
+        </div>
+        {/foreach}
+    </div>
+</div>
+
+<div class="promotion-list">
+    <div class="head">
+        <span class="title">营销活动</span>
+        <a href="{:addon_url('shop/promotion/market')}" class="text-color">更多</a>
+    </div>
+    <div class="body layui-form">
+        {foreach name="all_promotion" item="promotion" index="index"}
+            {if $index < 9}
+            <div class="promotion-item">
+                <a href="{:addon_url($promotion.url)}">
+                    <div class="box">
+                        <div class="info-wrap">
+                            <img src="{:img($promotion.icon)}" alt="" class="icon">
+                            <div class="info">
+                                <div>{$promotion.title}</div>
+                                <div class="desc">{$promotion.description}</div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {/if}
+        {/foreach}
+    </div>
+</div>
+
+<div class="promotion-calendar">
+    <div class="head">
+        <i class="iconfont iconback_light" onclick="getPromotion(-1)"></i>
+        <span class="month">{$month}</span>
+        <i class="iconfont iconyoujiantou" onclick="getPromotion(1)"></i>
+    </div>
+    <div class="body">
+        <div class="list top-wrap">
+            <div class="promotion"></div>
+            <div class="days">
+                {for start="1" end="$days + 1"}
+                <div>{$i}</div>
+                {/for}
+            </div>
+        </div>
+        {notempty name="$summary.time_limit"}
+        {foreach name="$summary.time_limit" item="promotion"}
+        <div class="group">
+            {foreach name="$promotion.detail" item="item"}
+            <div class="list">
+                <div class="promotion">
+                    <span class="promotion-tag" {notempty name="$promotion.color"}style="background: {$promotion.color}"{/notempty}>{$promotion.title}</span>
+                    <span><a href="{:addon_url($promotion.url)}" target="_blank">{$item.promotion_name}</a></span>
+                </div>
+                <div class="days">
+                    {for start="0" end="$days"}
+                    <div>
+                        {php}$curr_time = $start_time + ($i + 1) * 86400;{/php}
+                        {if $curr_time > $item.start_time && ($curr_time - 86399) <= $item.end_time}
+                        <div class="progress{if $item.start_time >= ($curr_time - 86400) } start{/if}{if $item.end_time <= $curr_time } end{/if}" {notempty name="$promotion.color"}style="background: {$promotion.color}"{/notempty}></div>
+                        {/if}
+                    </div>
+                    {/for}
+                </div>
+            </div>
+            {/foreach}
+        </div>
+        {/foreach}
+        {else/}
+        <div class="empty">
+            暂无相关活动数据，<a href="{:addon_url('shop/promotion/market')}" class="text-color">去创建</a>
+        </div>
+        {/notempty}
+        <div class="loading">
+            <i class="common-loading-layer layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="promotionData">
+    <div class="head">
+        <i class="iconfont iconback_light" onclick="getPromotion(-1)"></i>
+        <span class="month">{{ d.month }}</span>
+        <i class="iconfont iconyoujiantou" onclick="getPromotion(1)"></i>
+    </div>
+    <div class="body">
+        <div class="list top-wrap">
+            <div class="promotion"></div>
+            <div class="days">
+                {{# for (var i = 1; i < d.days + 1; i++) { }}
+                <div>{{ i }}</div>
+                {{# } }}
+            </div>
+        </div>
+        {{# if (d.data.time_limit.length){ }}
+        {{# d.data.time_limit.forEach(function(promotion){ }}
+        <div class="group">
+            {{# promotion.detail.forEach(function(item){ }}
+            <div class="list">
+                <div class="promotion">
+                    <span class="promotion-tag" style="{{ promotion.color ? 'background: ' + promotion.color : '' }}">{{ promotion.title }}</span>
+                    <span><a href="{{ ns.url(promotion.url) }}" target="_blank">{{ item.promotion_name }}</a></span>
+                </div>
+                <div class="days">
+                    {{# for (var i = 0; i < d.days; i++) { }}
+                    <div>
+                        {{# var curr_time = d.start_time + (i + 1) * 86400;}}
+                        {{# if (curr_time > item.start_time && (curr_time - 86399) <= item.end_time){ }}
+                        <div class="progress {{# if (item.start_time >= (curr_time - 86400) ){ }} start{{# } }}{{# if (item.end_time <= curr_time){ }} end{{# } }}" style="{{ promotion.color ? 'background: ' + promotion.color : '' }}"></div>
+                        {{# } }}
+                    </div>
+                    {{# } }}
+                </div>
+            </div>
+            {{# }) }}
+        </div>
+        {{# }) }}
+        {{# } else { }}
+        <div class="empty">
+            暂无相关活动数据，<a href="{:addon_url('shop/promotion/market')}" class="text-color">去创建</a>
+        </div>
+        {{# } }}
+        <div class="loading">
+            <i class="common-loading-layer layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="custom-box">
+    <div class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label">选择时间：</label>
+
+            <div class="layui-inline layui-inline-margin" id="time_fission">
+                <div class="layui-input-inline">
+                    <input type="text" id="date" name="date" autocomplete="off" class="layui-input" placeholder="请选择日期">
+                    <i class="iconfont iconriqi"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    var form,laydate, laytpl, repeat = false;
+    layui.use(['laydate','laytpl', 'form'], function(){
+        laydate = layui.laydate;
+        laytpl = layui.laytpl;
+        form = layui.form;
+
+        form.render()
+
+        form.on('switch(promotion)', function (data) {
+            $.ajax({
+                dataType: "JSON",
+                type: "POST",
+                data: {
+                    is_use: $(data.elem).is(':checked') ? 1 : 0,
+                    config_key: $(data.elem).attr('data-keyword')
+                },
+                url: ns.url("shop/config/modifyconfigisuse"),
+                success: function(res){
+
+                }
+            })
+        })
+    })
+
+    var length = 0;
+    function getPromotion(value) {
+        if (repeat) return;
+        repeat = true;
+        $('.loading').show();
+        length += value;
+        $.ajax({
+            dataType: "JSON",
+            type: "POST",
+            data: {
+                length: length
+            },
+            url: ns.url("shop/promotion/index"),
+            success: function(res){
+                repeat = false;
+                $('.loading').hide();
+                if (res.code == 0) {
+                    laytpl($('#promotionData').html()).render(res.data, function(string){
+                        $('.promotion-calendar').html(string);
+                    });
+                }
+            }
+        })
+    }
+</script>
+{/block}

@@ -1,0 +1,237 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .form-wrap {
+        margin-top: 0;
+    }
+
+    .tips {
+        padding: 10px;
+        margin-bottom: 15px;
+        background: #ffe1d2;
+        color: #ff8143;
+    }
+
+    .form-row {
+        width: 240px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    button {
+        width: 100px;
+        height: 34px;
+    }
+    #newPassword {
+        display: inline-block;
+        padding: 0 10px;
+        font-size: 25px;
+    }
+    .btn-code{
+        width: 115px;
+        padding: 0 0px;
+    }
+    .btn-tel-code{
+        width: auto;
+    }
+    .message-html{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form form-wrap">
+
+    <p class="tips">忘记密码，快去修改</p>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机号：</label>
+        <div class="layui-input-inline">
+            <input type="text" name="mobiles" lay-verify="required" placeholder="请输入手机号" autocomplete="off" class="layui-input len-mid">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">验证码：</label>
+        <div class="layui-input-block">
+            <div class="layui-input-inline">
+                <input type="text" name="captcha_code" lay-verify="required" placeholder="请输入验证码" autocomplete="off" class="layui-input len-mid">
+            </div>
+            <img class="layui-btn layui-btn-primary btn-code" onclick="captcha()" src="{$captcha.img}" id="captcha_img">
+            <input type="hidden" name="captcha_id" value="{$captcha.id}">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">动态码：</label>
+        <div class="layui-input-inline">
+            <input type="text" name="code" lay-verify="required" placeholder="请输入手机动态码" autocomplete="off" class="layui-input len-mid">
+        </div>
+        <button class="layui-btn layui-btn-primary btn-tel-code" onclick="mobileCode()">获取动态码</button>
+        <input type="hidden" name="key" value="">
+    </div>
+
+    <div class="form-row">
+        <button class="layui-btn" lay-submit lay-filter="save">重置密码</button>
+        <button class="layui-btn layui-btn-primary btn-sign" onclick="location.href=ns.url('niusms://shop/sms/login')">返回</button>
+    </div>
+
+</div>
+{/block}
+{block name="script"}
+
+<!--消息内容-->
+<script type="text/html" id="message_html">
+    <div class="message-html">
+        <span class="span-content">
+            您重置后的密码是:<div id="newPassword"></div>请妥善保存。
+        </span>
+    </div>
+</script>
+
+<script>
+    var form,laytpl,repeat_flag = false; //防重复标识;
+    layui.use(['laydate', 'form', 'laytpl'], function () {
+        form = layui.form,
+        laytpl = layui.laytpl;
+        form.render();
+
+        form.on('submit(save)', function (data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("niusms://shop/sms/forget"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (res) {
+                    if (res.code >= 0) {
+                        var newPassword = res.data.newPassword;
+                        openText();
+                        var nav = `<b> ${newPassword} </b>`;
+                        $("#newPassword").html(nav);
+                    } else {
+                        layer.msg(res.message);
+                    }
+                }
+            });
+
+            /**
+             * 表单验证
+             */
+            form.verify({
+                mobiles: function (value) {
+                    if (!value.trim()) {
+                        return "手机号不能为空";
+                    }
+                },
+                captcha_code: function (value) {
+                    if (!value.trim()) {
+                        return "验证码不能为空";
+                    }
+                },
+                code: function (value) {
+                    if (!value.trim()) {
+                        return "动态码不能为空";
+                    }
+                }
+
+            });
+        });
+    });
+
+    // 手机动态码
+    var sys_second = 60;
+    function mobileCode() {
+        if (sys_second != 60) return;
+        var mobiles = $("input[name='mobiles']").val();
+        var captcha_id = $("input[name='captcha_id']").val();
+        var captcha_code = $("input[name='captcha_code']").val();
+        if (mobiles == "") {
+            layer.msg("手机号不能为空");
+            return false;
+        }
+        if (captcha_id == "") {
+            layer.msg("重新获取验证码");
+            return false;
+        }
+        if (captcha_code == "") {
+            layer.msg("验证码不能为空");
+            return false;
+        }
+        var pattern = /^1[345789]\d{9}$/;
+        if (pattern.test(mobiles) == false) {
+            layer.msg("请输入正确的手机号");
+            return false;
+        }
+        if (repeat_flag) return;
+        repeat_flag = true;
+
+        $.ajax({
+            url: ns.url("niusms://shop/sms/mobileCode"),
+            data: {mobiles: mobiles, captcha_id: captcha_id, captcha_code: captcha_code},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                if (res.code >= 0) {
+                    var timer = setInterval(function() {
+                        if (sys_second > 1) {
+                            sys_second -= 1;
+                            $(".btn-tel-code").text(sys_second + 's后可重新获取');
+                        } else {
+                            sys_second = 60;
+                            clearInterval(timer);
+                            $(".btn-tel-code").attr("disabled", false);
+                            $(".btn-tel-code").text('获取动态码');
+                            $(".btn-tel-code").css("background-color", "#ffffff");
+                        }
+                    }, 1000);
+                    $(".btn-tel-code").attr("disabled", "disabled");
+                    $(".btn-tel-code").css("background-color", "#eee");
+                    $("input[name='key']").attr("value", res.data.key);
+                    layer.msg("发送成功");
+                } else {
+                    layer.msg(res.message);
+                }
+                repeat_flag = false;
+            }
+        });
+    }
+
+    // 验证码
+    function captcha() {
+        $.ajax({
+            url: ns.url("niusms://shop/sms/captcha"),
+            data: {},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                if (res.code >= 0) {
+                    $('#captcha_img').attr('src', res.data.img);
+                    $("input[name='captcha_id']").attr("value", res.data.id);
+                } else {
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+
+    function openText() {
+        laytpl($("#message_html").html()).render([], function (html) {
+            layer.open({
+                title: '重置成功',
+                type: 1,
+                area: ['400px', '150px'], //宽高
+                content: html,
+                cancel: function(index, layero){ 
+                    location.href = ns.url("niusms://shop/sms/login");
+                } 
+            });
+        });
+    }
+</script>
+{/block}

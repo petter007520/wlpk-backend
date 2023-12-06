@@ -1,0 +1,293 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+	.layui-layout-admin.admin-style-2 .table-tab .layui-tab-title{margin-bottom: 15px;}
+</style>
+{/block}
+{block name="main"}
+<div class="single-filter-box">
+	<button class="layui-btn" onclick="add()">添加活动</button>
+</div>
+<!-- 搜索框 -->
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">活动名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="manjian_name" placeholder="请输入活动名称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">活动时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class=" iconrili iconfont calendar"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button type="button" class="layui-btn" lay-filter="search" lay-submit>筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="manjian_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">所有活动</li>
+		<li lay-id="1">进行中</li>
+		<li lay-id="2">已结束</li>
+		<li lay-id="-1">已关闭</li>
+		<li lay-id="0">未开始</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="manjian_list" lay-filter="manjian_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="detail">详情</a>
+		{{#  if(d.status == 0 || d.status == 1) {  }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{#  }  }}
+		{{#  if(d.status == 0) {  }}
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{#  }else if(d.status == 1) {  }}
+		<a class="layui-btn" lay-event="close">关闭</a>
+		{{#  }else if(d.status == 2 || d.status == -1) {  }}
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{#  }  }}
+	</div>
+</script>
+<!-- 时间 -->
+<script id="time" type="text/html">
+	<div class="layui-elip">开始：{{ns.time_to_date(d.start_time)}}</div>
+	<div class="layui-elip">结束：{{ns.time_to_date(d.end_time)}}</div>
+</script>
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{foreach $manjian_status_arr as $manjian_status_k => $manjian_status_v}
+		{{#  if(d.status == {$manjian_status_k}){  }}
+			{$manjian_status_v}
+		{{#  }  }}
+	{/foreach}
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form','element','laydate'], function() {
+		var table,
+			form = layui.form,
+            element = layui.element,
+            laydate = layui.laydate,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(manjian_tab)', function(){
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    'status':this.getAttribute('lay-id')
+                }
+            });
+        });
+
+		table = new Table({
+			elem: '#manjian_list',
+			url: ns.url("manjian://shop/manjian/lists"),
+			cols: [
+				[{
+					field: 'manjian_name',
+					title: '活动名称',
+					unresize: 'false',
+					width: '25%'
+				}, {
+					title: '活动时间',
+					unresize: 'false',
+					width: '21%',
+                    templet: '#time'
+				}, {
+					field: 'status',
+					title: '状态',
+					unresize: 'false',
+					width: '13%',
+					templet: '#status'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					align:'right'
+				}]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("manjian://shop/manjian/edit", {"manjian_id": data.manjian_id});
+					break;
+				case 'detail': //详情
+                    location.href = ns.url("manjian://shop/manjian/detail", {"manjian_id": data.manjian_id});
+					break;
+				case 'delete': //删除
+					deleteManjian(data.manjian_id);
+					break;
+				case 'close': //关闭
+					close(data.manjian_id);
+					break;
+			}
+		});
+
+        //开始时间
+        laydate.render({
+            elem: '#start_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                start_time = ns.date_to_time(value);
+            }
+        });
+        //结束时间
+        laydate.render({
+            elem: '#end_time', //指定元素
+            type: 'datetime'
+            , done: function (value, date, endDate) {
+                end_time = ns.date_to_time(value);
+            }
+        });
+		
+		/**
+		 * 删除
+		 */
+		function deleteManjian(manjian_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+		
+			layer.confirm('确定要删除该满减活动吗?', function() {
+				$.ajax({
+					url: ns.url("manjian://shop/manjian/delete"),
+					data: {
+						manjian_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+		
+						if (res.code == 0) {
+							table.reload({
+								page: {
+									curr: 1
+								},
+							});
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		 * 关闭
+		 */
+		function close(manjian_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			layer.confirm('确定关闭该活动吗?', function() {
+				$.ajax({
+					url: ns.url("manjian://shop/manjian/close"),
+					data: {
+						manjian_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+					
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	function add() {
+		location.href = ns.url("manjian://shop/manjian/add");
+	}
+</script>
+
+<!-- 详情弹框html -->
+<script type="text/html" id="detail">
+	<table class="layui-table">
+		<colgroup>
+			<col width="120">
+			<col width="270">
+		</colgroup>
+		<tbody>
+			<tr>
+				<td>活动名称</td>
+				<td>{{d.manjian_name}}</td>
+			</tr>
+			<tr>
+				<td>开始时间</td>
+				<td>{{ ns.time_to_date(d.start_time, "YYYY-MM-DD hh:mm:ss") }}</td>
+			</tr>
+			<tr>
+				<td>结束时间</td>
+				<td>{{ ns.time_to_date(d.end_time, "YYYY-MM-DD hh:mm:ss") }}</td>
+			</tr>
+			<tr>
+				<td id="rule_name">满减规则</td>
+				<td id="rule">
+					{{#  var rule = JSON.parse(d.rule_json);  }}
+					{{#  for(var key in rule){  }}
+						<p>单笔订单满<span class="money-num">{{ rule[key].money }}</span>元，立减现金<span class="discount_money-num">{{ rule[key].discount_money }}</span>元</p>
+					{{#  }  }}
+				</td>
+			</tr>
+			<tr>
+				<td>备注</td>
+				<td>{{ d.remark }}</td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+{/block}

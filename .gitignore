@@ -1,0 +1,14 @@
+/.project
+/.vscode
+/.settings
+/.idea
+/.htaccess
+/.buildpath
+/cert.key
+*.log
+*.txt
+/h5
+/web
+/mshop
+/config/database.php
+/cashregister

@@ -1,0 +1,9 @@
+.draggable-element .rich-text .preview-draggable{word-break: break-all;}
+.rich-text{max-width:100%;}
+.rich-text img{max-width:100%!important;}
+.rich-text .preview-draggable{
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    word-break: break-all;
+    /*overflow: hidden;*/
+}

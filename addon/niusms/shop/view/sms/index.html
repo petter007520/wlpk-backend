@@ -1,0 +1,730 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .account-value, .split{line-height: 34px;}
+    .account-value span{font-size: 24px;}
+    .layui-input-block + .layui-word-aux{display: block;margin-left: 100px;}
+    .shop-detail{display: flex;flex-wrap: wrap;width: 940px;}
+    .shop-detail p{display: inline-block;width: 300px;line-height: 30px;}
+    .shop-detail p:last-of-type{width: auto;max-width: 430px;}
+    .card-common{margin-top: 0;}
+    .card-common .layui-card-body{padding: 0 30px;}
+    .cut{color: #fd852d;cursor: pointer;}
+    .cut:hover{color: #fd852d;}
+    .cut:active{color: #fd852d;}
+    .tel-class{width: 200px;height: 30px;border: 1px solid #ccc;border-radius: 5px;padding-left: 5px;}
+    .code-class{width:100px}
+    .code-last{font-size: 12px;display: inline-block;margin-left: 10px;color: #fd852d;cursor: pointer;width: 90px;border: 0px}
+    .table-tab .layui-tab-title{margin-bottom: 15px;}
+    .single-filter-box{padding-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="tips-wrap layui-collapse">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">操作提示</h2>
+        <ul class="layui-colla-content layui-show">
+            <li>设置短信签名、开启模板消息需要审核。</li>
+            <li>审核时间：周一至周日9:30-22:00（法定节假日顺延），工作日预计2小时，非工作日预计4小时。</li>
+            <li>短信数量不足时，请进行短信充值；如有疑问，请联系客服，客服电话：400-886-7993。</li>
+        </ul>
+    </div>
+</div>
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">短信信息</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <div class="shop-detail">
+            <p>
+                <strong>用户名：</strong><span>{$account_info.username}</span>
+                <a class="cut" onclick="location.href=ns.url('niusms://shop/sms/login')">切换账户</a>
+            </p>
+            <p><strong>公司名称：</strong><span>{$account_info.company}</span></p>
+            <p><strong>账户状态：</strong><span>{if $account_info.status == 0}正常{elseif $account_info.status == 1}禁用{/if}</span>
+            </p>
+            <p><strong>手机号：</strong><span>{$account_info.mobiles}</span>
+                <span class="cut" onclick="updateTel()">&nbsp;&nbsp;更换手机号</span>
+            </p>
+            <p><strong>签名：</strong>
+                {notempty name="$sms_config.value.signature"}
+                <span>{$sms_config.value.signature}</span>
+                {else/}
+                <span>暂无</span>
+                {/notempty}
+                {if $signature_status.auditResult == 1}
+                <span>待审核</span>
+                {elseif $signature_status.auditResult == 3 /}
+                <span>审核失败 <span style="color:red;">（失败原因：{$signature_status.auditMsg}）</span></span>
+                {/if}
+                {notempty name="$sms_config.value.signature"}
+                <a class="cut" onclick="addChildSignature('{$sms_config.value.signature}')">更换签名</a>
+                {else/}
+                <a class="cut" onclick="addChildSignature('')">签名设置</a>
+                {/notempty}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">短信权限</span>
+        </div>
+    </div>
+    <div class="layui-card-body layui-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">是否开启：</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="is_use" value="1" lay-skin="switch" lay-filter="is_use" {if $sms_config['is_use']}checked{/if}>
+            </div>
+            <div class="word-aux sm">是否开启牛云短信模版</div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card card-common card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="card-title">短信条数</span>
+        </div>
+    </div>
+    <div class="layui-card-body layui-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">短信：</label>
+            <div class="layui-input-inline len-short account-value"><span class="text-color">{$account_info.balance}</span>
+                条
+            </div>
+            <button class="layui-btn layui-btn-primary" onclick="location.href=ns.url('niusms://shop/sms/index',{buy : 1})" data-num="point}">短信充值
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="store_tab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="">短信模版</li>
+        <li lay-id="0">充值记录</li>
+        <li lay-id="1">发送记录</li>
+    </ul>
+    <div class="layui-tab-content">
+        <div class="layui-tab-item layui-show">
+            <table id="sms_template_list" lay-filter="sms_template_list"></table>
+        </div>
+        <div class="layui-tab-item">
+            <table id="recharge_sms_list" lay-filter="recharge_sms_list"></table>
+        </div>
+        <div class="layui-tab-item">
+            <div class="single-filter-box">
+                <div class="layui-form">
+                    <div class="layui-input-inline">
+                        <label class="layui-form-label">发送状态：</label>
+                        <div class="layui-input-inline">
+                            <select name="status">
+                                <option value="all">全部</option>
+                                <option value="1">待发送</option>
+                                <option value="2">发送成功</option>
+                                <option value="-1">发送失败</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="search_text" placeholder="请输入短信标题" autocomplete="off" class="layui-input">
+                            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit><i class="layui-icon">&#xe615;</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table id="sms_list" lay-filter="sms_list"></table>
+        </div>
+    </div>
+</div>
+<!--操作-->
+<script type="text/html" id="operation">
+    <div class="table-btn">
+        <a class="layui-btn" lay-event="examine">查看</a>
+        {{# if(d.status == 1){ }}
+        <a class="layui-btn" lay-event="close">关闭</a>
+        {{# }else{ }}
+        <a class="layui-btn" lay-event="open">开启</a>
+        {{# } }}
+    </div>
+</script>
+<!--<script type="text/html" id="sms_template_info">-->
+<!--	<div class="layui-form">-->
+<!--		<div class="layui-form-item">-->
+<!--			<label class="layui-form-label">模板变量json：</label>-->
+<!--			<div class="layui-input-inline">{{d.param_json}}</div>-->
+<!--		</div>-->
+<!--	</div>-->
+<!--</script>-->
+{/block}
+{block name="script"}
+<!-- 操作 -->
+<script type="text/html" id="grantOperation">
+    <div class="table-btn">
+        <a class="layui-btn" lay-event="detail">详情</a>
+    </div>
+</script>
+
+<!-- 更换手机号 -->
+<script type="text/html" id="set_tel">
+    <div class="layui-form member-form" id="reset_label" lay-filter="form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">手机号：</label>
+            <div class="layui-input-block">
+                <input type="text" class="tel-class" name="tel"/>
+                <input type="hidden" name="username_to" value="{$account_info.username}">
+            </div>
+        </div>
+
+        <div class="form-row sm">
+            <button class="layui-btn" lay-submit lay-filter="setlabel">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeLabel()">返回</button>
+        </div>
+    </div>
+</script>
+
+<!-- 验证码效验 -->
+<script type="text/html" id="code_tel">
+    <div class="layui-form member-form" lay-filter="form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">动态码：</label>
+            <div class="layui-input-block">
+                <input type="text" class="tel-class code-class" name="code" placeholder="请输入动态码"/>
+                <input class="register-message-font code-last"onclick="getCode()" value="获取动态码" readonly />
+                <input type="hidden" id="code_mobile" name="code_mobile" value="{$account_info.mobiles}">
+                <input type="hidden" name="key" value="" id="key">
+            </div>
+        </div>
+
+        <div class="form-row sm">
+            <button class="layui-btn" lay-submit lay-filter="setCode">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeCodeLabel()">返回</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var form, laytpl, table,
+        repeat_flag = false, //防重复标识
+        layer_label,
+        code_label,
+        count = 60,
+        curCount,
+        interValObj;
+
+    layui.use(['form', 'laytpl'], function () {
+        form = layui.form;
+        laytpl = layui.laytpl;
+        form.render();
+
+        form.on('switch(is_use)', function (data) {
+            $.ajax({
+                url: ns.url("niusms://shop/sms/modifyConfigIsUse"),
+                data: {is_use: data.elem.checked ? 1 : 0},
+                dataType: 'JSON',
+                type: 'POST',
+                success: function (res) {
+                    layer.msg(res.message);
+                }
+            });
+
+        });
+
+        /**
+         * 加载表格
+         */
+        table = new Table({
+            elem: '#sms_template_list',
+            url: ns.url("niusms://shop/sms/getSmsTemplatePageList"),
+            cols: [
+                [
+                    // {
+                    // 	width: "3%",
+                    // 	type: 'checkbox',
+                    // 	unresize: 'false'
+                    // },
+                    {
+                        field: 'tem_id',
+                        title: '模板ID',
+                        width: '7%',
+                        unresize: 'false'
+                    }, {
+                    field: 'template_name',
+                    title: '模板名称',
+                    width: '13%',
+                    unresize: 'false'
+                }, {
+                    title: '模板类型',
+                    width: '8%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        if (data.template_type == 1) return '验证码';
+                        else if (data.template_type == 2) return '行业通知';
+                        else if (data.template_type == 3) return '营销推广';
+                    }
+                }, {
+                    field: 'template_content',
+                    title: '模板内容',
+                    width: '46%',
+                    unresize: 'false'
+                }, {
+                    field: 'status',
+                    title: '开关状态',
+                    width: '8%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        if (data.status == 1) return '启用';
+                        else if (data.status == 0) return '关闭';
+                    }
+                }, {
+                    field: 'audit_status_name',
+                    title: '审核状态',
+                    width: '9%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        var html = '';
+                        if (data.audit_status != 0 && data.audit_status != 2) html += "<span style='color: red;'>" + data.audit_status_name + "</span>";
+                        else html += data.audit_status_name;
+                        return html;
+                    }
+                }, {
+                    title: '操作',
+                    toolbar: '#operation',
+				    align:'right'
+                }]
+            ],
+            // bottomToolbar: "#batchOperation"
+        });
+
+        /**
+         * 监听工具栏操作商家拒绝退款
+         */
+        table.tool(function (obj) {
+            var data = obj.data,
+                event = obj.event;
+            switch (obj.event) {
+                // case 'select':
+                // 	var html = $("#sms_template_info").html();
+                // 	laytpl(html).render(data, function (html) {
+                // 		layerIndex = layer.open({
+                // 			title: '短信模板详情',
+                // 			skin: 'layer-tips-class',
+                // 			type: 1,
+                // 			area: ['650px'],
+                // 			content: html,
+                // 			success: function () {
+                // 				form.render();
+                // 			}
+                // 		});
+                // 	});
+                // 	break;
+                case 'examine':
+                    var url = ns.url("niusms://shop/message/edit", {"keywords": data.keywords});
+                    window.open(url);
+                    break;
+                case 'open':
+                    enableTemplate(data.template_id, 1);
+                    break;
+                case 'close':
+                    enableTemplate(data.template_id, 0);
+                    break;
+            }
+        });
+
+        // // 批量操作
+        // table.bottomToolbar(function (obj) {
+        //
+        // 	if (obj.data.length < 1) {
+        // 		layer.msg('请选择要操作的数据');
+        // 		return;
+        // 	}
+        // 	var id_array = new Array();
+        // 	for (i in obj.data) id_array.push(obj.data[i].template_id);
+        // 	switch (obj.event) {
+        // 		case "batch_open":
+        // 			//批量开启
+        // 			for (var i = 0; i < id_array.length; i++) {
+        // 				enableTemplate(id_array[i],1);
+        // 			}
+        // 			break;
+        // 		case 'batch_close':
+        // 			//批量关闭
+        // 			enableTemplate(id_array.toString(),0);
+        // 			break;
+        // 		case 'batch_check':
+        // 			//批量审核
+        // 			layer.open({
+        // 				title: "批量设置",
+        // 				type: 1,
+        // 				area: ['700px', '600px'],
+        // 				content: $('#batchSet').html(),
+        // 				success: function(){
+        // 					form.render();
+        // 				}
+        // 			})
+        // 			break;
+        // 	}
+        // });
+
+        /* 发送记录 */
+        grantTable = new Table({
+            elem: '#sms_list',
+            url: ns.url("shop/message/smsRecords"),
+            cols: [
+                [{
+                    field: 'keywords_name',
+                    title: '标题',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+                    field: 'account',
+                    title: '接收人账号',
+                    width: '12%',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '创建时间',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return ns.time_to_date(data.create_time);
+                    }
+                }, {
+                    field: 'send_time',
+                    title: '发送时间',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return ns.time_to_date(data.send_time);
+                    }
+                }, {
+                    title: '发送状态',
+                    width: '18%',
+                    unresize: 'false',
+                    templet: '#grantStatus'
+                }, {
+                    title: '操作',
+                    width: '20%',
+                    unresize: 'false',
+                    templet: '#grantOperation',
+				    align:'right'
+                }]
+            ]
+        });
+
+        grantTable.tool(function (obj) {
+            if (obj.event == "detail") {
+                var detailHtml = $("#smsDetail").html();
+                laytpl(detailHtml).render(obj.data, function (html) {
+                    layer.open({
+                        type: 1,
+                        title: '通知详情',
+                        area: ['550px'],
+                        content: html
+                    });
+                })
+            }
+        });
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function (data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+
+        form.on('submit(setlabel)', function(data) {
+            if(data.field.tel == ""){
+                layer.msg('请输入手机号');
+                return ;
+            }
+            var reg = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/;
+            if (!reg.test(data.field.tel)) {
+                layer.msg('请输入正确的手机号码!');
+                return;
+            }
+            // var tel_arr = data.field.tel.split(',');
+            // for (var i = 0; i < tel_arr.length; i ++){
+            //
+            // }
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("niusms://shop/sms/updateNiusmsTel"),
+                data: {
+                    tel : data.field.tel,
+                    username : data.field.username_to
+                },
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    layer.close(layer_label);
+                    layer.close(code_label);
+                    location.reload();
+                }
+            });
+        });
+
+        form.on('submit(setCode)', function(data) {
+            if (data.field.code == ""){
+                layer.msg("请输入动态码");
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("niusms://shop/sms/codeValidate"),
+                data: {
+                    code : data.field.code,
+                    code_mobile : data.field.code_mobile,
+                    key : data.field.key
+                },
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.close(code_label);
+                    if(res == 1){
+                        layer_label = layer.open({
+                            title: '更换手机号',
+                            skin: 'layer-tips-class',
+                            type: 1,
+                            area: ['450px'],
+                            content: $("#set_tel").html(),
+                        });
+                    }else{
+                        layer.msg("动态码不正确");
+                    }
+                }
+            });
+        });
+
+        /* 充值记录 */
+        rechargeTable = new Table({
+            elem: '#recharge_sms_list',
+            url: ns.url("niusms://shop/sms/getSmsOrderList"),
+            cols: [
+                [{
+                    field: 'order_no',
+                    title: '订单编号',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+                    field: 'package_name',
+                    title: '短信套餐',
+                    width: '15%',
+                    unresize: 'false'
+                }, {
+                    field: 'sms_num',
+                    title: '短信条数',
+                    width: '10%',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '订单总价',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        var value = data.order_money;
+                        return value;
+                    }
+                }, {
+                    field: 'pay_money',
+                    title: '实付金额',
+                    width: '10%',
+                    unresize: 'false'
+                }, {
+                    title: '订单状态',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        var start = data.order_status == 0 ? '待支付' : data.order_status == 1 ? '已支付' : '已关闭';
+                        return start;
+                    }
+                }, {
+                    title: '付款时间',
+                    width: '18%',
+                    unresize: 'false',
+                    templet: function (res) {
+                        return ns.time_to_date(res.create_time);
+                    }
+                }]
+            ]
+        });
+    });
+
+    function enableTemplate(template_id, status) {
+        $.ajax({
+            url: ns.url("niusms://shop/template/enableTemplate"),
+            data: {template_id: template_id, status: status},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                if (res.code >= 0) {
+                    location.reload();
+                }
+                layer.msg(res.message);
+            }
+        });
+    }
+
+    function addChildSignature(signature) {
+
+        var url = ns.url("niusms://shop/sms/signlist");
+        //iframe层-父子操作
+        var layerIndex = layer.open({
+            title: "签名管理",
+            type: 2,
+            area: ['1200px', '800px'],
+            // btn: '保存',
+            content: url,
+            end: function () {
+                location.reload();
+            }
+        });
+
+//		signature = signature.replace("【","").replace("】","");
+//		layer.prompt({
+//			formType: 2,
+//			title: '请输入短信签名',
+//			value: signature,
+//		}, function(value, index, elem){
+//			$.ajax({
+//				url: ns.url("niusms://shop/sms/addChildSignature"),
+//				data: {signature: value},
+//				dataType: 'JSON',
+//				type: 'POST',
+//				success: function (res) {
+//					var successList = res.data.successList;
+//					var failList = res.data.failList;
+//					if(successList.length){
+//						layer.msg(successList[0].msg);
+//					}else if(failList.length){
+//						layer.msg(failList[0].msg);
+//					}
+//				}
+//			});
+//			layer.close(index);
+//		});
+
+    }
+
+    function updateTel(){
+        code_label = layer.open({
+            title: "获取动态码",
+            skin: 'layer-tips-class',
+            type: 1,
+            area: ['450px'],
+            content: $("#code_tel").html(),
+        });
+    }
+    function getCode(){
+        var mobile = $("#code_mobile").val();
+        $.ajax({
+            url: ns.url("niusms://shop/sms/getMobleCode"),
+            data: {mobile: mobile},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                layer.msg(res.message);
+                if(res['code'] >= 0){
+
+                    curCount = count;
+                    $(".code-last").attr("disabled", true);
+                    $(".code-last").val(curCount + "秒后重新获取");
+                    interValObj = setInterval(setRemainTime, 1000); // 启动计时器timer处理函数，1秒执行一次
+
+                    $("#key").val(res['key']);
+                }
+
+            }
+        });
+    }
+
+    function closeCodeLabel(){
+        // curCount = 0;
+        layer.close(code_label);
+    }
+    function closeLabel() {
+        layer.close(layer_label);
+    }
+
+    //timer处理函数
+    function setRemainTime() {
+        if (curCount == 0) { // 超时重新获取验证码
+            window.clearInterval(interValObj);// 停止计时器
+            $(".code-last").attr("disabled", false);
+            $(".code-last").val("获取验证码");
+        }else {
+            curCount--;
+            $(".code-last").attr("disabled", true);
+            $(".code-last").val(curCount + "秒后重新获取");
+        }
+    }
+</script>
+<script type="text/html" id="smsDetail">
+    <table class="layui-table">
+        <colgroup>
+            <col width="20%">
+            <col width="80%">
+        </colgroup>
+        <tbody>
+            <tr>
+                <td>接收账号</td>
+                <td colspan="3">{{d.account}}</td>
+            </tr>
+            <tr>
+                <td>通知名称</td>
+                <td colspan="3">{{d.keywords_name}}</td>
+            </tr>
+            <tr>
+                <td>创建时间</td>
+                <td colspan="3">{{ns.time_to_date(d.create_time)}}</td>
+            </tr>
+            <tr>
+                <td>发送时间</td>
+                <td colspan="3">{{ns.time_to_date(d.send_time)}}</td>
+            </tr>
+            <tr>
+                <td>状态</td>
+                <td>{{# if(d.status == 0){ }}发送中
+                    {{# }else if(d.status == 1){ }}发送成功
+                    {{# }else{ }}发送失败
+                    {{# } }}
+                </td>
+            </tr>
+            <tr>
+                <td>通知内容</td>
+                <td colspan="3">{{d.content}}</td>
+            </tr>
+            <tr>
+                <td>返回结果</td>
+                <td colspan="3">{{d.result}}</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<!-- 批量操作 -->
+<!--<script type="text/html" id="batchOperation">-->
+<!--<button class="layui-btn layui-btn-primary" lay-event="batch_open">批量开启</button>-->
+<!--<button class="layui-btn layui-btn-primary" lay-event="batch_close">批量关闭</button>-->
+<!--</script>-->
+<!-- 状态 -->
+<script type="text/html" id="grantStatus">
+    {{# if(d.status == 0){ }}
+    <span>待发送</span>
+    {{# }else if(d.status == 1){ }}
+    <span>发送成功</span>
+    {{# }else{ }}
+    <span>发送失败</span>
+    {{# } }}
+</script>
+{/block}

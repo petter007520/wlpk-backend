@@ -1,0 +1,226 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 65px!important;}
+    .align-left {text-align: left!important;}
+    .align-right {text-align: right!important;}
+    .area-table .toggle {user-select: none;cursor: pointer;}
+    .area-table .toggle .icon {display: inline-block;width: 10px;text-align: center}
+    .area-table .flex-wrap {display: flex;align-items: center}
+    .area-table .level-icon { margin-right: 10px; }
+    .area-table .add-child {margin-left: 10px}
+    .area-table tr th:first-child, .area-table tr td:first-child {padding: 9px 0 9px 10px}
+</style>
+{/block}
+
+{block name="main"}
+<div class="single-filter-box" style="display: block ">
+    <button class="layui-btn add-area">添加地区</button>
+</div>
+
+<table class="layui-table area-table" lay-skin="nob">
+    <colgroup>
+        <col width="1%">
+        <col width="50%">
+        <col width="16%">
+        <col width="17%">
+        <col width="16%">
+    </colgroup>
+    <thead>
+        <tr>
+            <th></th>
+            <th class="align-left">名称</th>
+            <th class="align-left">简称</th>
+            <th class="align-left">地区编码</th>
+            <th class="align-right">操作</th>
+        </tr>
+    </thead>
+    {foreach name="area" item="vo"}
+    <tbody data-parent="0" data-id="{$vo.id}" data-level="1">
+        <tr>
+            {if $vo.child_num}
+            <td class="toggle"><span class="icon text-color">+</span></td>
+            {else/}
+            <td></td>
+            {/if}
+            <td class="flex-wrap">
+                <input type="text" class="layui-input len-mid" name="name" value="{$vo.name}">
+                <a href="javascript:;" class="text-color add-child">添加下级地区</a>
+            </td>
+            <td>
+                <input type="text" class="layui-input len-mid" name="shortname" value="{$vo.shortname}">
+            </td>
+            <td>{$vo.id}</td>
+            <td class="align-right">
+                <a href="javascript:;" class="text-color delete-area">删除</a>
+            </td>
+        </tr>
+    </tbody>
+    {/foreach}
+</table>
+<table>
+
+</table>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+    $(function(){
+        // 点击展开子菜单
+        $('body').on('click', '.area-table .toggle', function(){
+            var data = $(this).parents('tbody').data();
+            if (!$('.area-table tbody[data-parent="'+ data.id +'"][data-id]').length) {
+                var child = getChild(data.id, data.level + 1);
+                if (child.length) {
+                    var html = '';
+                    child.forEach(function(item){
+                        html += '<tbody data-parent="'+ data.id +'" data-id="'+ item.id +'" data-level="'+ (data.level + 1) +'"><tr>';
+                        if (item.child_num) html += '<td class="toggle"><span class="icon text-color">+</span></td>';
+                        else html += '<td></td>';
+                        html += '<td class="flex-wrap"><span class="level-icon">'+ (data.level == 1 ? '|--' : '|----') +'</span><input type="text" class="layui-input len-mid" name="name" value="'+ item.name +'">';
+                        if (data.level < 2) html += '<a href="javascript:;" class="add-child text-color">添加下级地区</a></td>';
+                        else html += '</td>';
+                        html += '<td><input type="text" class="layui-input len-mid" name="shortname" value="'+ item.shortname +'"></td>';
+                        html += '<td>'+ item.id +'</td>';
+                        html+= '<td class="align-right"><a href="javascript:;" class="text-color delete-area">删除</a></td>';
+                        html+= '</tr></tbody>';
+                    })
+                    $(this).parents('tbody').after(html);
+                }
+                $(this).html('<span class="icon text-color">-</span>');
+            } else {
+                if ($('.area-table tbody[data-parent="'+ data.id +'"][data-id]:eq(0)').is(':hidden')) {
+                    $('.area-table tbody[data-parent="'+ data.id +'"]').show();
+                    $(this).html('<span class="icon text-color">-</span>');
+                } else {
+                    $('.area-table tbody[data-parent="'+ data.id +'"]').hide();
+                    $(this).html('<span class="icon text-color">+</span>');
+                }
+            }
+        })
+
+        // 添加子菜单
+        $('body').on('click', '.area-table .add-child', function(){
+            var data = $(this).parents('tbody').data();
+            var html = '<tbody data-parent="'+ data.id +'" data-id="0" data-level="'+ (data.level + 1) +'"><tr>';
+            html += '<td></td>';
+            html += '<td class="flex-wrap"><span class="level-icon">'+ (data.level == 1 ? '|--' : '|----') +'</span><input type="text" class="layui-input len-mid" name="name" value=""></td>';
+            html += '<td><input type="text" class="layui-input len-mid" name="shortname" value=""></td>';
+            html += '<td><input type="text" class="layui-input len-short" name="id" value=""></td>';
+            html += '<td class="align-right"></td>';
+            html+= '</tr></tbody>';
+
+            if (!$('.area-table tbody[data-parent="'+ data.id +'"]').length) {
+                $(this).parents('tbody').after(html);
+            } else {
+                $('.area-table tbody[data-parent="'+ data.id +'"]:last').after(html);
+            }
+        })
+
+        $('.add-area').click(function (){
+            var html = `<tbody data-parent="0" data-id="0" data-level="1">
+                <tr>
+                    <td></td>
+                    <td class="flex-wrap">
+                        <input type="text" class="layui-input len-mid" name="name" value="">
+                    </td>
+                    <td>
+                        <input type="text" class="layui-input len-mid" name="shortname" value="">
+                    </td>
+                    <td>
+                        <input type="text" class="layui-input len-short" name="id" value="">
+                    </td>
+                    <td class="align-right">
+                    </td>
+                </tr>
+            </tbody>`;
+            $('.area-table thead').after(html);
+        })
+
+        // 保存或编辑地区
+        $('body').on('change', '.area-table input', function(){
+            var tbody = $(this).parents('tbody');
+            var form = {
+                id: tbody.attr('data-id') != 0 ? tbody.attr('data-id') : tbody.find('[name="id"]').val().trim(),
+                pid: tbody.attr('data-parent'),
+                level: tbody.attr('data-level'),
+                name: tbody.find('[name="name"]').val().trim(),
+                shortname: tbody.find('[name="shortname"]').val().trim(),
+            };
+            if (form.id == 0 || !form.name) return;
+
+            $.ajax({
+                url: ns.url('shop/address/savearea'),
+                data: form,
+                dataType: 'json',
+                success: function(res){
+                    if (res.code == 0) {
+                        if (!tbody.attr('data-id')) tbody.attr('data-id', res.data);
+                    } else {
+                        layer.msg(res.message);
+                    }
+                }
+            })
+        })
+
+        var deleteRepeat = false;
+        $('body').on('click', '.area-table .delete-area', function(){
+            var tbody = $(this).parents('tbody');
+            layer.confirm('删除该地区将会连该地区下级的地区也一并删除，是否要继续操作？', function() {
+                if (deleteRepeat) return;
+                deleteRepeat = true;
+
+                $.ajax({
+                    url: ns.url('shop/address/deletearea'),
+                    data: {
+                        id: tbody.attr('data-id'),
+                        level: tbody.attr('data-level'),
+                    },
+                    dataType: 'json',
+                    success: function(res){
+                        deleteRepeat = false;
+                        if (res.code == 0) {
+                            layer.closeAll();
+                            tbody.remove();
+                            switch (tbody.attr('data-level')) {
+                                case '1':
+                                    $('.area-table tbody[data-parent="'+ tbody.attr('data-id') +'"]').each(function (){
+                                        let id = $(this).attr('data-id');
+                                        $('.area-table tbody[data-parent="'+ id +'"]').remove();
+                                        $(this).remove();
+                                    })
+                                    break;
+                                case '2':
+                                    $('.area-table tbody[data-parent="'+ tbody.attr('data-id') +'"]').remove();
+                                    break;
+                            }
+                        } else {
+                            layer.msg(res.message);
+                        }
+                    }
+                })
+            })
+        })
+    })
+
+    function getChild(pid, level){
+        var data = [];
+        $.ajax({
+            url: ns.url('shop/address/getAreaList'),
+            data: {
+                pid: pid,
+                level: level,
+                child: 1
+            },
+            dataType: 'json',
+            async: false,
+            success: function(res){
+                if (res.code == 0 && res.data) {
+                    data = res.data;
+                }
+            }
+        })
+        return data;
+    }
+</script>
+{/block}

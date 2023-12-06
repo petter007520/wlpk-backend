@@ -1,0 +1,93 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.item-block-parent .item-poa-pic {
+		background-image: linear-gradient(to right, #fb8700, #fb6400);
+		text-align: center;
+		color: #FFFFFF;
+		width: 70px;
+		height: 30px;
+		line-height: 30px;
+		border-bottom-left-radius: 3px;
+	}
+	.item-block .item-hide{
+		position: absolute;
+		top: 0;
+		right: -1px;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card card-common card-brief" id="promotion">
+	<div class="layui-card-header ">
+		<span class="card-title">会员互动</span>
+	</div>
+
+	<div class="layui-card-body">
+		<div class="item-block-parent item-five">
+			{foreach $promotion as $list_k => $list_v}
+			{if  condition="$list_v['show_type'] eq 'member'"}
+			{empty name="$list_v['is_developing']"}
+			<a class="item-block item-block-hover-a" href="{:addon_url($list_v['url'])}">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+			</a>
+			{else/}
+					<a class="item-block item-block-hover-a" href="#">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$list_v.title}</div>
+						<p class="item-content-desc line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+					<div class="item-poa-pic">敬请期待</div>
+				</div>
+			</a>
+			{/empty}
+			{/if}
+			{/foreach}
+			{if  condition="$user_info['is_admin'] eq '1'"}
+			{foreach $tool_addon as $tool_addon_k => $tool_addon_v}
+			<div class="item-block item-block-hover">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="{$tool_addon_v.logo_img}" />
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">{$tool_addon_v.goods_name}</div>
+						<p class="item-content-desc line-hiding" title="{$tool_addon_v.package_name}">{$tool_addon_v.introduction}</p>
+					</div>
+					<img class="item-hide" src="SHOP_IMG/recommend.png" alt="">
+				</div>
+				<div class="item-float-wrap ">
+					<div class="item-float">
+						<div class="item-float-con"></div>
+						<div class="item-float-con now_btn" >
+							<a onclick="alertAddon()" target="_blank">立即升级</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	function alertAddon() {
+		layer.msg('该插件为付费插件，请联系客服购买！');
+	}
+</script>
+{/block}

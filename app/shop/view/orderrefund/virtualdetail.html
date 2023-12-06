@@ -1,0 +1,272 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/order_detail.css"/>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/refund_detail.css" />
+{/block}
+{block name="main"}
+<div class="order-detail">
+    <div class="title">退款订单信息</div>
+    <div class="order-information order-information-bottom">
+        <div class="order-information-contentOne">
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">订单编号：</div>
+                <div class="contentOne-content-text">{$order_info['order_no']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">订单类型：</div>
+                <div class="contentOne-content-text">{$order_info['order_type_name']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">付款方式：</div>
+                <div class="contentOne-content-text">{$order_info['pay_type_name']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">买家：</div>
+                <div class="contentOne-content-text">{$order_info.nickname}</div>
+            </div>
+        </div>
+        <div class="order-information-contentTwo">
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">配送方式：</div>
+                <div class="contentOne-content-text">{$order_info['delivery_type_name']}</div>
+            </div>
+            {if $order_info['delivery_type'] eq 'store'}
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">配送门店：</div>
+                <div class="contentOne-content-text">{$order_info['delivery_store_name']}</div>
+            </div>
+
+            {php}
+            $delivery_store_info = json_decode($order_info['delivery_store_info'], true);
+            {/php}
+
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">联系电话：</div>
+                <div class="contentOne-content-text contentOne-content-text-die">{$delivery_store_info.telphone ?? ''}</div>
+            </div>
+
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">门店地址：</div>
+                <div class="contentOne-content-text">{$delivery_store_info['full_address'] ?? ''}</div>
+            </div>
+            {else/}
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">收货人：</div>
+                <div class="contentOne-content-text">{$order_info['name']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">联系电话：</div>
+                <div class="contentOne-content-text">{$order_info['mobile']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">收货地址：</div>
+                <div class="contentOne-content-text contentOne-content-text-die">{$order_info['full_address']}-{$order_info['address']}</div>
+            </div>
+            {/if}
+        </div>
+        <div class="order-information-contentTwo">
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">营销活动：</div>
+                <div class="contentOne-content-text">{$order_info['promotion_type_name']}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">买家留言：</div>
+                <div class="contentOne-content-text contentOne-content-text-die">
+                    {if $order_info['buyer_message'] == ""}
+                    -
+                    {else/}
+                    {$order_info['buyer_message']}
+                    {/if}
+                </div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">备注：</div>
+                <div class="contentOne-content-text">
+                    {if $order_info['remark'] == ""}
+                    -
+                    {else/}
+                    {$order_info['remark']}
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="title">售后信息</div>
+    <div class="order-information order-information-bottom">
+        <div class="order-information-contentOne">
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">退款编号：</div>
+                <div class="contentOne-content-text">{$detail['refund_no'] ?? ''}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">申请时间：</div>
+                <div class="contentOne-content-text">{:time_to_date($detail.refund_action_time)}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">维权类型：</div>
+                <div class="contentOne-content-text">
+                    {if $detail.refund_mode > 1}
+                        售后
+                    {else /}
+                        退款
+                    {/if}
+                </div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">退款方式：</div>
+                <div class="contentOne-content-text">
+                    {if $detail.shop_active_refund == 1}
+                    主动退款
+                    {else /}
+                    {if $detail.refund_type == 1}仅退款{else/}退货退款{/if}
+                    {/if}
+                    （{if $detail.refund_money_type == 1} 原路退款 {elseif $detail.refund_money_type == 2} 线下退款{else/} 退款到余额{/if}）
+                </div>
+            </div>
+        </div>
+        <div class="order-information-contentTwo">
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">退款金额：</div>
+                <div class="contentOne-content-text">￥{$detail.refund_status == 3 ? $detail.refund_real_money : $detail.refund_apply_money}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">退款原因：</div>
+                <div class="contentOne-content-text">{$detail.refund_reason ?: '--'}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">退款说明：</div>
+                <div class="contentOne-content-text">{$detail.refund_remark ?: '--'}</div>
+            </div>
+            <div class="contentOne-content">
+                <div class="contentOne-content-title">商家退款说明：</div>
+                <div class="contentOne-content-text">{$detail.shop_refund_remark ?: '--'}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="title">退款状态</div>
+    <div class="order-information-contentOne order-orderStatus-contentOne ">
+        <div class="contentOne-content">
+            <div class="contentOne-content-title">退款状态：</div>
+            <div class="contentOne-content-text contentOne-content-textNew">{$detail.refund_status_name}</div>
+        </div>
+        <div class="contentTow-operation">
+            {if !empty($detail.refund_action)}
+                {foreach $detail.refund_action as $k => $v}
+                <a class="contentTow-operation-content contentTow-operation-new" onclick="{$v.event}({$detail.order_goods_id});">{$v.title}</a>
+                {/foreach}
+            {/if}
+        </div>
+        <div class="orderStatus">
+            <div class="orderStatus-content-title">提醒：</div>
+            <div class="orderStatus-content-text">
+                <p class="text-tile">如果未发货，请点击同意退款给买家。</p>
+                <p class="text-tile">如果实际已发货，请主动与买家联系。</p>
+                <p class="text-tile">如果订单整体退款后，优惠券和余额会退还给买家。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="shop-information">
+    <div class="title">售后商品</div>
+    <div class="shop-information-table">
+        <table lay-filter="parse-table-order-product" lay-skin="line">
+            <thead>
+            <tr class="table-trOne">
+                <th lay-data="{field:'product_name', width:200}">商品</th>
+                <th lay-data="{field:'price'}">价格</th>
+                <th lay-data="{field:'sale_num'}" class="align-center">数量</th>
+                <th lay-data="{field:'total_money'}">小计（元）</th>
+                <th lay-data="{field:'shipping_status'}" class="align-center">状态</th>
+                {if isset($order_info.virtual_goods)}
+                    {if $order_info.goods_class == 2}
+                    <th style="text-align:center">总核销次数</th>
+                    <th style="text-align:center">剩余次数</th>
+                    <th>有效期</th>
+                    <th>操作</th>
+                    {/if}
+                    {if $order_info.goods_class == 3}
+                    <th>卡密信息</th>
+                    {/if}
+                {/if}
+                {if $detail.refund_type == 2 && $detail.refund_status > 1 && $detail.refund_delivery_no != ''}
+                <th>退货物流公司</th>
+                <th>退货物流单号</th>
+                <th>物流说明</th>
+                <th>是否入库</th>
+                {/if}
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="table-trTow">
+                <td>
+                    <div class="multi-line-hiding goods-name" title="{$detail.sku_name}">{$detail.sku_name}</div>
+                </td>
+                <td>{$detail.price}</td>
+                <td class="align-center">{$detail.num}</td>
+                <td>{$detail.goods_money}</td>
+                <td class="align-center">{$detail.delivery_status_name}</td>
+
+                {if isset($order_info.virtual_goods)}
+                {if $order_info.goods_class == 2}
+                <td style="text-align:center;">{$order_info.virtual_goods.total_verify_num}</td>
+                <td style="text-align:center;">{$order_info.virtual_goods.total_verify_num - $order_info.virtual_goods.verify_num}</td>
+                <td>
+                    {if $order_info.virtual_goods.expire_time > 0}{:time_to_date($order_info.virtual_goods.expire_time)}{else/}永久有效{/if}</td>
+                <td><a href="javascript:;" class="text-color" onclick="showVerifyRecord()">核销记录</a></td>
+                {/if}
+                {if $order_info.goods_class == 3}
+                <td>
+                    <div class="carmichael">
+                        {foreach name="$order_info.virtual_goods" item="vo"}
+                        <div>卡号：{$vo.card_info.cardno}<br>密码：{$vo.card_info.password}</div>
+                        {/foreach}
+                    </div>
+                </td>
+                {/if}
+                {/if}
+
+                {if $detail.refund_type == 2 && $detail.refund_status > 1 && $detail.refund_delivery_no != ''}
+                <td>{$detail.refund_delivery_name}</td>
+                <td>{$detail.refund_delivery_no}</td>
+                <td>{$detail.refund_delivery_remark}</td>
+                <td>{if $detail.is_refund_stock == 1}入库{else/}不入库{/if}</td>
+                {/if}
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="shop-operation">
+    <div class="title">售后日志</div>
+    <div class="refund-block-content">
+        <ul class="layui-timeline">
+            {foreach $detail['refund_log_list'] as $log_k => $log_item}
+            <li class="layui-timeline-item">
+                {if $log_item["action_way"] == 1}
+                <span class="refund-way layui-timeline-axis refund-buyer">买</span>
+                {elseif $log_item["action_way"] == 2 /}
+                <span class="refund-way layui-timeline-axis seller-buyer bg-color">商</span>
+                {else /}
+                <span class="refund-way layui-timeline-axis platform-buyer">平</span>
+                {/if}
+                <div class="layui-timeline-content layui-text">
+                    <div class="layui-timeline-title">{$log_item.action}<span style="display:inline-block;float:right;margin-right:40px;">{:time_to_date($log_item.action_time)}</span></div>
+                    {notempty name="$log_item['desc']"}
+                    <div class="desc">{$log_item.desc}</div>
+                    {/notempty}
+                </div>
+            </li>
+            {/foreach}
+        </ul>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<!-- 维权操作 -->
+{include file="orderrefund/refund_action" /}
+{/block}

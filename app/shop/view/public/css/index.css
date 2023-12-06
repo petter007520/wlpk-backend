@@ -1,0 +1,239 @@
+.body-content {
+    background: none!important;
+    padding: 0!important;
+    margin: 0!important;
+}
+
+.common-wrap {
+    background: #fff;
+    padding: 15px;
+    margin: 15px 15px 0 15px;
+    background: #fff;
+}
+.common-wrap .head {
+    display: flex;
+    align-items: center
+}
+.common-wrap .head .title {
+    font-size: 16px;
+    font-weight: bolder
+}
+.common-wrap .head .sub-title {
+    margin-left: 10px;
+    color: #999
+}
+.common-wrap .body {
+    margin-top: 15px;
+}
+
+.summary-wrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+.summary-wrap .summary-item {
+    width: 25%;
+    padding: 0 15px 10px 15px;
+    box-sizing: border-box;
+}
+.summary-wrap .summary-item .title .iconfont{
+    color: #C8C9CC;
+    font-size: 14px;
+    z-index: 999;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.summary-wrap .summary-item .title,.summary-wrap .summary-item .bottom-title {
+    color: #909399;
+    font-size: 14px;
+    margin-top: 5px;
+}
+.summary-wrap .summary-item .value {
+    color: #303133;
+    font-size: 26px;
+    margin-top: 10px;
+}
+
+.todo-list .summary-item {
+    flex: 1;
+    width: 0;
+    cursor: pointer;
+}
+
+.echart-wrap, .promotion-wrap {
+    display: flex;
+}
+.echart-wrap .common-wrap, .promotion-wrap .common-wrap {
+    flex: 1;
+}
+.echart-wrap .common-wrap:first-child, .promotion-wrap .common-wrap:first-child {
+    margin-right: 0;
+}
+
+.common-function {
+    display: flex;
+}
+.common-function .function-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding-bottom: 10px;
+}
+.common-function .function-item .icon {
+    width: 40px;
+    margin-top: 10px;
+}
+.common-function .function-item  .title {
+    margin-top: 10px;
+}
+
+.promotion-wrap .common-wrap {
+    padding-right: 0;
+}
+.promotion-wrap .body,
+.guide-wrap .body{
+    display:flex;
+    flex-wrap: wrap;
+}
+.promotion-wrap .promotion-item {
+    width:33.33%;
+    margin-bottom:15px
+}
+.promotion-wrap .promotion-item .box,
+.guide-wrap .guide-item .box
+{
+    border:1px solid #eee;
+    margin-right:15px;
+}
+.promotion-wrap .promotion-item .info-wrap,
+.guide-wrap .guide-item .info-wrap
+{
+    display:flex;
+    padding:10px
+}
+.promotion-wrap .info-wrap .info,
+.guide-wrap .info-wrap .info
+{
+    flex:1;
+    width: 0;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.promotion-wrap .info-wrap .icon,
+.guide-wrap .info-wrap .icon
+{
+    width:40px;
+    height: 40px;
+    margin-right:10px
+}
+.promotion-wrap .info-wrap .desc,
+.guide-wrap .info-wrap .desc
+{
+    color:#999;
+    font-size:12px;
+}
+
+.guide {
+    padding-right: 0;
+}
+.guide-wrap {
+    display: flex;
+}
+.guide-wrap .guide-item {
+    width: 20%;
+}
+.guide-wrap .guide-item .info-wrap {
+    padding: 15px 10px;
+    align-items: center;
+}
+.guide-wrap .icon {
+    position: relative;
+    width: 44px!important;
+    height: 44px!important;
+}
+.guide-wrap .icon .bg-box {
+    width: 100%;
+    height: 100%;
+    background: var(--base-color);
+    opacity: .1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.guide-wrap .icon .iconfont {
+    color: var(--base-color);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    line-height: 1;
+}
+.guide-wrap .action {
+    height: 28px;
+    line-height: 28px;
+    border: 1px solid var(--base-color);
+    color: var(--base-color);
+    border-radius: 30px;
+    padding: 0 10px;
+    margin-left: 10px;
+    transition: all .3s;
+}
+.guide-wrap .action:hover {
+    background: var(--base-color);
+    color: #fff;
+}
+.guide-wrap .complete {
+    border-color: #E6E6E6;
+    color: #999;
+}
+.guide-wrap .complete:hover {
+    background: #fff;
+    color: #999;
+}
+.guide-wrap .complete .iconfont {
+    line-height: 1;
+    color: #00A717;
+    font-size: 12px;
+    margin-top: 5px;
+    margin-right: 2px;
+}
+.guide .head{
+    justify-content: space-between;
+}
+.guide .head .iconfont {
+    font-weight: bold;
+    margin-right: 15px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.top-tips {
+    padding: 15px;
+    background: #EBF1FF;
+    display: flex;
+    align-items: center;
+}
+.top-tips .iconfont {
+    margin-right: 10px;
+    color: #105CFB;
+}
+.top-tips span,.top-tips a {
+    color: #105CFB;
+}
+.top-tips a {
+    margin-left: 30px;
+}
+.pink {
+    background: #FFEBEB;
+}
+.pink .iconfont, .pink span,.pink a {
+    color: #FB1010;
+}

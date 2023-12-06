@@ -1,0 +1,380 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/jquery-ui.css">
+<style>
+    .content-box {position: relative;width: 800px;height: 400px;background-color: rgb(242, 244, 244);top:50%;left:50%;transform: translate(-50%,8%);border: 1px dashed #333;background-size:100% 100%;}
+    .box {width: 100px;height: 100px;background-color: rgba(255,255,255,0.7);border: 1px solid #ccc;position: absolute;left: 0px;top: 0px;}
+    .box1,.box2,.box3,.box4 {width: 10px;height: 10px;background-color: #fff;position: absolute;border-radius: 50%; border: 1px solid #333;}
+    .box1 {top: -5px;left: -5px;cursor: nw-resize;}
+    .box2 {top: -5px;right: -5px;cursor: ne-resize;}
+    .box3 {left: -5px;bottom: -5px;cursor: sw-resize;}
+    .box4 {bottom: -5px;right: -5px;cursor: se-resize;}
+    .box .link-opt{padding:2px 0px 0px 6px;}
+    .box .link-opt span{cursor: pointer;padding-right:4px;color:blue;}
+    .add-box-btn{position: fixed;left:10px;top:10px;}
+    .link-res{padding-left:6px;line-height:14px;}
+</style>
+
+{/block}
+{block name="body"}
+<div class="layui-form">
+    <div class="content-box" id="content_box"></div>
+    <button class="layui-btn add-box-btn" id="addBox">增加热区</button>
+</div>
+{/block}
+{block name="script"}
+<script>
+    //热区设置数据
+    let imageData = JSON.parse(sessionStorage.getItem('imageData'));
+    let dragBoxArr = {};
+    let contentBoxWidth = 600;
+    let contentBoxHeight = 600;
+
+    //初始化内容盒子
+    $(function(){
+        initContentBox();
+    });
+
+    //增加标记点
+    $("#addBox").click(function(){
+        let dragBox = new DragBox();
+        dragBoxArr[dragBox.getIndex()] = dragBox;
+    });
+
+    //拖动类
+    class DragBox {
+
+        constructor(param) {
+            //初始化数据
+            this.index = null;
+            this.oDiv = null;
+            //相关处理
+            this.createBox(param);
+            this.bindDragEvent();
+            this.bindResizeEvent();
+            this.bindDeleteEvent();
+            this.bindSelectLinkEvent();
+        }
+        //创建盒子
+        createBox(param){
+            let that = this;
+
+            //创建盒子的索引
+            let index = 0;
+            let index_arr = Object.keys(dragBoxArr);
+            if(index_arr.length > 0){
+                index = Number(index_arr[index_arr.length - 1]) + 1;
+            }
+            let id = 'box_' + index;
+
+            //初始化盒子数据
+            let box_data = {
+                left: '0px',
+                top: '0px',
+                width: '100px',
+                height: '100px',
+                link: null,
+            };
+            if(param && param.init_data){
+                box_data = param.init_data;
+                box_data.width += '%';
+                box_data.height += '%';
+                box_data.left += '%';
+                box_data.top += '%';
+            }
+            let link_title = box_data.link ? box_data.link.title : '';
+            that.link = box_data.link;
+
+            let box_html = `
+				<div class="box" id="${id}" style="width:${box_data.width};height:${box_data.height};left:${box_data.left};top:${box_data.top};">
+					<span class="box1"></span>
+					<span class="box2"></span>
+					<span class="box3"></span>
+					<span class="box4"></span>
+					<div class="link-opt">
+                        <span class="select">选择</span>
+                        <span class="delete">删除</span>
+					</div>
+					<div class="link-res">${link_title}</div>
+				</div>`;
+            $("#content_box").append(box_html);
+            that.oDiv = document.getElementById(id);
+            that.index = index;
+        }
+        //删除盒子
+        bindDeleteEvent() {
+            let that = this;
+            let index = that.index;
+            $("#box_"+ index +" .delete").click(function(){
+                $("#box_" + index).remove();
+                delete dragBoxArr[index];
+            })
+        }
+        //选择链接
+        bindSelectLinkEvent() {
+            let that = this;
+            let index = that.index;
+            $("#box_" + index + " .select").click(function () {
+                let link = that.link || {};
+                ns.select_link(link, function (data) {
+                    that.link = data;
+                    $("#box_" + index + " .link-res").html(data.title);
+                });
+            })
+        }
+        //绑定拖动事件
+        bindDragEvent() {
+            const that = this;
+            let disX, disY;
+            this.oDiv.onmousedown = function (e) {
+                disX = e.clientX - that.oDiv.offsetLeft;
+                disY = e.clientY - that.oDiv.offsetTop;
+
+                //鼠标移动时
+                document.onmousemove = function (e) {
+                    var e = e || window.event;
+                    that.oDiv.style.left = e.clientX - disX + 'px';
+                    that.oDiv.style.top = e.clientY - disY + 'px';
+
+
+                    //边界判断
+                    if(e.clientX - disX < 0) {
+                        that.oDiv.style.left = 0;
+                    }
+
+                    if(e.clientX - disX > contentBoxWidth - that.oDiv.offsetWidth) {
+                        that.oDiv.style.left = contentBoxWidth - that.oDiv.offsetWidth + 'px';
+                    }
+
+                    if(e.clientY - disY< 0) {
+                        that.oDiv.style.top = 0;
+                    }
+
+
+                    if(e.clientY - disY > contentBoxHeight - that.oDiv.offsetHeight) {
+                        that.oDiv.style.top = contentBoxHeight - that.oDiv.offsetHeight + 'px';
+                    }
+                    // console.log('left：',that.oDiv.style.left,'top：',that.oDiv.style.top);
+                }
+
+                //鼠标抬起时
+                document.onmouseup = function (e) {
+                    document.onmousemove = null;
+                }
+            }
+        }
+        //绑定调整大小事件
+        bindResizeEvent() {
+            const that = this;
+            let aSpan = that.oDiv.getElementsByTagName('span');
+            for(let i = 0; i < aSpan.length; i++) {
+                that.dragFn(aSpan[i]);
+            }
+        }
+        //单个角拖动事件
+        dragFn(obj) {
+            const that = this;
+            obj.onmousedown = function (e) {
+                var oEv = e || window.event;
+                //   阻止事件的冒泡
+                oEv.stopPropagation();
+                // 获取移动前盒子的宽高，
+                var oldWidth = that.oDiv.offsetWidth;
+                var oldHeight = that.oDiv.offsetHeight;
+                // 获取鼠标距离屏幕的left和top值
+                var oldX = oEv.clientX;
+                var oldY = oEv.clientY;
+
+                // 元素相对于最近的父级定位
+                var oldLeft = that.oDiv.offsetLeft;
+                var oldTop = that.oDiv.offsetTop;
+                // 设置最小的宽度
+                var minWidth = 20
+                var minHeight = 20
+
+                document.onmousemove = function (e) {
+                    var oEv = e || event;
+
+                    // 左上角
+                    if (obj.className == "box1") {
+                        if (minWidth > oldWidth - (oEv.clientX - oldX)) {
+                            return
+                        } else if (minHeight > oldHeight - (oEv.clientY - oldY)) {
+                            return
+                        }
+
+                        // 移动后盒子的宽
+                        that.oDiv.style.width = oldWidth - (oEv.clientX - oldX) + 'px';
+                        // 高度同理
+                        that.oDiv.style.left = oldLeft + (oEv.clientX - oldX) + 'px';
+
+                        //左上 宽
+                        if(oldLeft + (oEv.clientX - oldX) < 0) {
+                            that.oDiv.style.left = 0;
+                            that.oDiv.style.width = oldWidth - (oEv.clientX - oldX) + (oldLeft + (oEv.clientX - oldX))  + 'px';
+                        }
+
+                        that.oDiv.style.height = oldHeight - (oEv.clientY - oldY) + 'px';
+                        that.oDiv.style.top = oldTop + (oEv.clientY - oldY) + 'px';
+
+                        //左上  高
+                        if(oldTop + (oEv.clientY - oldY) < 0) {
+                            that.oDiv.style.top = 0;
+                            that.oDiv.style.height = oldTop + (oEv.clientY - oldY) + (oldHeight - (oEv.clientY - oldY)) + 'px';
+                        }
+
+                    } else if (obj.className == "box2") {
+                        // 右上角
+                        if (minWidth > oldWidth - (oEv.clientX - oldX)) {
+                            return
+                        } else if (minHeight > oldHeight - (oEv.clientY - oldY)) {
+                            return
+                        }
+
+                        that.oDiv.style.width = oldWidth + (oEv.clientX - oldX) + 'px';
+                        that.oDiv.style.right = oldLeft - (oEv.clientX - oldX) + 'px';
+
+                        let nowWidth = oldWidth + (oEv.clientX - oldX) + oldLeft;
+
+                        //右上 宽
+                        if(nowWidth > contentBoxWidth) {
+
+                            that.oDiv.style.width = contentBoxWidth - oldLeft + 'px';
+                        }
+
+                        that.oDiv.style.height = oldHeight - (oEv.clientY - oldY) + 'px';
+                        that.oDiv.style.top = oldTop + (oEv.clientY - oldY) + 'px';
+
+                        //右上  高
+                        if(oldTop + (oEv.clientY - oldY) < 0) {
+                            that.oDiv.style.top = 0;
+                            that.oDiv.style.height = oldTop + (oEv.clientY - oldY) + (oldHeight - (oEv.clientY - oldY)) + 'px';
+                        }
+
+                    } else if (obj.className == "box3") {
+                        // 左下角
+                        if (minWidth > oldWidth - (oEv.clientX - oldX)) {
+                            return
+                        } else if (minHeight > oldHeight - (oEv.clientY - oldY)) {
+                            return
+                        }
+                        that.oDiv.style.width = oldWidth - (oEv.clientX - oldX) + 'px';
+                        that.oDiv.style.left = oldLeft + (oEv.clientX - oldX) + 'px';
+
+                        //左下
+                        if(oldLeft + (oEv.clientX - oldX) < 0) {
+                            that.oDiv.style.left = 0;
+                            that.oDiv.style.width = oldWidth - (oEv.clientX - oldX) + (oldLeft + (oEv.clientX - oldX))  + 'px';
+                        }
+
+                        that.oDiv.style.height = oldHeight + (oEv.clientY - oldY) + 'px';
+                        that.oDiv.style.bottom = oldTop + (oEv.clientY + oldY) + 'px';
+
+                        //左下
+                        if(oldTop + oldHeight + (oEv.clientY - oldY) > contentBoxHeight) {
+                            that.oDiv.style.height = contentBoxHeight - oldTop + 'px';
+                        }
+
+                    } else if (obj.className == "box4") {
+                        // 右下角
+                        if (minWidth > oldWidth - (oEv.clientX - oldX)) {
+                            return
+                        } else if (minHeight > oldHeight - (oEv.clientY - oldY)) {
+                            return
+                        }
+
+                        that.oDiv.style.width = oldWidth + (oEv.clientX - oldX) + 'px';
+                        that.oDiv.style.right = oldLeft - (oEv.clientX - oldX) + 'px';
+
+                        let nowWidth = oldWidth + (oEv.clientX - oldX) + oldLeft;
+
+                        //右下 宽
+                        if(nowWidth > contentBoxWidth) {
+                            //that.oDiv.style.left = 0;
+
+                            that.oDiv.style.width = contentBoxWidth - oldLeft + 'px';
+                        }
+
+                        that.oDiv.style.height = oldHeight + (oEv.clientY - oldY) + 'px';
+                        that.oDiv.style.bottom = oldTop + (oEv.clientY + oldY) + 'px';
+
+                        //左下
+                        if(oldTop + oldHeight + (oEv.clientY - oldY) > contentBoxHeight) {
+                            that.oDiv.style.height = contentBoxHeight - oldTop + 'px';
+                        }
+                    }
+
+                }
+                //鼠标抬起时
+                document.onmouseup = function () {
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                }
+            }
+        }
+        //获取索引
+        getIndex(){
+            return this.index;
+        }
+        //获取数据
+        getData() {
+            let that = this;
+            let index = that.index;
+            let dom = $("#box_" + index);
+            let position = dom.position();
+
+            let data = {
+                width : dom.width() / contentBoxWidth * 100,
+                height : dom.height() / contentBoxHeight * 100,
+                left : position.left / contentBoxWidth * 100,
+                top : position.top / contentBoxHeight * 100,
+                link : that.link,
+            }
+            return data;
+        }
+    }
+
+    //初始化盒子
+    function initContentBox(){
+        if(imageData == null) return;
+        if(imageData.imgWidth > imageData.imgHeight){
+            contentBoxHeight = contentBoxWidth * imageData.imgHeight / imageData.imgWidth;
+        }else{
+            contentBoxWidth = contentBoxHeight * imageData.imgWidth / imageData.imgHeight;
+        }
+
+        $("#content_box").css({backgroundImage: "url("+ ns.img(imageData.imageUrl) +")", width: contentBoxWidth + 'px', height: contentBoxHeight + 'px'});
+        if(imageData.heatMapData){
+            $.each(imageData.heatMapData, function(index, item){
+                let dragBox = new DragBox({
+                    init_data : item,
+                });
+                dragBoxArr[dragBox.getIndex()] = dragBox;
+            })
+        }
+    }
+
+    //获取操作结果
+    function getIframeRes(callback){
+        let heatMapData = [];
+        let checkRes = true;
+        $.each(dragBoxArr, function(index, item){
+            var data = item.getData();
+            if(!data.link){
+                parent.layer.msg('请选择热区链接');
+                checkRes = false;
+                return false;
+            }
+            heatMapData.push(data);
+        })
+        if(!checkRes) return;
+        imageData.heatMapData = heatMapData;
+        console.log(heatMapData);
+
+        if(typeof callback == 'function'){
+            callback(imageData);
+        }
+    }
+
+</script>
+{/block}

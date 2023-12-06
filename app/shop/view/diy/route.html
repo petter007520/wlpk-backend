@@ -1,0 +1,147 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.table-tab .layui-tab-title{margin-bottom: 20px;}
+	.layui-table-box{overflow: inherit;}
+	.layui-table-body{overflow: inherit;}
+	.layui-table-view td>div{overflow: inherit;}
+	.route-wrap{display: flex;align-items: center;}
+	.route-wrap a{margin: 0 10px;}
+	.route-wrap .iconfont{font-size: 24px;vertical-align:bottom;cursor: pointer;}
+	.promote-wrap{position: relative;}
+	.qrcode-wrap {display: none;font-size: 14px;line-height: 20px;background-color: #fff;box-shadow: 0 2px 8px 0 rgba(200, 201, 204, .5);position: absolute;z-index: 2000;border-radius: 2px;top: 40px;right: 5px;transform: translateX(10px);width: 200px;margin-bottom: 20px;}
+	.qrcode-wrap:before {right: 7px;top: -14px;border: solid transparent;content: "";height: 0;width: 0;position: absolute;pointer-events: none;border-color: transparent;border-bottom-color: #fff;border-width: 8px;}
+	.qrcode-wrap h4{text-align: center;border-bottom: 2px solid;line-height: 40px;}
+	.qrcode-wrap img{display: block;width: 130px;height: 130px;max-width: 100%;margin: 10px auto;}
+	.qrcode-wrap span{display: block;text-align: center;margin-bottom: 10px;cursor: pointer;}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="single-filter-box">
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入页面名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<table id="route_list" lay-filter="route_list"></table>
+
+<script type="text/html" id="h5_route">
+	<div class="route-wrap">
+		<span>{$h5_domain}{{d.wap_url}}</span>
+		<a class="text-color" href="javascript:ns.copy('h5_route_{{d.id}}');">复制</a>
+		<div class="promote-wrap">
+			<span class="text-color iconfont iconerweima" data-event="qrcode" data-name="{{d.name}}" data-path="{{d.wap_url}}" onclick="showQrcode(this,'h5')"></span>
+			<div class="qrcode-wrap" data-event="qrcode">
+				<h4 class="border-color" data-event="qrcode">二维码</h4>
+				<img src="" data-event="qrcode">
+				<span class="text-color" onclick="ns.copy('h5_route_{{d.id}}')" data-event="qrcode">复制链接</span>
+			</div>
+		</div>
+		<input type="hidden" id="h5_route_{{d.id}}" value="{$h5_domain}{{d.wap_url}}">
+	</div>
+</script>
+
+<script type="text/html" id="weapp_route">
+	<div class="route-wrap">
+		<span>{{d.wap_url}}</span>
+		<a class="text-color" href="javascript:ns.copy('weapp_route_{{d.id}}');">复制</a>
+		<div class="promote-wrap">
+			<span class="text-color iconfont iconerweima" data-event="qrcode" data-name="{{d.name}}" data-path="{{d.wap_url}}" onclick="showQrcode(this,'weapp')"></span>
+			<div class="qrcode-wrap" data-event="qrcode">
+				<h4 class="border-color" data-event="qrcode">二维码</h4>
+				<img src="" data-event="qrcode">
+				<span class="text-color" onclick="ns.copy('weapp_route_{{d.id}}')" data-event="qrcode">复制链接</span>
+			</div>
+		</div>
+		<input type="hidden" id="weapp_route_{{d.id}}" value="{{d.wap_url}}">
+	</div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var form,laytpl,table,element;
+	layui.use([ 'laytpl', 'form','element'], function () {
+		laytpl = layui.laytpl;
+		element = layui.element;
+		form = layui.form;
+		table = new Table({
+			elem: '#route_list',
+			url: ns.url("shop/diy/route"),
+			cols: [[{
+				type: 'checkbox',
+				width: '3%'
+			}, {
+				width: '10%',
+				title: '页面名称',
+				templet: function (res) {
+					var html = '';
+					html += `<span>${res.title}</span>`;
+					return html;
+				}
+			}, {
+				width: '45%',
+				title: 'H5链接',
+				templet: '#h5_route',
+			}, {
+				width: '30%',
+				title: '小程序链接',
+				templet: '#weapp_route',
+			}]],
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data){
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+
+	function showQrcode(event,type) {
+		$('.qrcode-wrap').hide();
+		promote({name: $(event).attr('data-name'), path: $(event).attr('data-path'), app_type: type}, function (data) {
+			if(data[type].status == 1) {
+				var qrcode = $(event).next();
+				qrcode.find('img').attr('src', ns.img(data[type].img));
+				qrcode.show();
+			}else{
+				layer.msg(data[type].message);
+			}
+		});
+	}
+
+	$(document).click(function(event) {
+		if ($(event.target).attr('data-event') !='qrcode' && $('.qrcode-wrap').not(':hidden').length) {
+			$('.qrcode-wrap').css('display', 'none');
+		}
+	});
+
+	// 推广链接
+	function promote(data,callback) {
+		$.ajax({
+			type: "POST",
+			url: ns.url("shop/diy/promoteRoute"),
+			data: data,
+			dataType: 'JSON',
+			success: function (res) {
+				if (res.code == 0) {
+					if(callback) callback(res.data.path);
+				}
+			}
+		});
+	}
+</script>
+{/block}

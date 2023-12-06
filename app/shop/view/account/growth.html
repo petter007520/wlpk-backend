@@ -1,0 +1,189 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style>
+    .screen {margin-top: 15px}
+    .table-title {cursor: pointer}
+    .layui-layout-admin.admin-style-2 .screen {margin-top: 0;margin-bottom: 15px;}
+    .layui-layout-admin.admin-style-2 .layui-form-item .layui-input-inline{background-color: #fff;}
+    .table-bottom .layui-table-page {position: inherit;text-align: right}
+</style>
+{/block}
+
+{block name="main"}
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+    <div class="layui-colla-item">
+        <form class="layui-colla-content layui-form layui-show">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">昵称/手机号：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="search_text" placeholder="请输入会员昵称/手机号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">发生方式：</label>
+                    <div class="layui-input-inline">
+                        <select name="from_type">
+                            <option value="">全部</option>
+                            {foreach $from_type as $k => $val}
+                            <option value="{$k}">{$val.type_name}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">发生时间：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+                        <i class=" iconrili iconfont calendar"></i>
+                    </div>
+                    <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-seven" onclick="datePick(7, this);return false;">近7天</button>
+                    <button class="layui-btn layui-btn-primary date-picker-btn date-picker-btn-thirty" onclick="datePick(30, this);return false;">近30天</button>
+                </div>
+            </div>
+            <div class="form-row">
+                <button class="layui-btn" lay-submit="" id="search" lay-filter="search">筛选</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table id="account_detail" lay-filter="account_detail"></table>
+{/block}
+
+{block name="script"}
+<script type="text/html" id="memberInfo">
+    <div class='table-title'>
+        <div class='title-pic'>
+            <img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+        </div>
+        <div class='title-content' onclick="location.href = ns.url('shop/member/editmember?member_id={{d.member_id}}')">
+            <p class="layui-elip">{{d.nickname}}</p>
+            <p class="layui-elip">{{d.mobile}}</p>
+        </div>
+    </div>
+</script>
+
+<script>
+    var form, laydate;
+    layui.use(['laydate','form', 'element'], function(){
+        form = layui.form;
+        laydate = layui.laydate;
+
+        form.on('submit(search)', function(data) {
+            if ($('#start_time').val() != '' && $('#end_time').val() != '' && (new Date($('#end_time').val()).getTime() <= new Date($('#start_time').val()).getTime() )) {
+                layer.msg('结束时间不能小于开始时间');
+                return false;
+            }
+            data.field.account_type = 'growth';
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+            return false;
+        });
+
+        laydate.render({
+            elem: '#start_time',
+            type: 'datetime',
+            max: 0,
+            change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+        laydate.render({
+            elem: '#end_time',
+            type: 'datetime',
+            max: 0,
+            change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        table = new Table({
+            elem: '#account_detail',
+            url: ns.url("shop/memberaccount/accountdetail"),
+            where: {
+                account_type: 'growth'
+            },
+            cols: [
+                [{
+                    templet: '#memberInfo',
+                    title: '会员信息',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+                    title: '成长值变化',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function (d) {
+                        if (d.account_data > 0) return '+' + parseInt(d.account_data);
+                        return parseInt(d.account_data);
+                    }
+                }, {
+                    field: 'type_name',
+                    title: '发生方式',
+                    width: '15%',
+                    unresize: 'false'
+                },  {
+                    field: 'create_time',
+                    title: '发生时间',
+                    width: '20%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return ns.time_to_date(data.create_time);
+                    }
+                }, {
+                    field: 'remark',
+                    title: '备注',
+                    width: '30%',
+                    unresize: 'false'
+                }]
+            ]
+        });
+    })
+
+    /**
+     * 七天时间
+     */
+    function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+        // alert(new Date().format("yyyy-MM-dd hh:mm"));
+        var now_date = new Date();
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+    }
+</script>
+{/block}

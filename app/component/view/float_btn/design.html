@@ -1,0 +1,48 @@
+<nc-component :data="data[index]" class="float-btn" data-disabled="1">
+	
+	<!-- 预览 -->
+	<template slot="preview">
+		<template v-if="nc.lazyLoad">
+			<div class="float-btn-box border-color" data-disabled="1">
+				<div v-for="(item,previewIndex) in nc.list" :key="previewIndex" :index="previewIndex" class="float-btn-item" data-disabled="1">
+					<div class="img-box" data-disabled="1" v-if="!item.iconType || item.iconType == 'img'" :style="{ width : nc.imageSize + 'px',height : nc.imageSize + 'px' }">
+						<img :src="changeImgUrl(item.imageUrl)" data-disabled="1">
+					</div>
+					<div class="icon-box" data-disabled="1" v-if="item.iconType && item.iconType == 'icon'" :style="{ width : nc.imageSize + 'px',height : nc.imageSize + 'px',fontSize : nc.imageSize + 'px' }">
+						<iconfont :icon="item.icon" v-if="item.icon" :value="item.style ? item.style : ''"></iconfont>
+					</div>
+				</div>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>按钮位置</h3>
+				<btn-position></btn-position>
+				<slide :data="{ field : 'btnBottom', label : '上下偏移' }"></slide>
+			</div>
+			<div class="template-edit-title">
+				<h3>图片设置</h3>
+				<slide :data="{ field : 'imageSize', label : '图片大小', min: 40, max : 100 }"></slide>
+				<float-btn-list></float-btn-list>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 样式编辑 -->
+	<template slot="edit-style"></template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var floatBtnResourcePath = "{$resource_path}"; // http路径
+			var floatBtnRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

@@ -1,0 +1,117 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css"/>
+<link rel="stylesheet" href="SHOP_CSS/goods_detail_config.css"/>
+{/block}
+{block name="main"}
+<div id="diyView" class="layui-form">
+
+	<div class="preview-wrap">
+
+		<div class='diy-view-wrap'>
+
+			<div class="preview-head">
+				<span>商品详情</span>
+			</div>
+
+			<div class="preview-block">
+				<div class="preview-draggable">
+					<img src="SHOP_IMG/goods/goods_detail_preview.png">
+				</div>
+				<div class="edit-attribute">
+					<div class="attr-wrap">
+						<div class="attr-title">
+							<span class="title">商品详情</span>
+						</div>
+						<div class="edit-content-wrap">
+
+							<div class="layui-form-item">
+								<label class="layui-form-label sm">导航栏透明</label>
+								<div class="layui-input-block">
+									<input type="checkbox" name="nav_bar_switch" lay-skin="switch" value="1" {if $config['nav_bar_switch'] == 1}checked{/if} />
+								</div>
+								<div class="word-aux diy-word-aux">控制导航栏是否透明显示（只限小程序）</div>
+							</div>
+
+							<div class="layui-form-item flex">
+								<div class="flex_left">
+									<label class="layui-form-label sm">促销语颜色</label>
+									<div class="curr-color">
+										<span></span>
+									</div>
+								</div>
+								<div class="layui-input-block flex_fill">
+									<div id="introductionColor" class="picker colorSelector">
+										<div></div>
+									</div>
+									<input type="hidden" name="introduction_color">
+									<span class="color-selector-reset text-color" onclick="reset('introductionColor','#303133')">重置</span>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="custom-save">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script>
+	layui.use(['form', 'laydate', 'laytpl'], function () {
+		var form = layui.form;
+		var repeat_flag = false; //防重复标识
+		form.render();
+
+		var size = 139; // 公式：二级面包屑layui-header-crumbs-second （55px）+ 自定义模板区域上内边距diyview（20px） + 底部保存按钮（90px）
+		var commonHeight = $(window).height() - size;
+		$('.preview-wrap').css("height", (commonHeight) + "px");
+		$(".edit-attribute .attr-wrap").css("height", (commonHeight - 1) + "px");// 1px是上边框
+		$(".preview-block").css("min-height", (commonHeight - 104) + "px"); // 公式：高度 - 自定义模板区域上内边距（20px） - 自定义模板区域下外编辑（20px）- 自定义模板头部（64px）
+		setTimeout(function () {
+			$('#diyView').css('visibility', 'visible');
+		}, 50);
+
+		Colorpicker.create({
+			el: 'introductionColor',
+			color: "{$config['introduction_color']}",
+			change: function (elem, hex) {
+				$(elem).find("div").css('background', hex);
+				$(elem).parent().parent().find('.curr-color span').text(hex);
+				$(elem).next().val(hex);
+			}
+		});
+
+		form.on('submit(save)', function (data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: 'POST',
+				url: ns.url("shop/goods/goodsDetailConfig"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function (res) {
+					repeat_flag = false;
+					layer.msg(res.message);
+				}
+			});
+
+		});
+	});
+
+	function reset(elem,color) {
+		$('#' + elem).children('div').css('background', color);
+		$('#' + elem).parent().parent().find('.curr-color span').text(color);
+		$('#' + elem).next().val(color);
+	}
+</script>
+{/block}

@@ -1,0 +1,161 @@
+<nc-component :data="data[index]" :class="['rubik-cube']">
+
+	<template slot="preview">
+		<div class="preview-box" :class="{'border-radius': nc.elementAngle == 'round'}">
+			<template v-if="nc.list.length>0 && !nc.list[0].imageUrl">
+				<div class="tip" :style="{ background : nc.componentBgColor,
+			     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				 borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				 backgroundImage: 'url(' + changeImgUrl('public/static/img/default_img/figure.png')  + ')'
+				}"></div>
+			</template>
+			<template v-if="(nc.mode != 'custom-rubik-cube')">
+				<ul :style="{ background : nc.componentBgColor,
+			     borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			     borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+			     borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0)
+				}">
+
+					<template v-if="nc.mode == 'row1-lt-of2-rt'">
+						<div class="template-left">
+							<li :class="nc.mode">
+								<template v-if="nc.list[0].imageUrl!=''">
+									<div :style="{margin: nc.imageGap/2 + 'px', height : nc.list[0].previewHeight,
+								     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+								     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+								     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+								     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+								     overflow: 'hidden'}">
+										<nc-image :src="changeImgUrl(nc.list[0].imageUrl)" :mode="nc.list[0].imageMode"></nc-image>
+									</div>
+								</template>
+							</li>
+						</div>
+						<div class="template-right">
+							<template v-for="(item, index) in nc.list">
+								<template v-if="index > 0">
+									<li :class="nc.mode">
+										<template v-if="item.imageUrl!=''">
+											<div :style="{margin: nc.imageGap + 'px ' + nc.imageGap/2 + 'px', height : item.previewHeight,
+										     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+										     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+										     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+										     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+											 overflow: 'hidden'}">
+												<nc-image :src="changeImgUrl(item.imageUrl)" :mode="item.imageMode"></nc-image>
+											</div>
+										</template>
+									</li>
+								</template>
+							</template>
+						</div>
+					</template>
+
+					<template v-else-if="nc.mode == 'row1-lt-of1-tp-of2-bm'">
+						<div class="template-left">
+							<li :class="nc.mode">
+								<template v-if="nc.list[0].imageUrl!=''">
+									<div :style="{marginRight: nc.imageGap/2 + 'px', height : nc.list[0].previewHeight,
+								     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+								     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+								     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+								     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+								  	 overflow: 'hidden'}">
+										<nc-image :src="changeImgUrl(nc.list[0].imageUrl)" :mode="nc.list[0].imageMode"></nc-image>
+									</div>
+								</template>
+							</li>
+						</div>
+						<div class="template-right">
+							<div class="template-top" :style="{marginBottom: nc.imageGap + 'px'}">
+								<li :class="nc.mode">
+									<template v-if="nc.list[1].imageUrl!=''">
+										<div :style="{marginLeft: nc.imageGap/2 + 'px', height : nc.list[1].previewHeight,
+									     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+									     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+									     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+									     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+									     overflow: 'hidden'}">
+											<nc-image :src="changeImgUrl(nc.list[1].imageUrl)" :mode="nc.list[1].imageMode"></nc-image>
+										</div>
+									</template>
+								</li>
+							</div>
+
+							<div class="template-bottom" :style="{marginLeft: nc.imageGap/2 + 'px',marginTop: nc.imageGap + 'px'}">
+								<template v-for="(item, index) in nc.list">
+									<template v-if="index > 1">
+										<li :class="nc.mode" :style="{margin: '0 ' + nc.imageGap/2 + 'px'}">
+											<template v-if="item.imageUrl!=''">
+												<div :style="{height : item.previewHeight,
+											     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+											     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+											     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+											     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+											     overflow: 'hidden'}">
+													<nc-image :src="changeImgUrl(item.imageUrl)" :mode="item.imageMode"></nc-image>
+												</div>
+											</template>
+										</li>
+									</template>
+								</template>
+							</div>
+						</div>
+					</template>
+
+					<template v-else>
+						<li v-for="(item,rubikIndex) in nc.list" :key="rubikIndex" :class="nc.mode">
+							<div v-if="item.imageUrl!=''" :style="{margin: nc.imageGap/2 + 'px', height : item.previewHeight,
+						     borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+						     borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+						     borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+						     borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+							 overflow: 'hidden'}">
+								<nc-image :src="changeImgUrl(item.imageUrl)" :mode="item.imageMode"></nc-image>
+							</div>
+						</li>
+					</template>
+				</ul>
+			</template>
+
+			<template v-else>
+				<template v-if="nc.lazyLoad">
+					<rubik-cube-diy-html :diy-html="nc.diyHtml"></rubik-cube-diy-html>
+				</template>
+			</template>
+		</div>
+	</template>
+	
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<rubik-cube></rubik-cube>
+		</template>
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>魔方样式</h3>
+				<slide :data="{ field : 'imageGap', label : '图片间隙', max: 30 }"></slide>
+				<slide :data="{ field : 'topElementAroundRadius', label : '上圆角', max : 50 }"></slide>
+				<slide :data="{ field : 'bottomElementAroundRadius', label : '下圆角', max : 50 }"></slide>
+			</div>
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var rubikCubeResourcePath = "{$resource_path}"; // http路径
+			var rubikCubeRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+
+</nc-component>

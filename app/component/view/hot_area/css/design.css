@@ -1,0 +1,25 @@
+@CHARSET "UTF-8";
+
+.hot-area .hot-area-warp {
+	overflow: hidden;
+	position: relative;
+}
+.hot-area .hot-area-warp .hot-area-item{
+	background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.hot-area .hot-area-wrap{
+	margin-left: 20px;
+}
+.hot-area .hot-area-wrap .word-aux {
+	margin: 10px 0 10px 0;
+	color: #909399;
+	font-size: 12px;
+}
+
+.hot-area .hot-area-wrap .error-msg{
+	margin: 10px 0 0 0;
+	color: #f44;
+	display: none;
+}

@@ -1,0 +1,340 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style type="text/css">
+	.iconadd_light {
+		font-size: 40px;
+	}
+	.good-poster {
+		width: 240px; 
+		height: 413px; 
+		margin:0 0 10px 30px; 
+		text-align: center; 
+		position: relative;
+		cursor: pointer;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-collapse tips-wrap">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>商品海报，在商品分享时的海报样式时为商家提供丰富的海报模板，可自定义设置，也可使用本商城提供的模板</li>
+			<li>使用商品海报，需要在商品添加、编辑中对商品海报选项进行选择。</li>
+			<li>分享商品海报，客户可以在手机端的商品详情中分享时获取商品海报图片。</li>
+		</ul>
+	</div>
+</div>
+<div class="single-filter-box top">
+	<button class="layui-btn add-button" onclick="add()">添加海报</button>
+</div>
+
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">海报名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="请输入海报名称" class="layui-input" autocomplete="off">
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<button type="button" class="layui-btn" lay-filter="search" lay-submit>筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="manjian_tab">
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="poster_list" lay-filter="poster_list"></table>
+	</div>
+</div>
+<script type="text/html" id="qr_img">
+	<div class='table-title'>
+		<div class='title-pic'>
+			<img layer-src src="{{ns.img()}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+		</div>
+	</div>
+</script>
+
+<script type="text/html" id="poster_status">
+	<div class='table-title'>
+		{{# if(d.template_status == 0){ }}
+			<div class='title-pic' style="text-align:left">未启用</div>
+		{{# }else{ }}
+			<div class='title-pic text-color' style="text-align:left">启用</div>
+		{{# } }}
+	</div>
+</script>
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="detail">预览</a>
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# if(d.template_status==0){ }}
+		<a class="layui-btn" lay-event="start">启用</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{# }else{ }}
+		<a class="layui-btn" lay-event="close">关闭</a>
+		{{# } }}
+	</div>
+</script>
+
+<script type="text/html" id="add">
+	<div style="display: flex;">
+		<div>
+			<div style="width: 240px; height: 413px; border: 1px dashed #ff791a; color: #ff791a; text-align: center; line-height: 413px; cursor: pointer; display: inline-block;" onclick="toAdd()">
+				<i class="iconfont iconadd_light"></i>
+			</div>
+			<div style="text-align: center; margin-top: 10px;">自定义海报</div>
+		</div>
+		<div style="display: inline-block; position: relative;">
+			<div style="display: flex;">
+				{{# d.forEach(function(item, index){ }}
+				<li class="good-poster" onclick="toAdd({{ item.muban_id }})">
+					<span class="iconfont" ></span>
+					<img data-id="1" style="width: 100%;" src="{{ item.image }}">
+					<span style="color: #000000; font-size: 14px;">{{ item.name }}</span>
+					<div class="js-zhezhao" ></div>
+				</li>
+				{{# }) }}
+			</div>
+		</div>
+	</div>
+</script>
+
+<!-- 详情弹框html -->
+<script type="text/html" id="detail">
+	<img layer-src src="{{ns.img(d)}}" style="width: 360px; height: 640px;" />
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl,template_id,table,form,element,repeat_flag = false;
+	layui.use(['form', 'element', 'laytpl'], function() {
+		form = layui.form;
+		element = layui.element;
+		laytpl = layui.laytpl;
+		form.render();
+
+		table = new Table({
+			elem: '#poster_list',
+			url: ns.url("postertemplate://shop/postertemplate/lists"),
+			cols: [
+				[ {
+					field: 'poster_name',
+					title: '海报名称',
+					unresize: 'false',
+					width: '15%',
+				}, {
+					field: 'template_status',
+					title: '海报状态',
+					unresize: 'false',
+					width: '60%',
+					templet: '#poster_status'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					align:'right'
+				}]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'detail': //预览
+					detailPoster(data.template_id);
+					break;
+				case 'edit': //编辑
+					location.href = ns.url("postertemplate://shop/postertemplate/editpostertemplate", {
+						"template_id": data.template_id
+					});
+					break;
+				case 'delete': //删除
+					deletePoster(data.template_id, data.template_status);
+					break;
+				case 'close': //关闭
+					close(data.template_id);
+					break;
+				case 'start': //启用
+					start(data.template_id);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function deletePoster(template_ids, template_status) {
+			if (template_status == 1) {
+				return layer.msg('请先关闭海报后再删除');
+			}
+
+			layer.confirm('确定要删除该海报吗?', function() {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				$.ajax({
+					url: ns.url("postertemplate://shop/postertemplate/delpostertemplate"),
+					data: {
+						template_ids: template_ids
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						repeat_flag = false;
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload({
+							    page: {
+							        curr: 1
+							    },
+							});
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+			});
+		}
+
+		/**
+		 * 关闭
+		 */
+		function close(template_id) {
+			layer.confirm('确定关闭吗?', function() {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				$.ajax({
+					url: ns.url("postertemplate://shop/postertemplate/editstatus"),
+					data: {
+						template_id: template_id,
+						template_status: 0
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						repeat_flag = false;
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 预览
+		 */
+		function detailPoster(template_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			$.ajax({
+				url: ns.url("postertemplate://shop/postertemplate/postertemplatedetail"),
+				data: {
+					template_id: template_id,
+				},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code >= 0) {
+						laytpl($("#detail").html()).render(res.data, function(html) {
+							layer.open({
+								type: 1,
+								shadeClose: true,
+								shade: 0.3,
+								offset: 'auto',
+								fixed: false,
+								title: "预览",
+								area: ['400px', '760px'],
+								btn: ['退出'],
+								content: html,
+								skin: 'detail'
+							});
+						})
+					}else{
+						layer.msg(res.message || '操作错误');
+					}
+				}
+			});
+		}
+
+		/**
+		 * 开启
+		 */
+		function start(template_id) {
+			layer.confirm('确定启用吗?', function() {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				$.ajax({
+					url: ns.url("postertemplate://shop/postertemplate/editstatus"),
+					data: {
+						template_id: template_id,
+						template_status: 1
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						repeat_flag = false;
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+
+	function add() {
+		var mubanList = [
+			{muban_id: 1, name:'商品海报1', image:"SHOP_IMG/poster1.png"},
+			{muban_id: 2, name:'商品海报2', image:"SHOP_IMG/poster2.png"},
+			{muban_id: 3, name:'商品海报3', image:"SHOP_IMG/poster3.png"},
+		];
+		laytpl($("#add").html()).render(mubanList, function(html) {
+			layer.open({
+				type: 1,
+				shadeClose: true,
+				shade: 0.3,
+				offset: 'auto',
+				fixed: false,
+				title: "添加海报",
+				area: ['1100px', '560px'],
+				btnAlign: 'c',
+				content: html,
+				skin: 'add',
+			});
+		})
+	}
+
+	function toAdd(muban_id) {
+		location.href = ns.url("postertemplate://shop/postertemplate/addpostertemplate", {muban_id:muban_id});
+	}
+	
+</script>
+{/block}

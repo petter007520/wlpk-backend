@@ -1,0 +1,346 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style>
+	.survey .layui-card {background:#f2f3f5;vertical-align:top;width:50%;display:inline-block;border-radius:0;float:left;margin-top:10px;box-shadow:unset;}
+	.survey .layui-card-header {font-size:14px;box-shadow:unset;border:0;}
+	.survey .layui-card:nth-child(3n) {margin-right:0;}
+	.survey {box-shadow:unset;}
+	.layui-card-body {font-size:24px;padding-top:0px;cursor:pointer;}
+	.layui-card.layui-input-inline {padding-left:40px;box-sizing:border-box;}
+	.tab-status {height:41px;}
+	.layui-card.layui-input-inline {position:relative;}
+	.stat-name {justify-content:space-between;}
+	.layui-elem-quote .time {font-size:12px;margin-left:10px;}
+	.screen-title {font-size:14px;font-weight:600;}
+	.stat-list {margin-top:10px;display:flex;flex-wrap:wrap;}
+	.stat-item {padding:15px;box-sizing:border-box;margin-right:10px;width:calc((100% - 30px) / 4);margin-bottom:10px;border:1px solid #eee;}
+	.stat-name span {position:relative;}
+	.stat-name .iconfont {margin-left:5px;cursor:pointer;}
+	.stat-name>a {float:right;margin-top:1px;font-size:14px;font-weight:normal;}
+	.stat-list .stat-item:nth-child(4n) {margin-right:0;}
+	.stat-value {font-size:24px;margin-top:15px;}
+	@media screen and (max-width:1580px) {.stat-list .stat-item {width:calc((100% - 20px) / 3);}
+		.stat-list .stat-item:nth-child(4n) {margin-right:10px;}
+		.stat-list .stat-item:nth-child(3n) {margin-right:0;}
+	}
+	.survey {margin:20px 0px;background:#f2f3f5;display:flex;}
+	.survey.stat .layui-card {width:150px !important;}
+	.survey.stat {margin-left:0;margin-right:0;height:90px;margin-top:10px;}
+	.survey.stat .layui-card-body {padding-top:0px;}
+	.symbol {padding:35px 20px;font-size:18px;}
+	.stat-text {padding:35px 10px;font-size:14px;}
+	.date-btn {height:32px;line-height:32px;font-size:14px;padding:0 10px;display:inline-block;box-sizing:border-box;float:left;cursor:pointer;}
+	.layui-form-center {display:inline-block;}
+	.js-prompt-top {color:#C8C9CC;font-size:14px;z-index:999;margin-left:5px;cursor:pointer;}
+	#time_fission {border: 1px solid #eee;padding: 7px 10px;}
+</style>
+{/block}
+
+{block name="main"}
+<div id="app">
+	<div class="main-wrap">
+		<div class="screen">
+			<div class="layui-elem-quote">统计报表<span class="time text-color-tip">更新时间：{:date('Y-m-d H:i:s')}</span></div>
+			<div class="layui-input-inline">
+				<div class="layui-inline layui-inline-margin" id="time_fission">
+					<div class="layui-input-inline">
+						<input type="text" id="start_time" name="start_time" autocomplete="off" class="layui-input" placeholder="请输入开始时间" value="{notempty name='$start_time'}{$start_time|date='Y-m-d H:i:s'}{/notempty}">
+						<i class="iconfont iconriqi"></i>
+					</div>
+					<div class="layui-form-center">-</div>
+					<div class="layui-input-inline">
+						<input type="text" id="end_time" name="end_time" autocomplete="off" class="layui-input" placeholder="请输入结束时间" value="{notempty name='$end_time'}{$end_time|date='Y-m-d H:i:s'}{/notempty}">
+						<i class="iconfont iconriqi"></i>
+					</div>
+				</div>
+			</div>
+			<div class="layui-input-inline">
+				<div class="date-btn text-color selected" onclick="datePick(2, this)">今日</div>
+				<div class="date-btn selected" onclick="datePick(1, this)">昨日</div>&nbsp;&nbsp;
+				<div class="date-btn selected" onclick="datePick(3, this)">本周</div>&nbsp;&nbsp;
+				<div class="date-btn selected" onclick="datePick(4, this)">本月</div>&nbsp;&nbsp;
+			</div>
+		</div>
+
+		<div class="survey">
+			<div class="layui-card layui-input-inline" >
+				<div class="layui-card-header">
+					<span class="hint">预计收入(元) </span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，店铺收入的金额减去支出的金额"></span>
+				</div>
+				<div class="layui-card-body">
+					<span class="num total_income" v-text="$options.filters.moneyFormat(realIncome)">0.00</span>
+				</div>
+			</div>
+			<div class="layui-card layui-input-inline" >
+				<div class="layui-card-header">
+					<span class="hint">收入总额(元) </span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，店铺收入的金额（订单收入、会员充值、会员开卡等）"></span>
+				</div>
+				<div class="layui-card-body">
+					<span class="num total_income" v-text="$options.filters.moneyFormat(totalIncome)">0.00</span>
+				</div>
+			</div>
+			<div class="layui-card layui-input-inline" >
+				<div class="layui-card-header">
+					<span class="hint">支出总额(元) </span>
+					<span class="iconfont iconwenhao js-prompt-top" data-tips="统计时间内，店铺支出的金额（退款、会员提现、现金红包等）"></span>
+				</div>
+				<div class="layui-card-body">
+					<span class="num total_expenditure" v-text="$options.filters.moneyFormat(totalDisburse)">0.00</span>
+				</div>
+			</div>
+
+			<div class="layui-clear"></div>
+		</div>
+
+		<div class="screen">
+			<div class="screen-title">收入概况</div>
+			<div class="survey stat">
+				<div class="layui-card layui-input-inline">
+					<div class="layui-card-header">
+						<span class="hint">收入总额</span>
+					</div>
+					<div class="layui-card-body">
+						<span class="num total_income" v-text="$options.filters.moneyFormat(totalIncome)">0.00</span>
+					</div>
+				</div>
+				<div class="symbol"> = </div>
+
+				<template v-for="(item, index) in incomeData">
+					<div class="symbol" v-if="index > 0"> + </div>
+					<div class="stat-text" v-text="item.title"></div>
+				</template>
+			</div>
+
+			<div class="stat-list">
+				<div class="stat-item" v-for="(item, index) in incomeData" :key="index">
+					<div class="stat-name">
+						<span><span v-text="item.title"></span><i class="iconfont iconwenhao js-prompt-top" :data-tips="item.desc"></i></span>
+						<a :href="url(item.url)" class="text-color" target="_blank">明细</a>
+					</div>
+					<div class="stat-value" v-text="$options.filters.moneyFormat(item.value)">0.00</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="screen">
+			<div class="screen-title">支出概况</div>
+			<div class="survey stat">
+				<div class="layui-card layui-input-inline">
+					<div class="layui-card-header">
+						<span class="hint">支出总额</span>
+					</div>
+					<div class="layui-card-body">
+						<span class="num total_income" v-text="$options.filters.moneyFormat(totalDisburse)">0.00</span>
+					</div>
+				</div>
+				<div class="symbol"> = </div>
+
+				<template v-for="(item, index) in disburseData">
+					<div class="symbol" v-if="index > 0"> + </div>
+					<div class="stat-text" v-text="item.title"></div>
+				</template>
+			</div>
+
+			<div class="stat-list">
+				<div class="stat-item" v-for="(item, index) in disburseData" :key="index">
+					<div class="stat-name">
+						<span><span v-text="item.title"></span><i class="iconfont iconwenhao js-prompt-top" :data-tips="item.desc"></i></span>
+						<a :href="url(item.url)" class="text-color" target="_blank">明细</a>
+					</div>
+					<div class="stat-value" v-text="$options.filters.moneyFormat(item.value)">0.00</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+<script>
+	var laydate;
+	layui.use(['laydate'], function () {
+		laydate = layui.laydate;
+
+		new LayDate({
+			elem: '#time_fission',
+			type: 'datetime',
+			rangeId:['start_time','end_time'],
+			max: '{:date("Y-m-d")}',
+			done: function(value, date, endDate){
+				var time_arr = value.split(' - ');
+				var start_time = time_arr[0];
+				var end_time = time_arr[1];
+				getIncomeData({start_time: dateToTime(start_time), end_time: dateToTime(end_time)});
+				getDisburseData({start_time: dateToTime(start_time), end_time: dateToTime(end_time)});
+				$('input[name="start_time"]').val(time_arr[0]);
+				$('input[name="end_time"]').val(time_arr[1]);
+			}
+		});
+	});
+
+	var vue =  new Vue({
+		el: '#app',
+		data: {
+			totalIncome: {$total_income}, //总收入
+			totalDisburse: {$total_disburse}, // 总支出
+			incomeData: {:json_encode($income_data)}, // 收入组成
+			disburseData: {:json_encode($disburse_data)} // 支出组成
+		},
+		computed: {
+			realIncome: function(){
+				return this.totalIncome - this.totalDisburse;
+			}
+		},
+		methods: {
+			url: function(href){
+				return ns.url(href)
+			}
+		},
+		filters: {
+			/**
+			 * 金额格式化输出
+			 * @param {Object} money
+			 */
+			moneyFormat(money) {
+				if (isNaN(parseFloat(money))) return money;
+				return parseFloat(money).toFixed(2);
+			}
+		}
+	})
+
+	/**
+	 * 查询收入数据
+	 * @param data
+	 */
+	function getIncomeData(data) {
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			url: ns.url("shop/account/income"),
+			data: data,
+			success: function(res) {
+				vue.incomeData = res.data;
+				var total = 0;
+				res.data.forEach(function(item){
+					total += parseFloat(item.value);
+				});
+				vue.totalIncome = total;
+			}
+		});
+	}
+
+	/**
+	 * 查询支出数据
+	 * @param data
+	 */
+	function getDisburseData(data) {
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			url: ns.url("shop/account/disburse"),
+			data: data,
+			success: function(res) {
+				vue.disburseData = res.data;
+				var total = 0;
+				res.data.forEach(function(item){
+					total += parseFloat(item.value);
+				});
+				vue.totalDisburse = total;
+			}
+		});
+	}
+
+	function datePick(date_type,event_obj){
+		$(".date-btn").removeClass("select");
+		$(".date-btn").removeClass("text-color");
+		$(event_obj).addClass('select');
+		$(event_obj).addClass('text-color');
+
+		var beginTime,endTime;
+
+		switch (date_type) {
+			case 1:
+				var now = new Date();
+				now.setDate(now.getDate()-1);
+				var Year = now.getFullYear();
+				var Month = now.getMonth() + 1;
+				var Day = now.getDate();
+				if(Month < 10) Month = '0'+Month;
+				if(Day < 10) Day = '0'+Day;
+
+				beginTime = Year + "-" + Month +"-" + Day + ' 00:00:00';        //格式 Y-m-d
+				endTime = Year + "-" + Month +"-" + Day + ' 23:59:59';        //格式 Y-m-d
+				break;
+			case 2:
+				var now = new Date();
+				var Year = now.getFullYear();
+				var Month = now.getMonth() + 1;
+				var Day = now.getDate();
+				if(Month < 10) Month = '0'+Month;
+				if(Day < 10) Day = '0'+Day;
+
+				beginTime = Year + "-" + Month +"-" + Day + ' 00:00:00';        //格式 Y-m-d
+				endTime = Year + "-" + Month +"-" + Day + ' 23:59:59';        //格式 Y-m-d
+				break;
+			case 3:
+				var now = new Date();
+				var Year = now.getFullYear();
+				var Month = now.getMonth() + 1;
+				var Day = now.getDate();
+				if(Month < 10) Month = '0'+Month;
+				if(Day < 10) Day = '0'+Day;
+
+				var week_day = now.getDay();
+				if(week_day==0)           //星期天表示 0 故当星期天的时候，获取上周开始的时候
+				{
+					week_day = 7;
+				}
+
+				now.setDate(Day-week_day+1);
+
+				var prev_year = now.getFullYear();
+				var prev_month = now.getMonth() + 1;
+				var prev_day = now.getDate();
+				if(prev_month < 10) prev_month = '0'+prev_month;
+				if(prev_day < 10) prev_day = '0'+prev_day;
+
+				beginTime = prev_year + "-" + prev_month +"-" + prev_day + ' 00:00:00';        //格式 Y-m-d
+				endTime = Year + "-" + Month +"-" + Day + ' 23:59:59';        //格式 Y-m-d
+				break;
+			case 4:
+				var now = new Date();             //获取当前时间
+				var beginTimes = now.getFullYear();     //开始计算
+				var Month = now.getMonth() +1 ;           //getMonth()是以0开始的月份
+				var Day = now.getDate();
+				if(Month < 10) Month = '0'+Month;
+				if(Day < 10) Day = '0'+Day;
+
+				beginTime = beginTimes + "-" +Month +"-01 00:00:00";        //格式 Y-m-d
+				endTime = beginTimes + "-" + Month +"-" + Day + ' 23:59:59';        //格式 Y-m-d
+				break;
+		}
+
+		new LayDate({
+			elem: '#time_fission',
+			type: 'datetime',
+			rangeId:['start_time','end_time'],
+			value: beginTime +' - '+ endTime,
+			max: '{:date("Y-m-d")}'
+		});
+
+		$('#start_time').val(beginTime);
+		$('#end_time').val(endTime);
+
+		getIncomeData({start_time: dateToTime(beginTime), end_time: dateToTime(endTime)})
+		getDisburseData({start_time: dateToTime(beginTime), end_time: dateToTime(endTime)})
+	}
+
+	function dateToTime(date){
+		return new Date(date).getTime() / 1000;
+	}
+</script>
+{/block}

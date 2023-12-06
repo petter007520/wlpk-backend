@@ -1,0 +1,217 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.management-info{
+		display: flex;
+		margin-bottom: 50px;
+	}
+	.management-info .management{
+		margin-left: 10px;
+	}
+	.management-info .phone-wrap{
+		min-width: 340px;
+		width: 340px;
+		height: 667px;
+	}
+	.management-info .phone-wrap .iframe-wrap{
+		width: 340px;
+		height: 100%;
+		border: 1px solid #eee;
+	}
+	.management-info .phone-wrap .iframe-wrap #iframe-management{
+		width: 340px;
+		height: 100%;
+	}
+	.management-info-left{
+		margin-left: 40px;
+		max-width: 680px;
+		width:100%;
+	}
+	.management-info-left-box{
+		position: relative;
+		padding: 20px;
+		border: 1px solid #eee;
+	}
+	.management-info-left-box::after{
+		position: absolute;
+		content: '';
+		width: 26px;
+		height: 26px;
+		background-color: #fff;
+		transform:rotate(-45deg);
+		left:-13px;
+		top:26px;
+		border: 1px solid #eee;
+		border-right: 0;
+		border-bottom: 0;
+	}
+	.management-info .management-info-left .management-info-top{
+		/*display: flex;*/
+		/*justify-content: space-between;*/
+		/*align-items: center;*/
+		border-bottom: 1px solid #eee;
+		padding-bottom: 20px;
+		
+	}
+	.management-info .management-info-title{
+		font-size: 18px;
+		font-weight: 800;
+		display: flex;
+		align-items: center;
+	}
+	.management-info .management-info-left .management-info-top .word-aux{
+		margin: 10px 0 0 0;
+	}
+	.management-info .management-info-box{
+		margin-top: 20px;
+		background-color: #F7F8FA;
+		padding: 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 20px;
+	}
+	.management-info .management-info-box-img{
+		width: 100px;
+		min-height: 100px;
+	}
+	.management-info .management-info-box-img img{
+		width: 100%;
+		height: 100%;
+	}
+	.management-info .management-info-box-img .tips {
+		text-align: center;
+		font-size: 12px;
+		color: #999;
+		border: 1px dashed #ddd;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100px;
+		height: 100px;
+		cursor: pointer;
+		box-sizing: border-box;
+	}
+	.management-info .management-info-box-title-bottom{
+		color: #999;
+	}
+	.management-info .management-empty {
+		text-align: center;
+	}
+	.management-info .management-empty img{
+		width: 190px;
+		display: block;
+		margin:80px auto 40px;
+	}
+	.blockflex{
+		margin-top: 10px;
+		text-align: center;
+		cursor:pointer;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="main-wrap-margin">
+	<div class="management-info">
+		<div class="phone-wrap">
+			<div class="iframe-wrap">
+				{if !empty($qrcode_info) && $qrcode_info['url']}
+				<iframe id="iframe-management" src="{$qrcode_info['url']}" frameborder="0"></iframe>
+				{else/}
+				<div class="management-empty">
+					<img src="__STATIC__/img/wap_not_found.png" />
+					<p>当前手机页面无法访问</p>
+					<a href="https://www.kancloud.cn/niucloud/niushop_b2c_v4/1842146" class="text-color" target="_blank">请检查手机端域名配置以及伪静态</a>
+				</div>
+				{/if}
+			</div>
+		</div>
+		<div class="management-info-left">
+			<div class="management-info-left-box">
+				<div class="management-info-top">
+					<div class="management-info-title">
+						<button type="button" class="layui-btn" onclick="toIndex()">装修</button>
+					</div>
+					{if $store_business == 'store'}
+					<p class="word-aux text-color">当前系统为连锁门店运营模式，首页按照门店页面装修</p>
+					{/if}
+				</div>
+				<div class="management-info-content">
+					<div class="management-info-box">
+						<div>
+							<div class="management-info-box-title">H5</div>
+							<div class="management-info-box-title-bottom">扫描右侧二维码查看演示</div>
+						</div>
+						<div class="management-info-box-img">
+							{notempty name="$qrcode_info"}
+							<img layer-src src="{:img($qrcode_info['img'])}" />
+							<div class="blockflex">
+
+								<a class="text-color" href="{:url('index/index/h5preview')}" target="_blank">访问店铺</a>
+							</div>
+							{/notempty}
+						</div>
+					</div>
+
+					{notempty name="$wechat_config"}
+					<div class="management-info-box">
+						<div>
+							<div class="management-info-box-title">微信公众号</div>
+							<div class="management-info-box-title-bottom">扫描右侧二维码查看</div>
+						</div>
+						<div class="management-info-box-img">
+							{notempty name="$wechat_config['qrcode']"}
+								<img layer-src src="{:img($wechat_config['qrcode'])}" onerror="this.src = 'STATIC_IMG/default_img/square.png'"/>
+							{else/}
+								<p class="tips" onclick="window.open('{:addon_url(\'wechat://shop/wechat/config\')}')">请上传<br>公众号二维码</p>
+							{/notempty}
+						</div>
+					</div>
+					{else/}
+					<div class="management-info-box">
+						<div>
+							<div class="management-info-box-title">微信公众号</div>
+							<div class="management-info-box-title-bottom">需要配置已认证的微信公众号，才能使用该功能哦！</div>
+						</div>
+						<button type="button" class="layui-btn jump-type" onclick="window.open('{:addon_url(\'wechat://shop/wechat/config\')}')">立即配置</button>
+					</div>
+					{/notempty}
+
+					{notempty name="$weapp_config"}
+					<div class="management-info-box">
+						<div>
+							<div class="management-info-box-title">微信小程序</div>
+							<div class="management-info-box-title-bottom">扫描右侧二维码查看</div>
+						</div>
+						<div class="management-info-box-img">
+							{notempty name="$weapp_config['qrcode']"}
+							<img layer-src src="{:img($weapp_config['qrcode'])}" onerror="this.src = 'STATIC_IMG/default_img/square.png'"/>
+							{else/}
+							<p class="tips" onclick="window.open('{:addon_url(\'weapp://shop/weapp/config\')}')">请上传<br>小程序二维码</p>
+							{/notempty}
+						</div>
+					</div>
+					{else/}
+					<div class="management-info-box">
+						<div>
+							<div class="management-info-box-title">微信小程序</div>
+							<div class="management-info-box-title-bottom">需要配置已认证的微信小程序，才能使用该功能哦！</div>
+						</div>
+						<button type="button" class="layui-btn jump-type" onclick="window.open('{:addon_url(\'weapp://shop/weapp/config\')}')">立即配置</button>
+					</div>
+					{/notempty}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var storeBusiness = '{$store_business}'; // 店铺运营模式
+	function toIndex(){
+		if(storeBusiness == 'shop') location.href = ns.url('shop/diy/index');
+		else if(storeBusiness == 'store') location.href = ns.url('store://shop/store/diy');
+	}
+</script>
+{/block}

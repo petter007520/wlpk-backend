@@ -1,0 +1,164 @@
+{extend name="$extend_base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/colorPicker/css/colorpicker.css" />
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/diyview.css" />
+{/block}
+{block name="main"}
+<div class="custom-save js-top-custom-save layui-hide">
+	<span></span>
+	<div class="button-group">
+		<button class="layui-btn save-button save">保存</button>
+		{notempty name="$diy_view_info"}
+		<button class="layui-btn" onclick="preview()">预览</button>
+		{/notempty}
+		<button class="layui-btn layui-btn-primary cancel-btn">取消</button>
+	</div>
+</div>
+
+<div id="diyView">
+	<!-- 组件列表 -->
+	<div class="component-list">
+		<div class="tab">
+			<span class="selected">内置组件</span>
+			<span data-type="EXTEND">第三方组件</span>
+		</div>
+		<nav>
+			{foreach name="$diy_view_utils" item="vo" key="k"}
+			<h3 data-index="{$k}" data-type="{$vo.type}" {if $vo['type'] == 'EXTEND'}style="display:none;"{/if}><img src="__STATIC__/ext/diyview/img/component_down.png" />{$vo.type_name}</h3>
+			<ul data-index="{$k}" data-type="{$vo.type}" {if $vo['type'] == 'EXTEND'}style="display:none;"{/if}>
+				{if $vo['type'] == 'SYSTEM'}
+				<li title="弹窗广告" @click='changeCurrentIndex(-98)'>
+					<i class="iconfont icondanchuangguanggao"></i>
+					<span>弹窗广告</span>
+				</li>
+				{/if}
+				{foreach name="$vo.list" item="li" key="li_k"}
+				<li title="{$li.title}" data-name="{$li.name}" data-max-count="{$li.max_count}" data-value='{$li.value}' data-is-delete="{$li.is_delete}" data-addon-name="{$li.addon_name}"
+					{if condition="$li.value"} @click='addComponent({$li.value},{ name : "{$li.name}", title : "{$li.title}", max_count : {$li.max_count}, addon_name : "{$li.addon_name}", is_delete : "{$li.is_delete}" })'
+					:class="{ 'disabled' : !checkComponentIsAdd('{$li.name}') }"
+					{else/}class="disabled"{/if}>
+						<i class="{$li.icon}"></i>
+						<span>{$li.title}</span>
+				</li>
+				{/foreach}
+			</ul>
+			{/foreach}
+		</nav>
+	</div>
+
+	<div class="preview-wrap">
+
+		<div class="loading-layer">
+			<div class="loading-anim">
+				<div class="box item"><div class="border out item"></div></div>
+			</div>
+		</div>
+
+		<div class="preview-restore-wrap">
+
+			<div class="div-wrap">
+
+				<button class="layui-btn layui-btn-primary position-page-btn" @click="changeCurrentIndex(-99)">页面设置</button>
+				<!-- 快捷操作 -->
+				<ul class="quick-action">
+<!--					<li>-->
+<!--						<i class="icondiy icon-system-eye-line"></i>-->
+<!--						<span>隐藏</span>-->
+<!--					</li>-->
+					<li @click="moveUpComponent()" :class="{ disabled : ((currentIndex - 1) < 0) }">
+						<i class="icondiy icon-system-jiantoushang"></i>
+						<span>上移</span>
+					</li>
+					<li @click="moveDownComponent()" :class="{ disabled : ( currentIndex < 0 || data.length === 0 || (currentIndex + 1) === data.length) }">
+						<i class="icondiy icon-system-jiantouxia"></i>
+						<span>下移</span>
+					</li>
+					<li @click="copyComponent()" :class="{ disabled : ( currentIndex < 0) }">
+						<i class="icondiy icon-system-file-copy-line"></i>
+						<span>复制</span>
+					</li>
+					<li @click="delComponent(currentIndex)" :class="{ disabled : currentIndex < -1 }">
+						<i class="icondiy icon-system-delete-bin-6-line"></i>
+						<span>删除</span>
+					</li>
+					<li @click="resetComponent()" :class="{ disabled : ( currentIndex < 0) }">
+						<i class="icondiy icon-system-loader-4-line"></i>
+						<span>重置</span>
+					</li>
+				</ul>
+
+				<div class='diy-view-wrap layui-form' :style="{ backgroundColor : global.pageBgColor,backgroundImage : 'url('+changeImgUrl(global.bgUrl)+')' }">
+
+					<div class="preview-head" @click="changeCurrentIndex(-99)">
+
+						<!-- 顶部tabbar风格 -->
+						<tabbar :current-index="currentIndex" :global="global"></tabbar>
+
+						<!-- 页面设置 -->
+						<div class="page-set-wrap" :class="{ selected : currentIndex == -99 }" :data-sort="-99" v-show="data.length == 0 || currentIndex == -99">
+							<page-set :current-index="currentIndex" :global="global" :global-lazy-load="globalLazyLoad"></page-set>
+						</div>
+
+					</div>
+
+					<!-- 弹窗广告 -->
+					<pop-window :current-index="currentIndex" :global="global" :global-lazy-load="globalLazyLoad"></pop-window>
+
+					<div class="preview-block">
+
+						<div v-for="(nc,index) in data" :key="nc.id" :data-index="index" :data-id="nc.id" :class="{ 'draggable-element' : true,selected : currentIndex == index }" :data-sort="index">
+							{foreach name="$diy_view_utils" item="vo"}
+								{foreach name="$vo.list" item="li"}
+								<template v-if="nc.componentName == '{$li.name}'">
+									{:event('DiyViewUtils',[ 'name' => $li['name'], 'addon_name' => $li['addon_name'] ],true)}
+								</template>
+								{/foreach}
+							{/foreach}
+						</div>
+
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- 预览 -->
+	<template slot="preview"></template>
+
+	<div class="custom-save js-bottom-custom-save">
+		<button class="layui-btn save">保存</button>
+		{notempty name="$diy_view_info"}
+		<button class="layui-btn" onclick="preview()">预览</button>
+		{/notempty}
+		<button class="layui-btn full-screen-btn">全屏</button>
+	</div>
+</div>
+
+{if condition="!empty($diy_view_info)"}
+<input type="hidden" id="id" value="{$diy_view_info.id}">
+<input type="hidden" id="info" value='{$diy_view_info.value ?? ""}' />
+{/if}
+<input type="hidden" id="name" value="{$name}" />
+<input type="hidden" id="title" value="{$title}" />
+<input type="hidden" id="template_id" value="{$template_id}" />
+<input type="hidden" id="page_type" value="{$page_type ?? ''}" />
+{/block}
+{block name="script"}
+<script>
+	var requestUrl = '{$request_url}';
+	var baseStyle = '{$base ?? "app/shop/view/base/style2.html"}';
+	var storeIsExit = '{$store_is_exit}';
+</script>
+<script src="STATIC_JS/vue.js"></script>
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/diyview/js/async_load_css.js"></script>
+<script src="STATIC_EXT/diyview/js/ddsort.js"></script>
+<script src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script src="STATIC_EXT/ueditor/ueditor.all.js"> </script>
+<script src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+<script src="STATIC_EXT/diyview/js/custom_template.js"></script>
+{include file="app/shop/view/diy/iconfont_component.html"/}
+{/block}

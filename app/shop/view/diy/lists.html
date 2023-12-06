@@ -1,0 +1,495 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-table-view td:last-child>div{overflow: inherit;}
+	.operation-wrap{position: relative;}
+	.layui-table-box{overflow: inherit;}
+	.layui-table-body{overflow: inherit;}
+	.set-home{display:inline-block;margin-left: 5px;padding: 3px;font-size: 12px;line-height: 1;color: #fff;}
+	.popup-qrcode-wrap{text-align: center;background: #fff;border-radius: 2px;box-shadow: 0 2px 8px 0 rgba(200,201,204,.5);padding: 10px;position: absolute;z-index: 1;top: -73px;left: -180px;display: none;width: 170px;height: 230px;}
+	.popup-qrcode-wrap:before, .popup-qrcode-wrap:after {left: 100%;top: 50%;border: solid transparent;content: " ";height: 0;width: 0;position: absolute;pointer-events: none;}
+	.popup-qrcode-wrap:before {border-color: transparent;border-left-color: #e5e5e5;border-width: 8px;margin-top: -29px;}
+	.popup-qrcode-wrap:after {border-color: transparent;border-left-color: #ffffff;border-width: 7px;margin-top: -31px;}
+	.popup-qrcode-wrap img{width: 150px;height: 150px;max-width: initial;}
+	.popup-qrcode-wrap p{font-size: 12px;margin: 5px 0;line-height: 1.8!important;}
+	.popup-qrcode-wrap a{font-size: 12px;}
+	.popup-qrcode-wrap input{opacity: 0;position: absolute;}
+	.popup-qrcode-wrap .popup-qrcode-loadimg {width: 16px!important; height: 16px!important; margin-top: 107px;}
+	.edit-sort.len-short{width: 100px !important;}
+	.use{
+		display: inline-block;
+		/*padding: 2px 8px;*/
+		line-height: 20px;
+		/*color: #fff;*/
+		/*border-radius: 2px;*/
+	}
+	.unused{
+		display: inline-block;
+		/*padding: 2px 8px;*/
+		line-height: 20px;
+		/*color: #999;*/
+		/*background: #EFF0F4;*/
+		/*border-radius: 2px;*/
+	}
+	.custom-tag{
+		display: inline-block;
+		/*padding: 2px 8px;*/
+		line-height: 20px;
+	}
+	.select-page{
+		display: flex;
+		flex-wrap: nowrap;
+		justify-content: center;
+		text-align: center;
+		/*overflow: hidden;*/
+	}
+	.select-page .item {position: relative;margin-right: 30px;padding: 10px;width: 200px;height: 390px;cursor: pointer;overflow: hidden;box-sizing: border-box;border: 1px solid #e9edef;}
+	.select-page .item:last-child{margin-right: 0;}
+	.select-page .item .checked {position: absolute;bottom: -1px;right: -1px;z-index: 101;font-size: 30px;display: none;}
+	.select-page .item .mask{position: absolute;background: -webkit-gradient(linear, left top, left bottom, color-stop(52.65%, rgba(255,255,255,0)), color-stop(83.57%, #fff));background: linear-gradient(180deg, rgba(255,255,255,0) 52.65%, #fff 83.57%);height: 100%;width: 100%;z-index: 99;left:0;}
+	.select-page .item img{width: 180px;}
+	.select-page .item .info{position: absolute;bottom: 12px;z-index: 100;background-color: #ffffff;display: flex;flex-direction: column;width: 100%;text-align: center;color: #333;left: 0;}
+	.select-page .item .info i {margin-bottom: 10px;font-size: 24px;color: #333;}
+	.select-page .item .info span{font-size: 16px;font-weight: bold;}
+	.select-page .item.selected .checked{display: block;}
+	.select-btn{padding-top: 10px;margin-top:20px;padding-right:10px;height:40px;line-height:40px;text-align:right;border-top:1px solid #e9edef;}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="single-filter-box">
+	<button class="layui-btn" onclick="createPage()">新建页面</button>
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入页面名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 筛选面板 -->
+<!--<div class="screen layui-collapse" lay-filter="selection_panel">-->
+<!--	<div class="layui-colla-item">-->
+<!--		<form class="layui-colla-content layui-form layui-show">-->
+<!--			<div class="layui-form-item">-->
+<!--				<div class="layui-inline">-->
+<!--					<label class="layui-form-label">页面名称</label>-->
+<!--					<div class="layui-input-inline">-->
+<!--						<input type="text" name="search_text" placeholder="请输入页面名称" autocomplete="off" class="layui-input">-->
+<!--					</div>-->
+<!--				</div>-->
+
+<!--				<div class="layui-inline">-->
+<!--					<label class="layui-form-label">店铺模板</label>-->
+<!--					<div class="layui-input-inline">-->
+<!--						<select name="template_id" lay-filter="template_id">-->
+<!--							{foreach name="$template_goods_list" item="vo"}-->
+<!--							<option value="{$vo.goods_id}">{$vo.title}</option>-->
+<!--							{/foreach}-->
+<!--						</select>-->
+<!--					</div>-->
+<!--				</div>-->
+
+<!--				<div class="layui-inline">-->
+<!--					<label class="layui-form-label">页面类型</label>-->
+<!--					<div class="layui-input-inline">-->
+<!--						<select name="type" lay-filter="type">-->
+<!--							<option value="">全部</option>-->
+<!--							<option value="DIY_PAGE">自定义页面</option>-->
+<!--							{foreach name="$template_list" item="vo"}-->
+<!--							<option value="{$vo.name}">{$vo.title}</option>-->
+<!--							{/foreach}-->
+<!--						</select>-->
+<!--					</div>-->
+<!--				</div>-->
+
+<!--			</div>-->
+
+<!--			<div class="form-row">-->
+<!--				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>-->
+<!--				<button type="reset" class="layui-btn layui-btn-primary">重置</button>-->
+<!--			</div>-->
+<!--		</form>-->
+<!--	</div>-->
+<!--</div>-->
+
+<div class="layui-tab table-tab" lay-filter="diy_list_tab">
+	<ul class="layui-tab-title js-diy-tab">
+		{foreach name="$template_list" item="vo"}
+		<li {if $vo.name==$type }class="layui-this"{/if} lay-id="{$vo.name}">{$vo.title}({$vo.count})</li>
+		{/foreach}
+	</ul>
+	<div class="layui-tab-content">
+		<table id="diy_list" lay-filter="diy_list"></table>
+	</div>
+</div>
+
+<script type="text/html" id="action">
+	<div class="operation-wrap" data-id="{{d.id}}">
+		<div class="table-btn">
+			<div class="popup-qrcode-wrap"><img class="popup-qrcode-loadimg" src="__STATIC__/loading/loading.gif" /></div>
+			{{# if(d.type != 'DIY_PAGE' && d.is_default == 0){ }}
+				<a class="layui-btn" lay-event="setUse">使用</a>
+			{{# } }}
+			<a class="layui-btn text-color" lay-event="promote">推广</a>
+			<a class="layui-btn" lay-event="edit">编辑</a>
+			<a class="layui-btn" lay-event="copy">复制页面</a>
+
+			{{# if(d.type == 'DIY_PAGE' || d.is_default == 0){ }}
+			<a class="layui-btn" lay-event="delete">删除</a>
+			{{# } }}
+		</div>
+	</div>
+</script>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+    <input name="sort" type="number" onchange="editSort({{d.id}}, this)" value="{{d.sort}}" class="layui-input edit-sort len-short">
+</script>
+
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+</script>
+
+<script type="text/html" id="createPageHtml">
+	<div class="layui-form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label sm"><span class="required">*</span>所属模板</label>
+			<div class="layui-input-inline len-mid">
+				<select name="template_id" lay-filter="template_id" lay-verify="required">
+					{foreach name="$template_goods_list" item="vo"}
+					<option value="{$vo.goods_id}">{$vo.title}</option>
+					{/foreach}
+				</select>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label sm"><span class="required">*</span>页面名称</label>
+			<div class="layui-input-inline len-mid">
+				<input type="text" name="title" placeholder="请输入页面名称" lay-verify="required" autocomplete="off" maxlength="15" class="layui-input">
+			</div>
+		</div>
+
+		<div class="form-row sm">
+			<button class="layui-btn" lay-submit lay-filter="createPage">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="layer.close(createPageIndex)">取消</button>
+		</div>
+
+	</div>
+</script>
+
+<script type="text/html" id="selectPageHtml">
+	<div class="layui-form select-page">
+		{foreach name="$page_type_list" item="vo" key="k"}
+		<div class="item{if $k==0} selected border-color{/if}" data-page-type="{$vo.name}">
+			<i class="iconfont iconxuanzhong text-color checked"></i>
+			<div class="mask"></div>
+			<img src="{:img($vo.preview)}" alt="">
+			<div class="info">
+				<i class="{$vo.icon}{if $k==0} text-color{/if}"></i>
+				<span {if $k==0}class="text-color"{/if}>{$vo.title}</span>
+			</div>
+		</div>
+		{/foreach}
+	</div>
+	<div class="select-btn">
+		<button class="layui-btn select-save" onclick="selectPage()">确定</button>
+		<button class="layui-btn select-cancel layui-btn-primary" onclick="layer.close(createPageIndex)">取消</button>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var form,laytpl,element,table,repeat_flag = false,createPageIndex;
+	layui.use([ 'laytpl', 'form','element'], function () {
+		laytpl = layui.laytpl;
+		form = layui.form;
+		element = layui.element;
+
+		table = new Table({
+			id: 'diy_list',
+			elem: '#diy_list',
+			url: ns.url("shop/diy/lists"),
+			cols: [[{
+				type: 'checkbox',
+				width: '3%'
+			}, {
+				width: '20%',
+				title: '页面名称',
+				templet: function (res) {
+					var html = '';
+					html += `<span>${res.title}</span>`;
+					return html;
+				}
+			}, {
+				field: 'type_name',
+				width: '16%',
+				title: '页面类型',
+			}, {
+				width: '16%',
+				title: '状态',
+				templet: function (res) {
+					var html = '';
+					if (res.type == 'DIY_PAGE'){
+						html = '<span class="custom-tag">-</span>';
+					}else{
+						if(res.is_default == 1) html = `<span class="use text-color">使用中</span>`;
+						else html = `<span class="unused">未使用</span>`;
+					}
+					return html;
+				}
+			},
+			// 	{
+			// 	field: 'click_num',
+			// 	width: '13%',
+			// 	title: '浏览量',
+			// 	sort: true
+			// },
+				{
+				width: '20%',
+				title: '创建时间',
+				templet: function (d) {
+					return ns.time_to_date(d.create_time);
+				}
+			},
+			// 	{
+			// 	field: 'sort',
+			// 	width: '12%',
+			// 	title: '排序',
+			// 	templet: '#editSort',
+			// 	sort: true
+			// },
+				{
+				title: '操作',
+				toolbar: '#action',
+				width: '25%',
+				align: 'right'
+			}]],
+			where: {
+				template_id: $("select[name='template_id']").val()
+			},
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+
+		//监听工具条
+		table.tool(function (obj) {
+			var data = obj.data;
+			if (obj.event === 'promote') {
+				// 推广
+				window.open(ns.url('index/index/h5preview', {id: data.id, type: 'page'}));
+			} else if (obj.event === 'edit') {
+				window.open(ns.url("shop/diy/edit", {id: data.id}));
+			} else if (obj.event === "delete") {
+				deleteSiteDiyView(data.id);
+			} else if (obj.event === "copy") {
+				layer.confirm('确定要复制该页面吗？', function (index) {
+					$.ajax({
+						type: "post",
+						url: ns.url("shop/diy/copySiteDiyView"),
+						data: {'id': data.id},
+						dataType: "JSON",
+						success: function (res) {
+							layer.msg(res.message);
+							if (res.code >= 0) {
+								table.reload();
+								getPageCount();
+							}
+						}
+					});
+					layer.close(index);
+				});
+			}else if(obj.event === 'setUse') {
+				$.ajax({
+					type: "post",
+					url: ns.url("shop/diy/setUse"),
+					data: {id: data.id, name: data.name},
+					dataType: "JSON",
+					success: function (res) {
+						layer.msg(res.message);
+						if (res.code >= 0) {
+							table.reload();
+						}
+					}
+				});
+			}
+		});
+
+		//批量操作
+		table.bottomToolbar(function (obj) {
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "delete":
+					var id_array = [];
+					for (var i in obj.data) id_array.push(obj.data[i].id);
+					deleteSiteDiyView(id_array.toString());
+					break;
+			}
+		});
+
+		//批量操作
+		table.toolbar(function (obj) {
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "delete":
+					var id_array = [];
+					for (var i in obj.data) id_array.push(obj.data[i].id);
+					deleteSiteDiyView(id_array.toString());
+					break;
+			}
+		});
+
+		// 搜索功能
+		form.on('submit(search)', function (data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+		form.on('submit(createPage)', function (data) {
+			location.href = ns.url('shop/diy/edit',data.field);
+		});
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(diy_list_tab)', function () {
+			var type = this.getAttribute('lay-id');
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					search_text : $('input[name="search_text"]').val(),
+					type : type
+				}
+			});
+
+		});
+	});
+
+	// 监听单元格编辑
+	function editSort(id, event){
+		var data = $(event).val();
+
+		if (data == '') {
+			$(event).val(0);
+			data = 0;
+		}
+
+		if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+			layer.msg("排序号只能是整数");
+			return ;
+		}
+		if(data<0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+		$.ajax({
+			type: 'POST',
+			url: ns.url("shop/diy/modifySort"),
+			data: {
+				id: id,
+				sort: data
+			},
+			dataType: 'JSON',
+			success: function(res) {
+				layer.msg(res.message);
+				if(res.code==0){
+					table.reload();
+				}
+			}
+		});
+	}
+
+	function createPage() {
+		// location.href = ns.url('shop/diy/edit');
+		createPageIndex = layer.open({
+			type: 1,
+			title: '选择页面类型',
+			content: $('#selectPageHtml').html(),
+			offset: 'auto',
+			area: ['auto','auto'],
+			success: function (layero, index) {
+				form.render();
+				$('.select-page .item').click(function () {
+					$(this).addClass('selected border-color').siblings().removeClass('selected border-color');
+					$('.select-page .item').find('.info>*').removeClass('text-color');
+					$(this).find('.info>*').addClass('text-color');
+				});
+			}
+		});
+	}
+
+	function selectPage() {
+		var selected = $('.select-page .item.selected');
+		var params = {};
+		// 排除自定义页面类型
+		if (selected.attr('data-page-type') !== 'DIY_PAGE') {
+			params.page_type = selected.attr('data-page-type');
+		}
+		location.href = ns.url('shop/diy/edit', params);
+	}
+
+	// 删除店铺微页面
+	function deleteSiteDiyView(id_array) {
+		layer.confirm('确定要删除这些微页面模板吗', function (index) {
+			$.ajax({
+				url: ns.url("shop/diy/deleteSiteDiyView"),
+				data: {'id': id_array},
+				dataType: "JSON",
+				success: function (res) {
+					layer.msg(res.message);
+					if (res.code == 0) {
+						getPageCount();
+						table.reload();
+					}
+				}
+			});
+			layer.close(index);
+		});
+	}
+
+	// 查询页面数量
+	function getPageCount() {
+		$.ajax({
+			type: "post",
+			url: ns.url("shop/diy/getPageCount"),
+			data: {},
+			dataType: "JSON",
+			success: function (res) {
+				if (res.code >= 0) {
+					var str = '';
+					for (var i = 0; i < res.data.length; i++) {
+						var item = res.data[i];
+						var type = $('.js-diy-tab li.layui-this').attr('lay-id');
+						str += `<li`;
+						if(item.name == type){
+							str += ` class="layui-this"`;
+						}
+						str += ` lay-id="${item.name}">`;
+						str += `${item.title}(${item.count})</li>`;
+					}
+					$('.js-diy-tab').html(str);
+				}
+			}
+		});
+	}
+</script>
+{/block}

@@ -1,0 +1,220 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/guess_you_like.css"/>
+{/block}
+{block name="main"}
+<div id="diyView" class="layui-form">
+
+    <div class="preview-wrap">
+
+        <div class='diy-view-wrap'>
+
+            <div class="preview-head">
+                <span>商品推荐</span>
+            </div>
+
+            <div class="preview-block">
+                <div class="preview-draggable">
+                    <h3 class="goods-recommend-title">
+                        <span>{$config['title']}</span>
+                    </h3>
+
+                    {php}$arr=[1,2,3,4];{/php}
+                    <div class="goods-list row1-of2 style-1">
+                        {foreach name="$arr" item="vo"}
+                        <div class="goods-item">
+                            <div class="goods-img">
+                                <img src="{:img('public/static/img/default_img/square.png')}" />
+                            </div>
+                            <div class="info-wrap">
+                                <div class="goods-name">商品名称</div>
+                                <div class="pro-info">
+                                    <div class="discount-price">
+                                        <div class="price-wrap text-color">
+                                            <span class="unit">¥</span>
+                                            <span class="price">100</span>
+                                            <span class="unit">.00</span>
+                                        </div>
+                                        <div class="delete-price">¥198</div>
+                                        <div class="sale">已售46件</div>
+                                    </div>
+                                    <div class="add-cart bg-color js-add-cart" {if $config['add_cart_switch'] == 1}style="display:block;"{/if}>购买</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/foreach}
+                    </div>
+                </div>
+                <div class="edit-attribute">
+                    <div class="attr-wrap">
+                        <div class="attr-title">
+                            <span class="title">商品推荐</span>
+                        </div>
+                        <div class="edit-content-wrap">
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">标题名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="title" value="{$config['title']}" maxlength="15" placeholder="请输入标题" class="layui-input" autocomplete="off" lay-verify="required" />
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">适用页面</label>
+                                <div class="layui-input-block">
+                                    <input type="checkbox" name="support_page" value="goods_detail" title="商品详情" lay-skin="primary" {if $config['support_page'] && in_array('goods_detail',$config['support_page'])}checked{/if} />
+                                    <input type="checkbox" name="support_page" value="cart" title="购物车" lay-skin="primary" {if $config['support_page'] && in_array('cart',$config['support_page'])}checked{/if} />
+                                    <input type="checkbox" name="support_page" value="collect" title="关注页面" lay-skin="primary" {if $config['support_page'] && in_array('collect',$config['support_page'])}checked{/if} />
+                                    <input type="checkbox" name="support_page" value="pay" title="支付结果页" lay-skin="primary" {if $config['support_page'] && in_array('pay',$config['support_page'])}checked{/if} />
+                                    <input type="checkbox" name="support_page" value="order_detail" title="订单详情" lay-skin="primary" {if $config['support_page'] && in_array('order_detail',$config['support_page'])}checked{/if} />
+                                    {if addon_is_exit('supermember')}
+                                    <input type="checkbox" name="support_page" value="super_member" title="超级会员卡" lay-skin="primary" {if $config['support_page'] && in_array('super_member',$config['support_page'])}checked{/if} />
+                                    {/if}
+                                    {if addon_is_exit('divideticket')}
+                                    <input type="checkbox" name="support_page" value="guafen" title="好友瓜分券" lay-skin="primary" {if $config['support_page'] && in_array('guafen',$config['support_page'])}checked{/if} />
+                                    {/if}
+                                    {if addon_is_exit('fenxiao')}
+                                    <input type="checkbox" name="support_page" value="fenxiao_level" title="分销等级页" lay-skin="primary" {if $config['support_page'] && in_array('fenxiao_level',$config['support_page'])}checked{/if} />
+                                    {/if}
+                                </div>
+                            </div>
+
+                            <div class="word-aux diy-word-aux">控制猜你喜欢模块在页面中的显示与隐藏</div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">数据来源</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="sources" lay-filter="sources" value="sort" title="按排序获取" data-tips="按照排序号获取商品作为数据来源" {if $config['sources'] == 'sort'}checked{/if} />
+                                    <input type="radio" name="sources" lay-filter="sources" value="browse" title="按最近浏览" data-tips="根据会员最近浏览的商品类型在同类商品作为数据来源" {if $config['sources'] == 'browse'}checked{/if} />
+                                    <input type="radio" name="sources" lay-filter="sources" value="sale" title="按销量获取" data-tips="根据销量获取商品作为数据来源" {if $config['sources'] == 'sale'}checked{/if} />
+                                    <input type="radio" name="sources" lay-filter="sources" value="diy" title="手动设置" data-tips="手动选择商品作为数据来源" {if $config['sources'] == 'diy'}checked{/if} />
+                                </div>
+                                <div class="word-aux diy-word-aux js-sources-tips"></div>
+                            </div>
+
+                            <div class="layui-form-item js-diy-select-goods" {if $config['sources'] == 'diy'}style="display:block;"{/if}>
+                                <label class="layui-form-label sm">手动选择</label>
+                                <div class="layui-input-block">
+                                    <div class="selected-style">
+                                        {if $config['sources'] == 'diy' && !empty($config['goods_ids'])}
+                                        <span onclick="addGoods()" class="text-color">已选{$config['goods_ids']|count}个</span>
+                                        {else/}
+                                        <span onclick="addGoods()">选择商品</span>
+                                        {/if}
+                                        <i class="iconfont iconyoujiantou"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">加入购物车</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="add_cart_switch" lay-filter="add_cart_switch" value="0" title="关闭" {if $config['add_cart_switch'] == 0}checked{/if} />
+                                    <input type="radio" name="add_cart_switch" lay-filter="add_cart_switch" value="1" title="开启" {if $config['add_cart_switch'] == 1}checked{/if} />
+                                </div>
+                                <div class="word-aux diy-word-aux">开启后，列表中将允许加入购物车</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="custom-save">
+        <input type="hidden" name="goods_ids" lay-verify="goods_ids" {notempty name="$config['goods_ids']"}value="{:implode(',',$config['goods_ids'])}"{/notempty}>
+        <button class="layui-btn" lay-submit lay-filter="save">保存</button>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form', 'laytpl'], function() {
+        var form = layui.form;
+        var repeat_flag = false; //防重复标识
+        form.render();
+
+        var size = 139; // 公式：二级面包屑layui-header-crumbs-second （55px）+ 自定义模板区域上内边距diyview（20px） + 底部保存按钮（64px）
+        var commonHeight = $(window).height() - size;
+        $('.preview-wrap').css("height", (commonHeight) + "px");
+        $(".edit-attribute .attr-wrap").css("height", (commonHeight - 1) + "px");// 1px是上边框
+        setTimeout(function () {
+            $('#diyView').css('visibility', 'visible');
+        }, 50);
+
+        form.on('radio(sources)', function(data){
+            $('.js-sources-tips').text($(data.elem).attr('data-tips'));
+            if(data.value == 'diy') {
+                $('.js-diy-select-goods').show();
+            }else {
+                $('.js-diy-select-goods').hide();
+            }
+        });
+
+        form.on('radio(add_cart_switch)', function(data){
+            if(data.value == 1) {
+                $('.js-add-cart').show();
+            }else {
+                $('.js-add-cart').hide();
+            }
+        });
+
+
+        $('input[name="title"]').keyup(function () {
+           $('.goods-recommend-title span').text($(this).val());
+        });
+
+        form.verify({
+            goods_ids: function (value) {
+                var sources = $('input[name="sources"]:checked').val();
+                if (sources == 'diy') {
+                    if (!/[\S]+/.test(value)) {
+                        return '请选择商品';
+                    }
+                }
+            }
+        });
+
+        form.on('submit(save)', function(data) {
+            data.field.support_page = [];
+            $('input[name="support_page"]:checked').each(function () {
+                data.field.support_page.push($(this).val());
+            });
+            data.field.support_page = data.field.support_page.toString();
+
+            if (repeat_flag) return;
+            repeat_flag = true;
+            $.ajax({
+                type: 'POST',
+                url: ns.url("shop/goods/guessyoulike"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    repeat_flag = false;
+                    layer.msg(res.message);
+                }
+            });
+        });
+    });
+
+	// 初始化
+	var goods_ids = $("input[name='goods_ids']").val() ? $("input[name='goods_ids']").val().split(',') : [];
+	if(goods_ids) $('.selected-style span').addClass('text-color').text('已选' + goods_ids.length + '个');
+    function addGoods(){
+        goodsSelect(function (res) {
+            if (!res.length) return false;
+			goods_ids = [];
+            for(var i=0;i<res.length;i++) {
+                goods_ids.push(res[i].goods_id);
+            }
+            $("input[name='goods_ids']").val(goods_ids.toString());
+            $('.selected-style span').addClass('text-color').text('已选' + goods_ids.length + '个');
+
+        }, goods_ids, {mode: "spu", disabled: 0});
+    }
+</script>
+{/block}

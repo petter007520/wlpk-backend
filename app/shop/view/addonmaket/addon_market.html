@@ -1,0 +1,179 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.item-con { height: auto!important; }
+	.item-block-parent .item-block-wrap { align-items: center; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">营销插件</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list item-block-parent item-five">
+			{if !empty($list)}
+				{foreach $list as $list_k => $list_v}
+					{if $list_v['type_mark'] == 'shop'}
+					<a class="item-block item-block-hover" href="#">
+						<div class="item-block-wrap">
+							<div class="item-pic">
+								<img src="{$list_v.logo_img}" />
+							</div>
+							<div class="item-con">
+								<div class="item-content-title">{$list_v.goods_name}</div>
+								<p class="item-content-desc line-hiding" title="{$list_v.introduction}">{$list_v.introduction}</p>
+							</div>
+						</div>
+						<div class="item-float-wrap">
+							<div class="item-float">
+								<div class="item-float-con">
+									<i class="bg-color-red"></i>
+									<span></span>
+								</div>
+							</div>
+						</div>
+					</a>
+					{/if}
+				{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">会员互动</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list item-block-parent item-five">
+			{if !empty($list)}
+				{foreach $list as $list_k => $list_v}
+					{if $list_v['type_mark'] == 'member'}
+					<a class="item-block item-block-hover" href="#">
+						<div class="item-block-wrap">
+							<div class="item-pic">
+								<img src="{$list_v.logo_img}" />
+							</div>
+							<div class="item-con">
+								<div class="item-content-title">{$list_v.goods_name}</div>
+								<p class="item-content-desc line-hiding" title="{$list_v.introduction}">{$list_v.introduction}</p>
+							</div>
+						</div>
+						<div class="item-float-wrap">
+							<div class="item-float">
+								<div class="item-float-con">
+									<i class="bg-color-red"></i>
+									<span></span>
+								</div>
+							</div>
+						</div>
+					</a>
+					{/if}
+				{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">应用工具</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list item-block-parent item-five">
+			{if !empty($list)}
+				{foreach $list as $list_k => $list_v}
+					{if $list_v['type_mark'] == 'tool'}
+					<a class="item-block item-block-hover" href="#">
+						<div class="item-block-wrap">
+							<div class="item-pic">
+								<img src="{$list_v.logo_img}" />
+							</div>
+							<div class="item-con">
+								<div class="item-content-title">{$list_v.goods_name}</div>
+								<p class="item-content-desc line-hiding" title="{$list_v.introduction}">{$list_v.introduction}</p>
+							</div>
+						</div>
+						<div class="item-float-wrap">
+							<div class="item-float">
+								<div class="item-float-con">
+									<i class="bg-color-red"></i>
+									<span></span>
+								</div>
+							</div>
+						</div>
+					</a>
+					{/if}
+				{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">系统插件</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list item-block-parent item-five">
+			{if !empty($list)}
+				{foreach $list as $list_k => $list_v}
+					{if $list_v['type_mark'] == 'system'}
+					<a class="item-block item-block-hover" href="#">
+						<div class="item-block-wrap">
+							<div class="item-pic">
+								<img src="{$list_v.logo_img}" />
+							</div>
+							<div class="item-con">
+								<div class="item-content-title">{$list_v.goods_name}</div>
+								<p class="item-content-desc line-hiding" title="{$list_v.introduction}">{$list_v.introduction}</p>
+							</div>
+						</div>
+						<div class="item-float-wrap">
+							<div class="item-float">
+								<div class="item-float-con">
+									<i class="bg-color-red"></i>
+									<span></span>
+								</div>
+							</div>
+						</div>
+					</a>
+					{/if}
+				{/foreach}
+			{/if}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    var repeat_flag = false; //防重复标识
+    function manage(addon_name, tag) {
+        if (repeat_flag) return;
+        repeat_flag = true;
+        $.ajax({
+            url: ns.url("shop/system/addon"),
+            data: {
+                addon_name,
+                tag
+            },
+            type: "POST",
+            dataType: "JSON",
+            success: function(res) {
+                layer.msg(res.message);
+                if (res.code == 0) {
+                    location.href = ns.url('shop/system/addon');
+                }else{
+                    repeat_flag = false;
+                }
+            }
+        });
+    }
+
+    //查看插件信息
+    function addonInfo(name){
+        location.href = ns.url('shop/upgrade/addonInfo', {name : name});
+    }
+</script>
+{/block}

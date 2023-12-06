@@ -1,0 +1,93 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_CSS/promotion_detail.css">
+{/block}
+{block name="main"}
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<div>
+			<span class="card-title">基本信息</span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div class="promotion-view">
+			<div class="promotion-view-item">
+				<label>活动名称：</label>
+				<span>{$info.bl_name}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>活动状态：</label>
+				<span>{$info.status == 1 ? '开启' : '关闭'}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>套餐价格：</label>
+				<span>￥{$info.bl_price}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>原价：</label>
+				<span>￥{$info.goods_money}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>节省价：</label>
+				<span>￥{$info.goods_money - $info.bl_price}</span>
+			</div>
+			<div class="promotion-view-item">
+				<label>运费承担：</label>
+				<span>{$info.shipping_fee_type == 1 ? '卖家承担运费' : '买家承担运费（快递）'}</span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<div>
+			<span class="card-title">活动商品</span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div class='promotion-view-list'>
+			<table id="promotion_list"></table>
+		</div>
+	</div>
+</div>
+
+<script type='text/html' id="promotion_list_item_box_html">
+	<div class="promotion-list-item-title">
+		<div class="promotion-list-item-title-icon">
+			<img src="{{ ns.img(d.sku_image) }}" alt="">
+		</div>
+		<p class="promotion-list-item-title-name multi-line-hiding">{{ d.sku_name }}</p>
+	</div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var list = {:json_encode($info.bundling_goods, JSON_UNESCAPED_UNICODE)};
+	layui.use('form', function() {
+		new Table({
+			elem: '#promotion_list',
+			cols: [
+				[{
+					field: 'sku_name',
+					title: '商品名称',
+					width: '40%',
+					unresize: 'false',
+					templet: "#promotion_list_item_box_html"
+				}, {
+					field: 'price',
+					title: '商品价格',
+					unresize: 'false',
+					width: '30%',
+				}, {
+					field: 'stock',
+					title: '库存',
+					unresize: 'false',
+					width: '10%',
+				}]
+			],
+			data: list
+		});
+	});
+</script>
+{/block}

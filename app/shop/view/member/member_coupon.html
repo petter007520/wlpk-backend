@@ -1,0 +1,97 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="body"}
+<div>
+    <table id="member_coupon_list" lay-filter="member_coupon_list"></table>
+</div>
+
+<!--状态-->
+<script type="text/html" id="state">
+    {{# if(d.state == 1){ }}
+    <div class="layui-elip">已领取</div>
+    {{# }else if(d.state == 2){ }}
+    <div class="layui-elip">已使用</div>
+    {{# }else if(d.state == 3){ }}
+    <div class="layui-elip">已过期</div>
+    {{# } }}
+</script>
+
+<!--面额-->
+<script type="text/html" id="types">
+    {{# if(d.type == 'reward'){ }}
+    <div class="layui-elip">￥{{d.money}}</div>
+    {{# }else if(d.type == 'discount'){ }}
+    <div class="layui-elip">{{d.discount}}折</div>
+    {{# } }}
+</script>
+
+<!--领取时间-->
+<script type="text/html" id="fetch_time">
+    {{ ns.time_to_date(d.fetch_time) }}
+</script>
+
+<!--使用时间-->
+<script type="text/html" id="use_time">
+    {{ ns.time_to_date(d.use_time) }}
+</script>
+
+<!--结束时间-->
+<script type="text/html" id="end_time">
+    {{ ns.time_to_date(d.end_time) }}
+</script>
+{/block}
+{block name="script"}
+<script>
+    var getType = {:json_encode($get_type)};
+    var table = new Table({
+        elem: '#member_coupon_list',
+        filter: "member_coupon_list",
+        url: ns.url("shop/member/memberCoupon"),
+        where:{ member_id : "{$member_id}" },
+        cols: [[{
+            field: 'coupon_name',
+            width: '14%',
+            title: '优惠券名称',
+            unresize : 'true'
+        }, {
+            field: 'coupon_code',
+            width: '11%',
+            title: '优惠码',
+            unresize : 'true'
+        }, {
+            width: '10%',
+            title: '面额',
+            templet: '#types',
+            unresize : 'true',
+        }, {
+            width: '10%',
+            title: '获取方式',
+            templet: function (data) {
+                return getType[data.get_type] ? getType[data.get_type] : '';
+            },
+            unresize : 'true',
+        }, {
+            width: '10%',
+            title: '状态',
+            templet: '#state',
+            unresize : 'true'
+        }, {
+            width: '15%',
+            title: '领取时间',
+            templet: '#fetch_time',
+            unresize : 'true'
+        }, {
+            width: '15%',
+            title: '结束时间',
+            templet: '#end_time',
+            unresize : 'true'
+        }, {
+            width: '15%',
+            title: '使用时间',
+            templet: '#use_time',
+            unresize : 'true'
+        }]],
+    });
+</script>
+{/block}

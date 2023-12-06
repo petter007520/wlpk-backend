@@ -1,0 +1,88 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.form-wrap {position: relative;}
+	.examples {cursor: pointer;}
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-form form-wrap">
+	<div class="layui-form-item">
+		<label class="layui-form-label">协议：</label>
+		<div class="layui-input-inline">
+			<input type="text" name="title" required lay-verify="required" placeholder="请输入协议标题" value="{$document_info.data.title}" autocomplete="off" class="layui-input len-long">
+		</div>
+	</div>
+	<div class="word-aux">
+		<p>协议内容展示使用该网站的一些相关规定</p>
+		<p>注册会员时需同意该协议才可继续注册   <a onclick="showDemo()" class="examples text-color">查看示例</a></p>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">内容：</label>
+		<div class="layui-input-inline">
+			<script id="editor" type="text/plain" class="special-length" style="height:300px;"></script>
+		</div>
+	</div>
+	<div class="form-row">
+		<button class="layui-btn" lay-submit lay-filter="save">保存</button>
+	</div>
+	
+	<input type="hidden" name="" id="agreementContent" value="{$document_info.data.content}" />
+
+	
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+	//实例化富文本
+	var ue = UE.getEditor('editor');
+	
+	if($("#agreementContent").val()){
+		 ue.ready(function() {
+		     ue.setContent($("#agreementContent").val());
+		 });
+	}
+	
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		//表单提交
+		form.on('submit(save)', function(data) {
+			if(repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/member/regAgreement"),
+				data: {
+					'title': data.field.title,
+					'content': ue.getContent(),
+				},
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+	});
+		function showDemo(){
+		    layer.open({
+				title: '查看示例',
+		        type: 1,
+		        area: ['500px', '660px'],
+		        content: '<img style="margin: 20px 80px;" src="SHOP_IMG/reg_info.png">'
+		    })
+		}
+</script>
+{/block}

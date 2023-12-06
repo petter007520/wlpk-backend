@@ -1,0 +1,108 @@
+<nc-component :data="data[index]" class="quick-navigation">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<template v-if="nc.lazyLoad">
+			<div class="quick-nav" :style="{
+				backgroundColor: nc.componentBgColor,
+				borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+				borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+				boxShadow:  nc.ornament.type == 'shadow' ? ('0 0 5px ' + nc.ornament.color) : '',
+				border: nc.ornament.type == 'stroke' ?  '1px solid ' + nc.ornament.color : ''
+			}">
+				<div class="quick-nav-item" v-for="(item) in nc.list" :key="item.id" :style="{background : 'linear-gradient(to right,' + item.bgColorStart ? item.bgColorStart : '' + ',' +  item.bgColorEnd ? item.bgColorEnd : '' + ')'}">
+					<div class="quick-img" v-if="item.imageUrl || item.icon">
+						<img v-if="item.iconType == 'img'" :src="changeImgUrl(item.imageUrl) || changeImgUrl('public/static/img/default_img/square.png')">
+						<iconfont v-if="item.iconType == 'icon'" :icon="item.icon" :value="(item.style ? item.style : null)"></iconfont>
+					</div>
+					<span class="quick-text" :style="{color: item.textColor }">{{item.title}}</span>
+				</div>
+
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<quick-nav-list></quick-nav-list>
+
+			<div class="template-edit-title">
+				<h3>快捷导航项</h3>
+				<div class="quick-nav-list">
+					<ul class="navigation-set-list">
+						<li v-for="(item,previewIndex) in nc.list" :key="item.id">
+
+							<div class="layui-form-item">
+								<label class="layui-form-label sm">图片</label>
+								<div class="layui-input-block">
+									<quick-image-upload :data="{ data : item }" data-disabled="1"></quick-image-upload>
+								</div>
+								<div class="word-aux diy-word-aux">宽度自适应，高度20px</div>
+							</div>
+
+							<div class="layui-form-item">
+								<label class="layui-form-label sm">标题</label>
+								<div class="layui-input-block">
+									<input type="text" name='title' v-model="item.title" maxlength="20" class="layui-input" autocomplete="off" />
+								</div>
+							</div>
+
+							<nc-link :data="{ field : item.link, label:'链接' }"></nc-link>
+
+							<color :data="{ id : item.id, field : 'bgColorStart,bgColorEnd', label : '背景颜色', parent : item, defaultColor : '#FFFFFF,#FFFFFF' }"></color>
+
+							<color :data="{ id : item.id, field : 'textColor', label : '文字颜色', parent : item, defaultColor : '#303133' }"></color>
+
+							<i class="del" @click="nc.list.splice(previewIndex,1)" data-disabled="1">x</i>
+							<div class="iconfont icontuodong"></div>
+						</li>
+
+						<div class="add-item text-color" @click="nc.tempData.methods.addNav()">
+							<i>+</i>
+							<span>添加一个快捷导航</span>
+						</div>
+					</ul>
+				</div>
+			</div>
+		</template>
+
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+			<div class="template-edit-title">
+				<h3>快捷导航</h3>
+
+				<div class="layui-form-item tag-wrap">
+					<label class="layui-form-label sm">样式</label>
+					<div class="layui-input-block">
+						<div v-for="(item,ornamentIndex) in nc.tempData.ornamentList" :key="ornamentIndex" @click="nc.ornament.type=item.type" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.ornament.type==item.type) }">
+							<i class="layui-anim layui-icon">{{ nc.ornament.type == item.type ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+				<color v-if="nc.ornament.type != 'default'" :data="{ field : 'color', 'label' : '边框颜色', parent : 'ornament', defaultColor : '#EDEDED' }"></color>
+
+			</div>
+
+		</template>
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var quickNavResourcePath = "{$resource_path}"; // http路径
+			var quickNavRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+
+	</template>
+
+</nc-component>

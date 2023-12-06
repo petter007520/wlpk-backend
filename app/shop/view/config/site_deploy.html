@@ -1,0 +1,86 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.input-text span{margin-right: 15px;}
+	.form-wrap {margin-top: 0; position: relative;background: none;}
+	.layui-layout-admin .layui-body .body-content{margin: 0 !important;}
+	.form-wrap .top{background: #f5f5f5;}
+	.layui-form-item.top .layui-form-label{text-align: left;font-weight: bold;padding-left: 15px;}
+	.layui-form-label{width: 110px;}
+	.layui-form-label + .layui-input-block{margin-left: 94px ;}
+	.layui-form-item.top .border-left{border-left: 3px solid;padding-right: 5px;}
+	.layui-unselect.layui-form-radio.layui-form-radioed.layui-radio-disbaled i:after{background:#eee !important;}
+	.shop-information{width: 100%;background: white;padding: 20px;box-sizing: border-box;margin-bottom: 20px;}
+	.shop-information .layui-input-block{margin-left: 0 !important;}
+	.shop-information .main-title{display: flex;align-items: center;justify-content: space-between;margin-bottom: 18px;}
+	.shop-information .title{color:#333333;margin-bottom: 0;width: 50%;height: 16px;line-height: 16px;padding-left: 10px;border-left: 3px solid rgb(254,106,0);box-sizing: border-box;font-size: 17px;}
+	.shop-information .main-title span{cursor: pointer;}
+	.layui-layout-admin .layui-body .body-content{background: none;}
+	.form-wrap .form-box{width: 100%;margin-bottom: 20px !important;display: flex;flex-wrap:wrap;}
+	.form-wrap .form-box .box-item{width: 32%;border-radius: 5px;margin-left: 20px;margin-bottom: 20px;background: #fff}
+	.form-wrap .form-box .box-item:nth-child(1){margin-left: 0;}
+	.form-wrap .form-box .box-item:nth-child(3n+1){margin-left: 0;}
+	.layui-layout-admin .layui-body .body-content{padding: 0 !important;}
+	.serviceOperation:after{overflow: hidden;content: "";height: 0;clear: both;display: block;}
+	.all-shop-information{margin:0 !important;padding: 20px !important;}
+	.href{padding-left: 66px;box-sizing: border-box;}
+	.all-shop-information .all-content{margin-top: 34px;}
+	.word-aux{margin-left: 110px}
+	.all-box-left{margin-left: 110px;}
+	.card-common{margin-top: 0;}
+	.layui-layout-admin.admin-style-2 .body-content{margin: 15px !important;}
+	.layui-layout-admin.admin-style-2 .form-wrap{padding-top: 0;}
+</style>
+{/block}
+{block name="main"}
+	<div class="layui-form form-wrap card-common">
+		{if !empty($site_deploy_data['domain_jump'])}
+			{php}echo  $site_deploy_data['domain_jump']['html'];{/php}
+		{/if}
+	
+		<!-- 各端设置手机、电脑、商家 -->
+		<div class="form-box">
+			{if !empty($site_deploy_data['h5'])}
+			<div class="box-item">
+				{php}echo $site_deploy_data['h5']['html'];{/php}
+			</div>
+			{/if}
+			{if !empty($site_deploy_data['pc'])}
+			<div class="box-item">
+				{php}echo $site_deploy_data['pc']['html'];{/php}
+			</div>
+			{/if}
+			{if !empty($site_deploy_data['mshop'])}
+			<div class="box-item">
+				{php}echo $site_deploy_data['mshop']['html'];{/php}
+			</div>
+			{/if}
+			{if !empty($site_deploy_data['weapp'])}
+			<div class="box-item">
+				{php}echo $site_deploy_data['weapp']['html'];{/php}
+			</div>
+			{/if}
+			{if !empty($site_deploy_data['cashier'])}
+			<div class="box-item">
+				{php}echo $site_deploy_data['cashier']['html'];{/php}
+			</div>
+			{/if}
+		</div>
+
+	</div>
+{/block}
+{block name="script"}
+<script>
+	function refreshArea(_formWin){
+		var _formWinObj = $("#layui-layer"+_formWin);
+		var w = _formWinObj.outerWidth();
+		var h = _formWinObj.outerHeight();
+		var l = ($(document).width()-w)/2;
+		var t = ($(window).height()-h)/2;
+		_formWinObj.css({
+			"left":l,
+			"top":t
+		});
+	}	
+</script>
+{/block}

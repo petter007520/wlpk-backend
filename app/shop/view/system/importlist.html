@@ -1,0 +1,116 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="__STATIC__/loading/msgbox.css" />
+<script type="text/javascript" src="__STATIC__/loading/msgbox.js"></script>
+<style>
+	.data-table{border-width: 0 !important;}
+	.data-table[lay-size=lg] th,.data-table[lay-size=lg] td{padding: 15px 15px;}
+	.data-table[lay-size=lg] .check-box{padding-left: 0;padding-right: 0;}
+	.check-box .layui-form{text-align: center;}
+	.layui-form-checkbox[lay-skin=primary]{padding-left: 0;}
+	.data-empty{text-align: center;}
+	.layui-layout-admin.admin-style-2 .layui-body .layui-tab + .body-content {padding-top: 63px !important;}
+</style>
+{/block}
+{block name="main"}
+
+<table class="layui-table data-table" lay-skin="line" lay-size="lg">
+	<colgroup>
+		<col width="40%">
+		<col width="20%">
+		<col width="25%">
+		<col width="15%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th>文件名称</th>
+			<th>文件大小</th>
+			<th>备份时间</th>
+			<th class="toolbar" style="text-align:right">操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		{if condition="$list"}
+		{foreach name=$list as $list_k => $list_v}
+		<tr>
+			<td>{$list_v.name}</td>
+			<td>{$list_v.size}</td>
+			<td>{:time_to_date($list_v.time)}</td>
+			<td class="toolbar">
+				<div class="table-btn">
+					<a class="layui-btn" onclick="isSureImport({$list_v.time}, null, null)">还原</a>
+					<a class="layui-btn" onclick="deleteDataBase({$list_v.time})">删除</a>
+				</div>
+			</td>
+		</tr>
+		{/foreach}
+		{else/}
+		<tr>
+			<td colspan="4" class="data-empty">无数据</td>
+		</tr>
+		{/if}
+	</tbody>
+</table>
+{/block}
+{block name="script"}
+<script>
+	function isSureImport(time, part, start) {
+		layer.confirm('是否恢复此备份文件?', function(index){
+		    layer.close(index);
+		    replay(time, part, start);
+		});
+	}
+	
+	function replay(time, part, start) {
+		ZENG.msgbox.show("正在读取文件", 6);
+		$.ajax({
+			url: ns.url("shop/system/importData"),
+			data: {
+				"time": time,
+				"part": part,
+				"start": start
+			},
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(data) {
+				if (data.code == 1) {
+				    ZENG.msgbox.show(data.message, 6, 100000);
+				    if (data.data.part) {
+				        replay(time, data.data.part, data.data.start);
+				        ZENG.msgbox.show("正在还原...", 6, 100000);
+				    } else {
+				        ZENG.msgbox.show(data.message, 4, 3000);
+				    }
+				} else {
+				    ZENG.msgbox.show(data.message, 4, 3000);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * 删除备份文件
+	 */
+	function deleteDataBase(time){
+		layer.confirm('是否删除此备份文件?', function(index){
+		    layer.close(index);
+		
+			ZENG.msgbox.show("正在删除文件", 6, 100000);
+			$.ajax({
+				url : ns.url("shop/system/deleteData"),
+				dataType: 'JSON',
+				type: 'POST',
+				data : {"time": time},
+				success : function(data) {
+					if (data.code){
+						ZENG.msgbox.show(data.message, 4, 3000);
+						location.reload();
+					} else {
+						ZENG.msgbox.show(data.message, 5);
+					}
+				}
+			})
+		});
+	}
+</script>
+{/block}

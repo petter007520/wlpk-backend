@@ -1,0 +1,337 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.screen{margin-bottom: 15px;}
+	.contraction span {
+		cursor: pointer;
+		display: inline-block;
+		width: 17px;
+		height: 17px;
+		text-align: center;
+		line-height: 14px;
+		user-select: none;
+	}
+	.verify-list {
+		overflow: hidden;
+		padding: 0 45px;
+	}
+	.verify-list li .img-wrap {
+		vertical-align: middle;
+		margin-right: 8px;
+		width: 80px;
+		height: 80px;
+		text-align: center;
+		border: 1px solid #e2e2e2;
+	}
+	.verify-list li .img-wrap img {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.verify-list li .info-wrap{
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.verify-list li .name-wrap{
+		flex: 1;
+	}
+	.verify-list li .info-wrap span.sku-name {
+		-webkit-line-clamp: 2;
+		margin-bottom: 5px;
+		line-height: 1.3;
+		margin-top: 0;
+		color: #333;
+		font-size: 14px;
+	}
+	.verify-list li .info-wrap span {
+		display: -webkit-box;
+		margin-top: 5px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: normal;
+		word-break: break-all;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 1;
+		line-height: 1;
+		font-size: 12px;
+	}
+	.verify-list li {
+		float: left;
+		display: flex;
+		padding: 10px;
+		margin-right: 10px;
+		margin-bottom: 10px;
+		border: 1px solid #EFEFEF;
+		width: 294px;
+		align-items: center;
+	}
+
+	.table-title .title-content p{overflow: hidden;text-overflow:ellipsis;white-space: nowrap;}
+
+
+	.goods-box{
+		display: flex;
+		padding: 10px;
+		justify-content: space-between;
+		margin-bottom: 20px;
+	}
+	.goods-box .goods-info{
+		width: 340px;
+	}
+	.goods-box .goods-info .goods-name{
+		text-overflow: ellipsis;
+
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+
+		display: -moz-box;
+		-moz-line-clamp: 2;
+		-moz-box-orient: vertical;
+
+		overflow-wrap: break-word;
+		word-break: break-all;
+		white-space: normal;
+		overflow: hidden;
+		height: 38px;
+	}
+	.goods-box .goods-info .goods-desc{
+		margin-top: 5px;
+	}
+	.goods-box .goods-img{
+		margin-right: 15px;
+		display: flex;
+		align-items: center;
+	}
+	.goods-box .goods-img img{
+		width: 80px;
+		max-height: 80px;
+	}
+	.goods-box .box-left{
+		display: flex;
+	}
+	.goods-box .box-right{
+		display: flex;
+		align-items: center;
+	}
+	.stat-box{
+		display: flex;
+		justify-content: space-around;
+		height: 100px;
+		align-items: center;
+		background: #f7f7f7;
+		margin-bottom: 10px;
+	}
+	.stat-box .stat-item .stat-val{
+		margin-top: 10px;
+		font-size: 20px;
+		font-weight: bold;
+	}
+	.user-detail{
+		cursor: pointer;
+	}
+	.table-title .title-content{
+		overflow: unset;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<!--商品信息-->
+<div class="goods-box">
+	<div class="box-left">
+		<div class="goods-img">
+			<img src="{:img(explode(',', $goods_info['goods_image'])[0])}">
+		</div>
+		<div class="goods-info">
+			<div class="goods-name">{$goods_info['goods_name']}</div>
+			<div class="goods-price">价格：{$goods_info['price']}</div>
+			<div class="goods-desc">库存：{$goods_info['goods_stock']}&nbsp;&nbsp;&nbsp;销量：{$goods_info['sale_num']}</div>
+		</div>
+	</div>
+	<div class="box-right">
+		<button class="layui-btn layui-btn-primary" onclick="window.location.href='{:url('shop/goods/lists')}'">返回</button>
+	</div>
+</div>
+
+<div class="stat-box">
+	<div class="stat-item">
+		<div class="stat-txt">核销码总数（个）</div>
+		<div class="stat-val">{$total_count}</div>
+	</div>
+	<div class="stat-item">
+		<div class="stat-txt">已核销（次）</div>
+		<div class="stat-val">{$verify_use_num}</div>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">购买人：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="nickname" placeholder="请输入购买人名称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">核销码：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="verify_code" placeholder="请输入核销码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="verify_list" lay-filter="verify_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="record">核销记录</a>
+	</div>
+</script>
+
+<script type="text/html" id="userdetail">
+	<div class='table-title user-detail' onclick="memberDetail({{d.member_id}})">
+		<div class='title-pic'>
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+		</div>
+		<div class='title-content'>
+			{{d.nickname}}
+		</div>
+	</div>
+</script>
+
+<script type="text/html" id="goodsDetail">
+	<div class="table-title">
+		<div class=" table-title">
+			<div class="title-pic"><img src="{{ns.img(d.sku_image)}}"></div>
+			<div class="title-content">
+				<p title="{{ d.sku_name }}">{{ d.sku_name }}</p>
+			</div>
+		</div>
+	</div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+    $(function () {
+        layui.use(['form', 'laydate','laytpl'], function () {
+            laytpl = layui.laytpl;
+            var table,
+                form = layui.form,
+                laydate = layui.laydate;
+            form.render();
+
+            //渲染时间
+            laydate.render({
+                elem: '#start_time',
+                type: 'datetime'
+            });
+
+            laydate.render({
+                elem: '#end_time',
+                type: 'datetime'
+            });
+
+            /**
+             * 加载表格
+             */
+            table = new Table({
+                elem: '#verify_list',
+                url: ns.url("shop/goods/verify"), //数据接口
+				where: {goods_id:"{$goods_id}"},
+                cols: [
+                    [{
+                        title: '商品信息',
+                        width: '20%',
+                        templet: '#goodsDetail'
+					},{
+						field: 'nickname',
+						title: '买家信息',
+						templet: '#userdetail'
+					},{
+						field: 'code',
+						title: '核销码',
+                    },
+					{
+						field: 'order_no',
+						title: '订单编号',
+						templet: function (data) {
+							return '<a href="'+ ns.url("shop/order/detail", {order_id:data.order_id}) +'" target="_blank">'+ data.order_no +'</a>';
+						}
+					},{
+						field: '',
+						title: '已核销/可核销',
+						templet: function (data) {
+							return data.verify_use_num + '/' + data.verify_total_count;
+						}
+                    },
+					 {
+                        field: 'sold_time',
+                        title: '售出时间',
+                        width: '10%',
+                        templet: function (data) {
+                            return ns.time_to_date(data.sold_time)
+                        }
+                    }, {
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						align : 'right'
+					}]
+                ]
+            });
+
+			/**
+			 * 监听工具栏操作
+			 */
+			table.tool(function(obj) {
+				var data = obj.data;
+				switch (obj.event) {
+					case 'record':
+						window.open(ns.url("shop/verify/records?verify_code=" + data.code))
+						break;
+				}
+			});
+
+
+			/**
+             * 搜索功能
+             */
+            form.on('submit(search)', function (data) {
+                table.reload({
+                    page: {
+                        curr: 1
+                    },
+                    where: data.field
+                });
+                return false;
+            });
+
+            //批量导出
+            form.on('submit(export_verify)', function (data) {
+                location.href = ns.url("shop/verify/exportVerify", data.field);
+                return false;
+            });
+        });
+    })
+	function memberDetail(member_id){
+		window.open(ns.url("shop/member/editmember", {'member_id':member_id}))
+	}
+</script>
+{/block}

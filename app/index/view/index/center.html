@@ -1,0 +1,90 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="INDEX_CSS/center.css" />
+{/block}
+{block name="main"}
+<div class="guide-top">
+    <div><img src="INDEX_IMG/back1.png"/></div>
+    <span></span>
+    <p>欢迎使用</p>
+    <p>NIUSHOP商城系统</p>
+</div>
+<div class="guide-links">
+    <a href="http://www.niushop.com" target="_blank">
+        <li>
+            <div>
+                <img class="no-select" src="INDEX_IMG/no_niuku.png">
+                <img class="selected" src="INDEX_IMG/niuku.png">
+                <p>官网</p>
+            </div>
+        </li>
+    </a>
+    <a href="{$pc_url}" target="_blank">
+        <li>
+            <div>
+                <img class="no-select" src="INDEX_IMG/no_pc.png">
+                <img class="selected" src="INDEX_IMG/pc.png">
+                <p>PC端</p>
+            </div>
+        </li>
+    </a>
+    <a href="">
+        <li class="li-selected">
+            <div>
+                <img class="no-select" src="INDEX_IMG/no_guide.png">
+                <img class="selected" src="INDEX_IMG/guide.png">
+                <p>引导页</p>
+            </div>
+        </li>
+    </a>
+    <a onclick="getShopUrl()" target="_blank">
+        <li>
+            <div>
+                <img class="no-select" src="INDEX_IMG/no_h5.png">
+                <img class="selected" src="INDEX_IMG/h5.png">
+                <p>手机端</p>
+            </div>
+        </li>
+    </a>
+    <a href="{$shop_url}" target="_blank">
+        <li>
+            <div>
+                <img class="no-select" src="INDEX_IMG/no_shop.png">
+                <img class="selected" src="INDEX_IMG/shop.png">
+                <p>网站后台</p>
+            </div>
+        </li>
+    </a>
+
+</div>
+<div class="guide-forter">
+    <p><a href="https://beian.miit.gov.cn/" target="_blank">{$copy.icp}</a></p>
+    <p><a href="{$copy.copyright_link}" target="_blank">{$copy.company_name}</a></p>
+    <div>
+        {if $copy.logo}
+        <a href="{$copy.copyright_link}" target="_blank"><img src="{:img($copy.logo)}"></a>
+        {else/}
+        <a href="{$copy.copyright_link}" target="_blank"><img src="INDEX_IMG/footer_logo.png"></a>
+        {/if}
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+    $(function () {
+        $(".guide-links>a li").hover(function(){
+            $(".guide-links>a li").removeClass("li-selected");
+            $(this).addClass("li-selected");
+
+        },function(){
+            $(".guide-links>a li").removeClass("li-selected");
+            $(".guide-links>a:nth-child(3) li").addClass("li-selected");
+        })
+    });
+
+    function getShopUrl(e) {
+        window.open("{:url('index/index/h5preview')}")
+    }
+</script>
+{/block}

@@ -1,0 +1,117 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.cache-item {display: flex;justify-content: space-between;width: 800px;padding: 20px 0;margin-left: 20px; border-bottom: 1px solid#E6E6E6;}
+	.cache-item .item-content .item-content-title {display: flex;align-items: center;font-size: 14px;}
+	.cache-item .item-content .item-content-title input {margin-right: 10px;width: 16px;height: 16px;}
+	.cache-item .item-content .item-content-desc {margin-left: 25px;font-size: 14px;margin-top: 5px; color: #888;}
+	.cache-all-btn {width: 820px;display: flex;justify-content: space-between;margin-top: 45px;}
+	.all-check{margin:10px 20px 20px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card card-common card-brief layui-form">
+	<div class="layui-card-header">
+		<span class="card-title">缓存管理</span>
+	</div>
+	<div>
+		<div class="all-check"  onclick="all_checked()">
+			<input type="checkbox" name="all_checked" value="" lay-skin="primary" title="全选" class="all_checked"/>
+		</div>
+		{foreach $cache_list as $k => $val}
+		<div class="cache-item">
+			<div class="item-content">
+				<div class="item-content-title" onclick="checked_item()">
+					<input type="checkbox"  name="cache_checked" title="{$val.name}" lay-filter="cache_checked" value="{$val.key}" lay-skin="primary">
+
+				</div>
+				<p class="item-content-desc over-hide-second">{$val.desc}</p>
+			</div>
+			<button type="button" class="layui-btn" onclick="clear_cache('{$val.key}')">{$val.btn}</button>
+		</div>
+		{/foreach}
+		<div class="cache-all-btn">
+			<div class="clear"></div>
+			<div>
+				<!--<button type="button" class="layui-btn text-color">取消</button>-->
+				<button type="button" class="layui-btn" onclick="clear_cache('multi')">一键清理刷新</button>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var laytpl, form, element,repeat_flag = false; //防重复标识
+	layui.use(['form'], function() {
+		form = layui.form;
+		form.render();
+	});
+	function clear_cache(key) {
+		if(key == 'multi') {
+			var checked_arr = [];
+			$("input[name='cache_checked']").each(function (val, index) {
+				if($(this).siblings("div").hasClass('layui-form-checked')){
+					checked_arr.push($(this).val());
+				}
+			});
+			if (checked_arr.length == 0){
+				layer.msg('请勾选需要刷新的数据');
+				return;
+			}
+			checked_arr.push('all');
+			key = checked_arr.toString();
+		}
+		if (repeat_flag) return;
+		repeat_flag = true;
+
+		var index = layer.load(2);
+		$.ajax({
+			url: ns.url("shop/system/cache"),
+			data: {
+				key
+			},
+			type: "POST",
+			dataType: "JSON",
+			success: function(res) {
+				layer.msg(res.message);
+				repeat_flag = false;
+				layer.close(index);
+			}
+		});
+	}
+
+	function checked_item(){
+		var num = 0;
+		$('input[name=cache_checked]').each(function(){
+			if($(this).siblings("div").hasClass('layui-form-checked')){
+				num++;
+			}
+		});
+		if(num<$('input[name=cache_checked]').length){
+			$('input[name=all_checked]').siblings("div").removeClass('layui-form-checked')
+		}else{
+			$('input[name=all_checked]').siblings("div").addClass('layui-form-checked')
+		}
+	}
+	function all_checked(){
+		var num = 0;
+		$('input[name=cache_checked]').each(function(){
+			if($(this).siblings("div").hasClass('layui-form-checked')){
+				num++;
+			}
+		});
+		if(num<$('input[name=cache_checked]').length){
+			$('input[name=all_checked]').siblings("div").addClass('layui-form-checked');
+			$('input[name=cache_checked]').each(function(){
+				$(this).siblings("div").addClass('layui-form-checked')
+			});
+		}else{
+			$('input[name=all_checked]').siblings("div").removeClass('layui-form-checked');
+			$('input[name=cache_checked]').each(function(){
+				$(this).siblings("div").removeClass('layui-form-checked')
+			});
+		}
+	}
+</script>
+{/block}

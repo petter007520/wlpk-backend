@@ -1,0 +1,548 @@
+<nc-component :data="data[index]" class="many-goods-list">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="goods-cate-list">
+			<template v-for="(item, previewIndex) in nc.list">
+				<div class="split-line" v-if="previewIndex > 0"></div>
+				<div class="goods-cate-item" :class="{'active': previewIndex == 0}">
+					<p>{{item.title}}</p>
+					<p :class="{'bg-color':previewIndex == 0 && item.desc}">{{item.desc}}</p>
+				</div>
+			</template>
+		</div>
+
+		<div :class="['goods-list',nc.template,nc.style]" :style="{ backgroundColor: nc.componentBgColor,
+			borderTopLeftRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			borderTopRightRadius: (nc.componentAngle == 'round' ? nc.topAroundRadius + 'px' : 0),
+			borderBottomLeftRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0),
+			borderBottomRightRadius: (nc.componentAngle == 'round' ? nc.bottomAroundRadius + 'px' : 0)
+		}">
+		   <template v-if="nc.tempData.previewList && Object.keys(nc.tempData.previewList).length">
+			   <div class="goods-item" v-for="(item, previewIndex) in nc.tempData.previewList" :key="previewIndex"
+					:style="{
+					borderTopLeftRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+					borderTopRightRadius: (nc.elementAngle == 'round' ? nc.topElementAroundRadius + 'px' : 0),
+					borderBottomLeftRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+					borderBottomRightRadius: (nc.elementAngle == 'round' ? nc.bottomElementAroundRadius + 'px' : 0),
+					backgroundColor: nc.elementBgColor,
+					boxShadow:  nc.ornament.type == 'shadow' ? ('0 0 5px ' + nc.ornament.color) : '',
+					marginLeft: nc.template == 'horizontal-slide' && (nc.slideMode == 'scroll' && nc.goodsMarginType=='diy' && (nc.goodsMarginNum+'px') || ((60 - nc.margin.both*2) /6 + 'px')) || '', 
+					marginRight: nc.template == 'horizontal-slide' && (nc.slideMode == 'scroll' && nc.goodsMarginType=='diy' && (nc.goodsMarginNum+'px') || ((60 - nc.margin.both*2) /6 + 'px')) || '',
+					border: nc.ornament.type == 'stroke' ?  '1px solid ' + nc.ornament.color : ''}">
+				   <div class="goods-img" :style="{ borderRadius:  nc.imgAroundRadius + 'px' }">
+					   <img :src="item.goods_image ? changeImgUrl(item.goods_image) : changeImgUrl('public/static/img/default_img/square.png')" :style="{ borderRadius:  nc.imgAroundRadius + 'px' }" onerror="this.src = ns.img('public/static/img/default_img/square.png');" />
+				   </div>
+
+				   <div class="info-wrap" v-if="nc.goodsNameStyle.control || nc.tag.value != 'hidden' || nc.priceStyle.mainControl || nc.priceStyle.lineControl || nc.btnStyle.control">
+
+					   <div class="goods-name" v-if="nc.goodsNameStyle.control" :style="{ color : nc.goodsNameStyle.color,fontWeight : nc.goodsNameStyle.fontWeight ? 'bold' : '' }" :class="[{'using-hidden' : nc.nameLineMode == 'single'},{'multi-hidden' : nc.nameLineMode == 'multiple'}]">{{ item.goods_name }}</div>
+
+					   <div class="tag-wrap" v-if="nc.tag.value != 'hidden'">
+						   <span class="hollow-tag text-color border-color">{{ nc.tag.text }}</span>
+					   </div>
+
+					   <div class="pro-info">
+						   <div class="discount-price">
+							   <div class="price-wrap" v-if="nc.priceStyle.mainControl">
+								   <span class="unit" :style="{ color : nc.priceStyle.mainColor }">¥</span>
+								   <span class="price" :style="{ color : nc.priceStyle.mainColor }">{{item.discount_price.split(".")[0]}}</span>
+								   <span class="unit" :style="{ color : nc.priceStyle.mainColor }">.{{  item.discount_price.split(".")[1] != undefined ? item.discount_price.split(".")[1] : '00'}}</span>
+							   </div>
+							   <div class="delete-price" v-if="nc.priceStyle.lineControl" :style="{ color : nc.priceStyle.lineColor }">¥{{item.line_price}}</div>
+							   <div class="sale" v-if="nc.saleStyle.control" :style="{ color : nc.saleStyle.color }">已售{{ item.sale_num }}件</div>
+						   </div>
+
+						   <template v-if="nc.btnStyle.control">
+
+							   <!-- 购物车图标 -->
+							   <div v-if="nc.btnStyle.style == 'icon-cart'" class="cart shopping-cart-btn iconfont icongouwuche" :style="{ color : nc.btnStyle.textColor }"></div>
+
+							   <!--加号图标 -->
+							   <div v-else-if="nc.btnStyle.style == 'icon-add'" class="cart plus-sign-btn iconfont iconjia2" :style="{ color : nc.btnStyle.textColor }"></div>
+
+							   <!-- 按钮 -->
+							   <div v-else-if="nc.btnStyle.style == 'button'" class="cart buy-btn" :style="{fontWeight: (nc.btnStyle.fontWeight ? 'bold' : 'normal'), backgroundColor : nc.btnStyle.bgColor, color : nc.btnStyle.textColor,borderRadius : nc.btnStyle.aroundRadius + 'px' ,padding : ('0 '+  nc.btnStyle.padding + 'px')}">{{ nc.btnStyle.text }}</div>
+
+							   <!-- 自定义图标 -->
+							   <div v-else-if="nc.btnStyle.style == 'icon-diy'" class="icon-diy">
+								   <iconfont :icon="nc.btnStyle.iconDiy.icon" v-if="nc.btnStyle.iconDiy.icon" :value="nc.btnStyle.iconDiy.style ? nc.btnStyle.iconDiy.style : ''"></iconfont>
+							   </div>
+
+						   </template>
+
+					   </div>
+				   </div>
+			   </div>
+		   </template>
+	   </div>
+
+	</template>
+
+	<!-- 内容编辑 -->
+	<template slot="edit-content">
+		<template v-if="nc.lazyLoad">
+			<many-goods-list-sources></many-goods-list-sources>
+
+			<div class="template-edit-title">
+				<h3>商品风格</h3>
+				<div class="layui-form-item list-style" v-if="nc.tempData.templateList">
+					<label class="layui-form-label sm">风格</label>
+					<div class="layui-input-block">
+						<div class="source">{{ nc.tempData.templateList[nc.template].text }}</div>
+						<div class="template-selected">
+							<div v-for="(item,templateKey) in nc.tempData.templateList" :key="templateKey" class="source-item" :title="item.text"
+							     @click="nc.tempData.methods.selectTemplate(templateKey)"
+							     :class="[(nc.template == templateKey) ? 'text-color border-color' : '' ]">
+								<i class='iconfont' :class='item.icon'></i>
+							</div>
+						</div>
+						<div class="style-selected">
+							<div v-for="(item,styleIndex) in nc.tempData.templateList[nc.template].styleList" :key="styleIndex" @click="nc.tempData.methods.selectTemplate('',item)" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.style==item.value) }">
+								<i class="layui-anim layui-icon">{{ nc.style == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+								<div>{{item.text}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="template-edit-title">
+				<h3>商品数据</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">排序</label>
+					<div class="layui-input-block">
+						<div v-for="(item,sortIndex) in nc.tempData.sortWayList" :key="sortIndex" @click="nc.sortWay=item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.sortWay==item.value) }">
+							<i class="layui-anim layui-icon">{{ nc.sortWay == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<slide :data="{ field : 'count', label: '商品数量', min:1, max: 30}" v-if="nc.sources != 'diy'"></slide>
+
+				<div class="many-goods-list-edit layui-form">
+					<ul>
+						<li v-for="(item, index) in nc.list">
+							<div class="content-block">
+								<div class="layui-form-item">
+									<label class="layui-form-label sm">分类名称</label>
+									<div class="layui-input-block">
+										<input type="text" name='title' v-model="item.title" maxlength="4" class="layui-input" />
+									</div>
+								</div>
+
+								<div class="layui-form-item" >
+									<label class="layui-form-label sm">副标题</label>
+									<div class="layui-input-block">
+										<input type="text" name='desc' v-model="item.desc" maxlength="5" class="layui-input" />
+									</div>
+								</div>
+
+								<div class="layui-form-item" v-if="nc.tempData.goodsSources">
+									<label class="layui-form-label sm">数据来源</label>
+									<div class="layui-input-block">
+										<div class="source-selected">
+											<div class="source">{{ nc.tempData.goodsSources[item.sources].text }}</div>
+											<span v-for="(sourceItem, sourcesKey) in nc.tempData.goodsSources" :key="sourcesKey" class="source-item" :title="sourceItem.text" @click="item.sources=sourcesKey" :class="[(item.sources == sourcesKey) ?  'text-color border-color' : '' ]">
+												<i class="iconfont" :class="[{'text-color': item.sources == sourcesKey}, sourceItem.icon]"></i>
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<div class="layui-form-item" v-if="item.sources == 'category'">
+									<label class="layui-form-label sm">商品分类</label>
+									<div class="layui-input-block">
+										<div class="selected-style" @click="nc.tempData.methods.selectCategory(index)">
+											<span :class="{ 'text-color' : item.categoryId > 0 }">{{ item.categoryName }}</span>
+											<i class="iconfont iconyoujiantou"></i>
+										</div>
+									</div>
+								</div>
+
+								<div class="layui-form-item" v-if="item.sources == 'diy'">
+									<label class="layui-form-label sm">手动选择</label>
+									<div class="layui-input-block">
+										<div class="selected-style" @click="nc.tempData.methods.addGoods(index)">
+											<span v-if="item.goodsId.length == 0">请选择</span>
+											<span v-if="item.goodsId.length > 0" class="text-color">已选{{ item.goodsId.length }}个</span>
+											<i class="iconfont iconyoujiantou"></i>
+										</div>
+									</div>
+								</div>
+
+							</div>
+
+							<i class="del" @click="nc.list.splice(index,1)" data-disabled="1">x</i>
+						</li>
+					</ul>
+
+					<div class="add-item text-color border-color" v-if="nc.tempData.methods" @click="nc.tempData.methods.addItem()">
+						<i>+</i>
+						<span>添加一个商品组</span>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="template-edit-title" v-show="nc.btnStyle.support">
+				<h3>购买按钮</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">是否显示</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.btnStyle.control = !nc.btnStyle.control" :class="{ 'layui-form-checked' : nc.btnStyle.control }">
+							<span>{{ nc.btnStyle.control ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">购物车事件</label>
+					<div class="layui-input-block">
+						<div @click="nc.btnStyle.cartEvent='detail'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.btnStyle.cartEvent=='detail') }">
+							<i class="layui-anim layui-icon">{{ nc.btnStyle.cartEvent=='detail' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>跳转商品详情</div>
+						</div>
+						<div @click="nc.btnStyle.cartEvent='cart'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.btnStyle.cartEvent=='cart') }">
+							<i class="layui-anim layui-icon">{{ nc.btnStyle.cartEvent=='cart' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>加入购物车</div>
+						</div>
+					</div>
+					<p class="word-aux" style="margin-left: 100px;" v-if="nc.btnStyle.cartEvent=='cart'">只有实物商品才能加入购物车，虚拟商品会跳转到商品详情</p>
+				</div>
+
+				<div v-show="nc.btnStyle.control">
+					<div class="layui-form-item btn-style">
+						<label class="layui-form-label sm">样式</label>
+						<div class="layui-input-block">
+							<div class="item" :class="{ 'border-color' : nc.btnStyle.style == 'button' }"
+							     @click="nc.btnStyle.style = 'button';nc.btnStyle.textColor= nc.btnStyle.textColor == '#FF6A00' ? '#FFFFFF' : nc.btnStyle.textColor">
+								<span class="buy-btn bg-color">按钮</span>
+							</div>
+							<div class="item" :class="{ 'border-color' : nc.btnStyle.style == 'icon-cart' }"
+							     @click="nc.btnStyle.style = 'icon-cart';nc.btnStyle.textColor= nc.btnStyle.textColor == '#FFFFFF' ? '#FF6A00' : nc.btnStyle.textColor">
+								<span class="shopping-cart-btn iconfont icongouwuche text-color border-color"></span>
+							</div>
+							<div class="item" :class="{ 'border-color' : nc.btnStyle.style == 'icon-add' }"
+							     @click="nc.btnStyle.style = 'icon-add';nc.btnStyle.textColor= nc.btnStyle.textColor == '#FFFFFF' ? '#FF6A00' : nc.btnStyle.textColor">
+								<span class="plus-sign-btn iconfont iconjia2 text-color border-color"></span>
+							</div>
+							<div class="item" :class="{ 'border-color' : nc.btnStyle.style == 'icon-diy' }"
+							     @click="nc.btnStyle.style = 'icon-diy';nc.btnStyle.textColor= nc.btnStyle.textColor == '#FFFFFF' ? '#FF6A00' : nc.btnStyle.textColor">
+								<span class="diy-btn text-color border-color">自定义</span>
+							</div>
+						</div>
+
+						<div class="layui-input-block diy-icon" v-show="nc.btnStyle.style == 'icon-diy'">
+							<img-icon-upload :data="{data : nc.btnStyle.iconDiy, displayType : 'icon'}"></img-icon-upload>
+							<div class="action-box">
+								<div class="action" @click="nc.tempData.methods.iconStyle($event)"><i class="iconfont iconpifu"></i></div>
+								<div class="action" :id="'many-goods-list-color-' + nc.tempData.goodsDuplicateId"><i class="iconfont iconyanse"></i></div>
+							</div>
+						</div>
+
+					</div>
+
+					<div class="layui-form-item" v-show="nc.btnStyle.style == 'button'">
+						<label class="layui-form-label sm">文字</label>
+						<div class="layui-input-block">
+							<input type="text" v-model="nc.btnStyle.text" maxlength="6" placeholder="请输入按钮文字" class="layui-input">
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="template-edit-title">
+				<h3>显示内容</h3>
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">商品名称</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.goodsNameStyle.control = !nc.goodsNameStyle.control" :class="{ 'layui-form-checked' : nc.goodsNameStyle.control }">
+							<span>{{ nc.goodsNameStyle.control ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">销售价</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.priceStyle.mainControl = !nc.priceStyle.mainControl" :class="{ 'layui-form-checked' : nc.priceStyle.mainControl }">
+							<span>{{ nc.priceStyle.mainControl ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item" v-show="nc.priceStyle.lineSupport">
+					<label class="layui-form-label sm">划线价</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.priceStyle.lineControl = !nc.priceStyle.lineControl" :class="{ 'layui-form-checked' : nc.priceStyle.lineControl }">
+							<span>{{ nc.priceStyle.lineControl ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item" v-show="nc.saleStyle.support">
+					<label class="layui-form-label sm">商品销量</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.saleStyle.control = !nc.saleStyle.control" :class="{ 'layui-form-checked' : nc.saleStyle.control }">
+							<span>{{ nc.saleStyle.control ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">商品标签</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.tempData.methods.selectTag()" :class="{ 'layui-form-checked' : nc.tag.value != 'hidden' }">
+							<span>{{ nc.tag.value != 'hidden' ? '显示' : '隐藏' }}</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item tag-wrap" v-show="nc.tag.value != 'hidden'">
+					<label class="layui-form-label sm"></label>
+					<div class="layui-input-block">
+						<div v-for="(item,tagIndex) in nc.tempData.tagList" :key="tagIndex" @click="nc.tag=JSON.parse(JSON.stringify(item))" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.tag.value==item.value) }">
+							<i class="layui-anim layui-icon">{{ nc.tag.value == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item" v-show="nc.tag.value == 'diy'">
+					<label class="layui-form-label sm">标签文字</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.tag.text" maxlength="10" placeholder="请输入标签文字" class="layui-input">
+					</div>
+				</div>
+
+			</div>
+
+		</template>
+
+		<!-- 商品分类选择弹框 -->
+		<script type="text/html" class="goods-category-layer">
+		    <div class="goods-category-list layui-form">
+		        <table class="layui-table pithy-table">
+		            <colgroup>
+		                <col width="5%">
+		                <col width="3%">
+		                <col width="37%">
+		                <col width="25%">
+		                <col width="30%">
+		            </colgroup>
+		            <thead>
+			            <tr>
+			                <th></th>
+			                <th></th>
+			                <th>分类名称</th>
+			                <th>简称</th>
+			                <th>图片</th>
+			            </tr>
+		            </thead>
+		            <tbody>
+		            {if condition="$category_list"}
+			            {foreach name="$category_list" item="vo"}
+				            <tr class='category-line'>
+				                <td><input type="checkbox" name="category_select_id" data-category_select_id = "{$vo['category_id']}"lay-skin="primary" value='{:json_encode($vo)}' lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $vo['category_id']}checked{/if}></td>
+				                <td>
+				                    {notempty name="$vo['child_list']"}
+				                    <span class="switch text-color js-switch" data-category-id="{$vo['category_id']}" data-level="{$vo['level']}" data-open="0">+</span>
+				                    {/notempty}
+				                </td>
+				                <td class="category-name">{$vo['category_name']}</td>
+				                <td>{$vo['short_name']}</td>
+				                <td>
+				                    {notempty name="$vo['image']"}
+				                    <div class="img-box">
+				                        <img layer-src src="{:img($vo['image'])}"/>
+				                    </div>
+				                    {/notempty}
+				                </td>
+				            </tr>
+				            {notempty name="$vo['child_list']"}
+					            {foreach name="$vo['child_list']" item="second"}
+					            <tr class='category-line' data-category-id-1="{$second['category_id_1']}" style="display:none;">
+					                <td><input type="checkbox" name="category_select_id" lay-skin="primary"data-category_select_id = "{$second['category_id']}" value='{:json_encode($second)}' lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $second['category_id']}checked{/if}></td>
+					                <td></td>
+					                <td style="padding-left: 20px;">
+					                    <span class="switch text-color js-switch" data-category-id="{$second['category_id']}" data-level="{$second['level']}" data-open="1" style="padding-right: 20px;">-</span>
+					                    <span class="category-name">{$second['category_name']}</span>
+					                </td>
+					                <td>{$second['short_name']}</td>
+					                <td>
+					                    {notempty name="$second['image']"}
+					                    <img layer-src src="{:img($second['image'])}"/>
+					                    {/notempty}
+					                </td>
+					            </tr>
+						            {notempty name="$second['child_list']"}
+							            {foreach name="$second['child_list']" item="third"}
+							            <tr class='category-line'data-category-id-1="{$third['category_id_1']}" data-category-id-2="{$third['category_id_2']}" style="display:none;">
+							                <td><input type="checkbox" name="category_select_id" lay-skin="primary" value='{:json_encode($third)}' data-category_select_id = '{$third['category_id']}'lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $third['category_id']}checked{/if}></td>
+							                <td></td>
+							                <td style="padding-left: 80px;">
+							                    <span class="category-name">{$third['category_name']}</span>
+							                </td>
+							                <td>{$third['short_name']}</td>
+							                <td>
+							                    {notempty name="$third['image']"}
+							                    <img layer-src src="{:img($third['image'])}"/>
+							                    {/notempty}
+							                </td>
+							            </tr>
+							            {/foreach}
+						            {/notempty}
+					            {/foreach}
+				            {/notempty}
+			            {/foreach}
+		            {else/}
+			            <tr>
+			                <td colspan="9" style="text-align: center">无数据</td>
+			            </tr>
+		            {/if}
+		            </tbody>
+		        </table>
+		    </div>
+		</script>
+		
+	</template>
+
+	<!-- 样式编辑 -->
+	<template slot="edit-style">
+		<template v-if="nc.lazyLoad">
+
+			<div class="template-edit-title">
+				<h3>商品样式</h3>
+				<div class="layui-form-item tag-wrap">
+					<label class="layui-form-label sm">边框</label>
+					<div class="layui-input-block">
+						<div v-for="(item,ornamentIndex) in nc.tempData.ornamentList" :key="ornamentIndex" @click="nc.ornament.type=item.type" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.ornament.type==item.type) }">
+							<i class="layui-anim layui-icon">{{ nc.ornament.type == item.type ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<color v-if="nc.ornament.type != 'default'" :data="{ field : 'color', 'label' : '边框颜色', parent : 'ornament', defaultColor : '#EDEDED' }"></color>
+
+				<slide :data="{ field : 'imgAroundRadius', label: '图片圆角', min:0, max: 50 }"></slide>
+
+				<div class="layui-form-item" v-if="nc.template == 'horizontal-slide'">
+					<label class="layui-form-label sm">滚动方式</label>
+					<div class="layui-input-block">
+						<div @click="nc.slideMode = 'scroll' " :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.slideMode == 'scroll') }">
+							<i class="layui-anim layui-icon">{{ nc.slideMode == 'scroll' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>平移</div>
+						</div>
+						<div @click="nc.slideMode = 'slide' " :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.slideMode == 'slide') }">
+							<i class="layui-anim layui-icon">{{ nc.slideMode == 'slide' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>切屏</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="layui-form-item" v-show="nc.goodsNameStyle.control">
+					<label class="layui-form-label sm">商品名称</label>
+					<div class="layui-input-block">
+						<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.goodsNameStyle.fontWeight = !nc.goodsNameStyle.fontWeight" :class="{ 'layui-form-checked' : nc.goodsNameStyle.fontWeight }">
+							<span>加粗</span>
+							<i class="layui-icon layui-icon-ok"></i>
+						</div>
+						<div v-for="(item,nameLineIndex) in nc.tempData.nameLineModeList" :key="nameLineIndex" @click="nc.nameLineMode=item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.nameLineMode==item.value) }">
+							<i class="layui-anim layui-icon">{{ nc.nameLineMode == item.value ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>{{item.text}}</div>
+						</div>
+					</div>
+				</div>
+
+				<color :data="{ field : 'elementBgColor', 'label' : '商品背景' }"></color>
+
+				<slide v-show="nc.elementAngle == 'round'" :data="{ field : 'topElementAroundRadius', label : '上圆角', max : 50 }"></slide>
+				<slide v-show="nc.elementAngle == 'round'" :data="{ field : 'bottomElementAroundRadius', label : '下圆角', max : 50 }"></slide>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">色调</label>
+					<div class="layui-input-block">
+						<div @click="nc.theme='default'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.theme == 'default') }">
+							<i class="layui-anim layui-icon">{{ nc.theme == 'default' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>跟随主题风格</div>
+						</div>
+						<div @click="nc.theme='diy'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.theme == 'diy') }">
+							<i class="layui-anim layui-icon">{{ nc.theme == 'diy' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>自定义</div>
+						</div>
+					</div>
+				</div>
+
+				<div v-show="nc.theme == 'diy'">
+					<color :data="{ field : 'color', 'label' : '商品名称', parent : 'goodsNameStyle', defaultColor : '#303133' }"></color>
+					<color :data="{ field : 'mainColor', 'label' : '销售价', parent : 'priceStyle', defaultColor : '#FF6A00' }"></color>
+					<div v-show="nc.priceStyle.lineSupport">
+						<color :data="{ field : 'lineColor', 'label' : '划线价', parent : 'priceStyle', defaultColor : '#999CA7' }"></color>
+					</div>
+					<div v-show="nc.saleStyle.support">
+						<color :data="{ field : 'color', 'label' : '商品销量', parent : 'saleStyle', defaultColor : '#999CA7' }"></color>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="template-edit-title" v-show="nc.btnStyle.support && nc.btnStyle.control">
+				<h3>购买按钮</h3>
+				<template v-if="nc.btnStyle.style == 'button'">
+					<div class="layui-form-item">
+						<label class="layui-form-label sm">是否加粗</label>
+						<div class="layui-input-block">
+							<div class="layui-unselect layui-form-checkbox" lay-skin="primary" @click="nc.btnStyle.fontWeight = !nc.btnStyle.fontWeight" :class="{ 'layui-form-checked' : nc.btnStyle.fontWeight }">
+								<span>{{ nc.btnStyle.fontWeight ? '加粗' : '常规' }}</span>
+								<i class="layui-icon layui-icon-ok"></i>
+							</div>
+						</div>
+					</div>
+					<slide :data="{ field : 'padding', parent : 'btnStyle', label : '按钮边距', min: 0, max : 20 }"></slide>
+				</template>
+				<slide v-show="nc.btnStyle.style == 'button'" :data="{ field : 'aroundRadius', label: '圆角', min:0, max: 50, parent: 'btnStyle' }"></slide>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label sm">色调</label>
+					<div class="layui-input-block">
+						<div @click="nc.btnStyle.theme='default'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.btnStyle.theme == 'default') }">
+							<i class="layui-anim layui-icon">{{ nc.btnStyle.theme == 'default' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>跟随主题风格</div>
+						</div>
+						<div @click="nc.btnStyle.theme='diy'" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (nc.btnStyle.theme == 'diy') }">
+							<i class="layui-anim layui-icon">{{ nc.btnStyle.theme == 'diy' ? "&#xe643;" : "&#xe63f;" }}</i>
+							<div>自定义</div>
+						</div>
+					</div>
+				</div>
+
+				<template v-if="nc.btnStyle.theme == 'diy'">
+					<color v-if="nc.btnStyle.style == 'button'" :data="{ field : 'bgColor', 'label' : '背景颜色', parent : 'btnStyle', defaultColor : '#FF6A00' }"></color>
+					<color :data="{ field : 'textColor', 'label' : '文字颜色', parent : 'btnStyle', defaultColor : '#FFFFFF' }"></color>
+				</template>
+			</div>
+
+		</template>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var manyGoodsListResourcePath = "{$resource_path}"; // http路径
+			var manyGoodsListRelativePath = "{$relative_path}"; // 相对路径
+		</js>
+		<css src="{$resource_path}/css/design.css"></css>
+		<js src="{$resource_path}/js/design.js"></js>
+	</template>
+	
+</nc-component>

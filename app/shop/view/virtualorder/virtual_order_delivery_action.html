@@ -1,0 +1,166 @@
+<!-- 订单物流发货 -->
+<style>
+    .order-delivery .layui-table { /*margin-bottom: 30px;*/
+    }
+
+    .layui-form .order_goods_list thead th, .layui-form #order_goods_list tbody tr {
+        border-bottom: 1px solid #E6E6E6;
+    }
+
+    .layui-form .order_goods_list thead th {
+        background-color: #F5F5F5;
+        line-height: 30px;
+    }
+
+    #order_goods_list_box, #order_goods_list_box1 {
+        overflow: hidden;
+    }
+
+    #order_goods_list_box table, #order_goods_list_box1 table {
+        margin: 0;
+    }
+
+    #order_goods_list_box table:nth-of-type(2), #order_goods_list_box1 table:nth-of-type(2) {
+        display: block;
+        overflow: auto;
+        max-height: 300px;
+    }
+
+    .order-delivery .input-text {
+        height: auto;
+        min-height: 34px;
+    }
+
+    .table-height {
+        height: 200px;
+        overflow: auto;
+    }
+    .edit-delivery-box table{
+        margin: 0;
+    }
+    .edit-delivery-box table:last-of-type{
+        display: block;
+        height: 430px;
+        overflow: auto;
+    }
+</style>
+<!--发送订单弹出框-->
+<script type="text/html" id="virtual_order_delivery_html">
+    <div class="order-delivery">
+        <div class="layui-form">
+            <input type="hidden" name="order_id" value="{{ d.order_info.order_id }}">
+            <div id="order_goods_list_box">
+                <table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line" lay-filter="order_goods_list">
+                    <colgroup>
+                        <col width="38%">
+                        <col width="15%">
+                        <col width="15%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+
+                            <th>商品名称</th>
+                            <th>数量</th>
+                            <th>发货状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{# layui.each(d.order_goods_list, function(index, item){ }}
+                        <tr>
+
+                            <td>{{ item.sku_name }}</td>
+                            <td>{{ item.num }}</td>
+                            <td>{{ item.delivery_status_name }}</td>
+                        </tr>
+                        {{# }); }}
+                        {{# if(d.order_goods_list.length === 0){ }}
+                        <tr>
+                            <td colspan="3" align="center">无数据</td>
+                        </tr>
+                        {{# } }}
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-row">
+                <button type="button" class="layui-btn" lay-submit id="button_delivery_order" lay-filter="button_delivery_order" style="display:none;">保存</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+    /**
+     * 订单发货
+     */
+    var submitting = false;
+    var flag = false;
+
+    function orderVirtualDelivery(order_id) {
+
+            if(flag){ return}
+            flag = true;
+
+            var product_arr = [];
+            layui.use(['table', 'form', 'laytpl'], function () {
+                var laytpl = layui.laytpl, table = layui.table, form = layui.form;
+                form.render();
+                //获取模板
+                var getTpl = $("#virtual_order_delivery_html").html();
+                var order_info = getOrderInfo(order_id)
+                //渲染模板
+                var data = {order_info};
+                data.order_goods_list = order_info.order_goods;
+
+                laytpl(getTpl).render(data, function (html) {
+                    layer.open({
+                        type: 1,
+                        shadeClose: true,
+                        shade: 0.3,
+                        fixed: false,
+                        scrollbar: false,
+                        title: "订单发货",
+                        area: '800px',
+                        btn: ['发货'],
+                        yes: function (index, layero) {
+                            $("#button_delivery_order").click();
+                        },
+                        content: html,
+                        cancel: function (index, layero) {
+                            //右上角关闭回调
+                            flag = false;
+                            layer.close(index);
+                            //return false 开启该代码可禁止点击该按钮关闭
+                        },
+                        success: function (layero, index) {
+                            form.render();
+
+                            form.on('submit(button_delivery_order)', function (data) {
+
+                                if (submitting) {
+                                    return false;
+                                }
+                                submitting = true;
+                                $.ajax({
+                                    type: "post",
+                                    url: '{:addon_url("shop/virtualorder/delivery")}',
+                                    async: true,
+                                    dataType: 'json',
+                                    data: data.field,
+                                    success: function (res) {
+                                        layer.msg(res.message);
+                                        if(res.code == 0){
+                                            layer.close(layer.index - 1);
+                                            reloadList();
+                                        }else{
+                                            submitting = false;
+                                        }
+                                    }
+                                })
+                            });
+                        }
+                    });
+                })
+            })
+
+    }
+</script>

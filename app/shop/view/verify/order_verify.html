@@ -1,0 +1,355 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.screen{margin-bottom: 15px;}
+	.contraction span{cursor: pointer;display: inline-block;width: 17px;height: 17px;text-align: center;line-height: 14px;user-select: none;}
+	.verify-list{overflow: hidden;padding: 0 45px;}
+	.verify-list li .img-wrap{vertical-align: middle;margin-right: 8px;width: 80px;height: 80px;text-align: center;border: 1px solid #e2e2e2;}
+	.verify-list li .img-wrap img{max-width: 100%;max-height: 100%;}
+	.verify-list li .info-wrap{flex: 1;display: flex;flex-direction: column;}
+	.verify-list li .name-wrap{flex: 1;}
+	.verify-list li .info-wrap span.sku-name{-webkit-line-clamp: 2;margin-bottom: 5px;line-height: 1.3;margin-top: 0;color: #333;font-size: 14px;}
+	.verify-list li .info-wrap span{display: -webkit-box;margin-top: 5px;overflow: hidden;text-overflow: ellipsis;white-space: normal;word-break: break-all;-webkit-box-orient: vertical;-webkit-line-clamp: 1;line-height: 1;font-size: 12px;}
+	.verify-list li{float: left;display: flex;padding: 10px;margin-right: 10px;margin-bottom: 10px;border: 1px solid #EFEFEF;width: 294px;align-items: center;}
+	.table-title .title-content p{overflow: hidden;text-overflow:ellipsis;white-space: nowrap;}
+	.goods-box{display: flex;padding: 10px;justify-content: space-between;margin-bottom: 20px;}
+	.goods-box .goods-info{width: 340px;}
+	.goods-box .goods-info .goods-name{text-overflow: ellipsis;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;display: -moz-box;-moz-line-clamp: 2;-moz-box-orient: vertical;overflow-wrap: break-word;word-break: break-all;white-space: normal;overflow: hidden;height: 38px;}
+	.goods-box .goods-info .goods-desc{margin-top: 5px;}
+	.goods-box .goods-img{margin-right: 15px;display: flex;align-items: center;}
+	.goods-box .goods-img img{width: 80px;max-height: 80px;}
+	.goods-box .box-left{display: flex;}
+	.goods-box .box-right{display: flex;align-items: center;}
+
+	.user-detail{cursor: pointer;}
+	.table-title .title-content{overflow: unset;}
+	.table-title .title-content p{overflow: hidden;text-overflow:ellipsis;white-space: nowrap;}
+	.table-title .title-content .verify-type{font-size:12px;margin-right: 4px;padding: 0px 6px;display: inline-block; border: 1px solid;border-radius: 3px;line-height: 18px}
+	.table-title .title-content .verify-code{display:inline-block;width:200px}
+	.layui-table-box .layui-table-body .laytable-cell-1-0-0{padding-top: 5px;padding-bottom: 5px}
+	.layui-layout-admin.admin-style-2 .stat-box{background-color: #F2F3F5;margin-bottom: 15px;}
+
+	.card-common:first-of-type{margin-top: 0;}
+	.layui-card-body{display: flex;padding-bottom: 0 !important;padding-right: 50px !important;padding-left: 50px !important;flex-wrap: wrap;}
+	.layui-card-body .content{flex: 1;display: flex;flex-direction: column;margin-bottom: 30px;justify-content: center;}
+	.layui-card-body .content:first-child {flex: unset;margin-right: 30px}
+	.layui-card-body .content .title{color: #909399;font-size: 14px;}
+	.layui-card-body .money{color: #303133;font-size: 26px;margin-top: 10px;max-width: 250px;}
+	.layui-card-body .bottom-title{color: #909399;font-size: 14px;margin-top: 5px;}
+	.layui-laydate-content tr{border: none;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<div>
+			<span class="card-title">核销概况</span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div class="content">
+			<p class="title">核销码总数（个）<a class="text-color" target="_blank" href="{:url('shop/verify/verifycard')}">核销台</a></p>
+			<p class="money">{$total_count}</p>
+			<p class="bottom-title">
+				<span>虚拟商品：{$verify_goods_count}</span> &nbsp;&nbsp;
+				<span>订单自提：{$pickup_count}</span>
+				<span>卡项商品：{$card_goods_count}</span>
+			</p>
+		</div>
+		<div class="content">
+			<p class="title">已核销（次）</p>
+			<p class="money">{$verify_use_num}</p>
+			<p class="bottom-title">
+				<span>&nbsp;</span>
+				<span>&nbsp;</span>
+			</p>
+		</div>
+		<div class="content">
+			<p class="title">待核销（虚拟商品）</p>
+			<p class="money">{$verify_goods_num}</p>
+			<p class="bottom-title">
+				<span>&nbsp;</span>
+				<span>&nbsp;</span>
+			</p>
+		</div>
+		<div class="content">
+			<p class="title">待核销（订单自提）</p>
+			<p class="money">{$pickup_num}</p>
+			<p class="bottom-title">
+				<span>&nbsp;</span>
+				<span>&nbsp;</span>
+			</p>
+		</div>
+		<div class="content">
+			<p class="title">待核销（卡项商品）</p>
+			<p class="money">{$card_goods_num}</p>
+			<p class="bottom-title">
+				<span>&nbsp;</span>
+				<span>&nbsp;</span>
+			</p>
+		</div>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+
+				<div class="layui-inline">
+					<label class="layui-form-label">核销码</label>
+					<div class="layui-input-inline">
+						<input type="text" name="verify_code" placeholder="请输入核销码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">核销码类型</label>
+					<div class="layui-input-inline">
+						<select name="verify_type">
+							<option value="">全部</option>
+							{foreach $verify_type as $k => $v}
+							<option value="{$k}">{$v.name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">核销码状态</label>
+					<div class="layui-input-inline">
+						<select name="is_verify">
+							<option value="">全部</option>
+							<option value="0">待核销</option>
+							<option value="1">已核销</option>
+							<option value="-1">已过期</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<button class="layui-btn" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="verify_list" lay-filter="verify_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="table-btn">
+		<a class="layui-btn" lay-event="record">核销记录</a>
+	</div>
+</script>
+
+<script type="text/html" id="userdetail">
+	<div class='table-title user-detail' onclick="memberDetail({{d.member_id}})">
+		<div class='title-pic'>
+			<img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+		</div>
+		<div class='title-content'>{{d.nickname}}</div>
+	</div>
+</script>
+
+<!-- 核销信息 -->
+<script type="text/html" id="verify_code">
+	<div class="table-title">
+		<div class="contraction" data-id="{{d.id}}" data-open="0">
+			<span>+</span>
+		</div>
+		<div class="title-content table-title" style="overflow: unset;">
+			{{# if(d.verify_type == "pickup"){ }}
+			<div class="title-pic"><img src="{{ns.img(d.sku_image)}}" onerror="this.src = 'SHOP_IMG/hexiao_dindan.png' "></div>
+			{{# } }}
+			{{# if(d.verify_type == "virtualgoods"){ }}
+			<div class="title-pic"><img src="{{ns.img(d.sku_image)}}"></div>
+			{{# } }}
+			{{# if(d.verify_type == "pickup" || d.verify_type == "virtualgoods"){ }}
+			<div class="title-content" style="overflow: unset;">
+				<p title="{{ d.order_info.order_name }}">{{ d.order_info.order_name }}</p>
+				<span class="verify-type text-color border-color">{{ d.verify_type_name}}</span>
+				<span class="verify-code">核销码：{{ d.verify_code }}</span>
+			</div>
+			{{# } }}
+			{{# if(d.verify_type == "cardgoods"){ }}
+			<div class="title-pic"><img src="{{ns.img(d.sku_image)}}"></div>
+			<div class="title-content" style="overflow: unset;">
+				<p title="{{ d.name }}">{{ d.sku_name }}</p>
+				<span class="verify-type text-color border-color">{{ d.verify_type_name}}</span>
+				<span class="verify-code">核销码：{{ d.verify_code }}</span>
+			</div>
+			{{# } }}
+		</div>
+	</div>
+</script>
+
+<!-- 核销内容 -->
+<script type="text/html" id="verifyList">
+	<tr class="js-list-{{d.index}}" id="sku_img_{{d.index}}">
+		<td colspan="8">
+			<ul class="verify-list">
+				{{# for(var i=0; i<d.list.length; i++){ }}
+				<li>
+					<div class="img-wrap">
+						<img layer-src src="{{ns.img(d.list[i].img, 'mid')}}">
+					</div>
+					<div class="info-wrap">
+						<div class="name-wrap">
+							<span class="sku-name">{{d.list[i].name}}</span>
+						</div>
+						<span class="price">价格：￥{{d.list[i].price}}</span>
+						<span class="sale_num">数量：{{d.list[i].num}}</span>
+					</div>
+				</li>
+				{{# } }}
+			</ul>
+		</td>
+	</tr>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+    $(function () {
+
+		$("body").on("click", ".contraction", function () {
+
+			var id = $(this).attr("data-id");
+			var open = $(this).attr("data-open");
+			var tr = $(this).parent().parent().parent().parent();
+			var index = tr.attr("data-index");
+			if (open == 1) {
+				$(this).children("span").text("+");
+				$(".js-list-" + index).remove();
+			} else {
+				$(this).children("span").text("-");
+				$.ajax({
+					url: ns.url("shop/verify/verifyInfo"),
+					data: {id: id},
+					dataType: 'JSON',
+					type: 'POST',
+					async: false,
+					success: function (res) {
+						var verify_list = $("#verifyList").html();
+						var data = {
+							list: res.data.data.item_array,
+							index: index
+						};
+						laytpl(verify_list).render(data, function (html) {
+							tr.after(html);
+						});
+						layer.photos({
+							photos: '.img-wrap',
+							anim: 5
+						});
+					}
+				});
+			}
+			$(this).attr("data-open", (open == 0 ? 1 : 0));
+		});
+
+        layui.use(['form', 'laydate','laytpl'], function () {
+            laytpl = layui.laytpl;
+            var table,
+                form = layui.form,
+                laydate = layui.laydate;
+            form.render();
+
+            //渲染时间
+            laydate.render({
+                elem: '#start_time',
+                type: 'datetime'
+            });
+
+            laydate.render({
+                elem: '#end_time',
+                type: 'datetime'
+            });
+
+            /**
+             * 加载表格
+             */
+            table = new Table({
+                elem: '#verify_list',
+                url: ns.url("shop/verify/orderverify"), //数据接口
+                cols: [
+					[{
+						title: '核销信息',
+						width: '30%',
+						templet: '#verify_code'
+					},{
+						field: 'name',
+						title: '买家姓名',
+						width: '15%',
+						align: 'center',
+					},{
+						field: '',
+						title: '已核销/可核销',
+						align: 'center',
+						templet: function (data) {
+							return data.verify_use_num + '/' + (data.verify_total_count ? data.verify_total_count : '不限次');
+						}
+					},{
+						field: '',
+						title: '核销状态',
+						align: 'center',
+						templet: function (data) {
+							return data.is_verify ? '已核销' : '待核销';
+						}
+					},{
+						field: 'verify_time',
+						title: '创建时间',
+						templet: function (data) {
+							return ns.time_to_date(data.create_time); //创建时间转换方法
+						}
+					},{
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						align : 'right'
+					}]
+                ]
+            });
+
+			/**
+			 * 监听工具栏操作
+			 */
+			table.tool(function(obj) {
+				var data = obj.data;
+				switch (obj.event) {
+					case 'record':
+						window.open(ns.url("shop/verify/records?verify_code=" + data.verify_code));
+						break;
+				}
+			});
+
+			/**
+             * 搜索功能
+             */
+            form.on('submit(search)', function (data) {
+                table.reload({
+                    page: {
+                        curr: 1
+                    },
+                    where: data.field
+                });
+                return false;
+            });
+
+            //批量导出
+            form.on('submit(export_verify)', function (data) {
+                location.href = ns.url("shop/verify/exportVerify", data.field);
+                return false;
+            });
+        });
+    });
+
+	function memberDetail(member_id){
+		window.open(ns.url("shop/member/editmember", {'member_id':member_id}))
+	}
+</script>
+{/block}

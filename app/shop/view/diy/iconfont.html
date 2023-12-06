@@ -1,0 +1,133 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+.iconfont-wrap{display: flex;margin-top: 10px;border-bottom: 1px solid #f1f1f1;}
+.iconfont-wrap .iconfont-left{padding: 10px 15px;width: 155px;height:429px; box-sizing: border-box;overflow-y: auto;}
+.iconfont-wrap .iconfont-left::-webkit-scrollbar{width: 4px;}
+.iconfont-wrap .iconfont-left::-webkit-scrollbar-track{background: rgb(179, 177, 177);border-radius: 10px;}
+.iconfont-wrap .iconfont-left::-webkit-scrollbar-thumb{background: rgb(136, 136, 136);border-radius: 10px;}
+.iconfont-wrap .iconfont-left::-webkit-scrollbar-thumb:hover{background: rgb(100, 100, 100);border-radius: 10px;}
+.iconfont-wrap .iconfont-left::-webkit-scrollbar-thumb:active{background: rgb(68, 68, 68);border-radius: 10px;}
+.iconfont-wrap .iconfont-left li{height: 32px;line-height: 32px;padding: 0 10px;margin-bottom: 9px;box-sizing: border-box;border: 1px solid #f1f1f1;border-radius: 3px;cursor: pointer;}
+.iconfont-wrap .iconfont-left li.active{color: var(--base-color);border-color: var(--base-color);}
+.iconfont-wrap .iconfont-left li:last-child{margin-bottom: 0;}
+.iconfont-wrap .iconfont-right{flex: 1;border-left: 1px solid #f1f1f1;}
+.iconfont-wrap .iconfont-right ul{padding: 0 10px;display: flex;flex-wrap: wrap;align-content: baseline;box-sizing: border-box;}
+.iconfont-wrap .iconfont-right li{margin: 6px 12px;display: flex;justify-content: center;align-items: center;width: 60px;height: 60px;border: 1px solid #f1f1f1;border-radius: 5px;cursor: pointer;}
+.iconfont-wrap .iconfont-right li span{font-size: 30px;}
+.iconfont-wrap .iconfont-right li .icon{width: 40px;height: 40px;vertical-align: -0.15em;fill: currentColor;overflow: hidden;}
+.iconfont-wrap .iconfont-right li:hover, .iconfont-wrap .iconfont-right li.active{color: var(--base-color);border-color: var(--base-color);}
+.iconfont-wrap .iconfont-right .empty{text-align: center;padding: 20px;}
+#iconPage{padding-right: 30px;text-align: right;}
+</style>
+{/block}
+{block name="body"}
+<div class="iconfont-wrap">
+    <ul class="iconfont-left">
+        <li data-value="">全部</li>
+        {foreach name="$icon_type" item="vo" key="k"}
+        <li data-value="{$k}" {if $k == 'icon-system'}class="active"{/if}>{$vo}</li>
+        {/foreach}
+    </ul>
+
+    <div class="iconfont-right">
+        <div class="list-wrap"></div>
+        <div id="iconPage"></div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script id="iconTemplate" type="text/html">
+    {{# if(d.list.length){ }}
+        <ul>
+        {{#  layui.each(d.list, function(index, item){ }}
+          <li data-icon="{{item}}" class="{{item == '{$icon}' && 'active'}}">
+            <span class="{{item}}"></span>
+<!--	          <svg class="icon" aria-hidden="true">-->
+<!--		          <use xlink:href="#{{item}}"></use>-->
+<!--	          </svg>-->
+          </li>
+        {{#  }); }}
+        </ul>
+    {{# }else{ }}
+      <div class="empty">无数据</div>
+    {{#  } }} 
+</script>
+<!--<script src="https://cdn3.codesign.qq.com/icons/MQmlyZwl3GjWRA1/latest/iconfont.js"></script>-->
+<script>
+    var laypage, laytpl, limit = 45, currPage = 1, iconData = [],currIcon="";
+    layui.use(['laypage','laytpl'], function(){
+        laypage = layui.laypage;
+        laytpl = layui.laytpl;
+        getIconData('icon-system'); //默认查询系统
+    });
+
+    // 获取iconfont数据
+    function getIconData(type) {
+        $.ajax({
+            type: 'post',
+            url: ns.url("shop/diy/iconfont"),
+            data: {type: type, site_id: ns_url.siteId, app_module: ns_url.appModule},
+            dataType: 'JSON',
+            success: function (res) {
+                if (res.code >= 0) {
+                    iconData = res.data;
+                    currPage = 1;
+                    renderTemplate(iconData);
+                    if(iconData.length>0) {
+                        $("#iconPage").show();
+                        laypage.render({
+                            elem: 'iconPage',
+                            count: iconData.length, //数据总数，从服务端得到
+                            limit: limit,
+                            jump: function (obj, first) {
+                                //obj包含了当前分页的所有参数，比如：
+                                currPage = obj.curr;
+
+                                //首次不执行
+                                if (!first) {
+                                    renderTemplate(iconData);
+                                }
+                            }
+                        });
+                    }else{
+                        $("#iconPage").hide();
+                    }
+                }
+            }
+        });
+    }
+
+    // 渲染模版
+    function renderTemplate(data){
+        var iconPagingData = [];
+        iconPagingData = data.filter((item,index) => {
+            if((currPage-1)*limit < (index+1) && (index+1) <= currPage*limit){
+                return item;
+            }
+        });
+
+        var getTpl = $("#iconTemplate").html();
+        laytpl(getTpl).render({list: iconPagingData}, function(html){
+            $(".iconfont-wrap .iconfont-right .list-wrap").html(html);
+        });
+    }
+
+    // 图标分类
+    $('.iconfont-left li').click(function () {
+        $(this).addClass('active').siblings().removeClass('active');
+        var type = $(this).attr('data-value');
+        getIconData(type);
+    });
+    
+    $("body").on("click",".iconfont-wrap .iconfont-right li",function(){
+        $(this).addClass("active").siblings().removeClass("active");
+        currIcon = $(this).attr("data-icon");
+        window.currIcon = currIcon;
+    });
+
+    function selectIcon(callback) {
+        if (typeof callback == "function") callback(currIcon);
+    }
+</script>
+{/block}

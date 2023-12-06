@@ -1,0 +1,170 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+	.progress-wrap {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		min-height: 120px;
+	}
+	
+	.progress-point {
+		flex-grow: 1;
+	}
+	
+	.progress-point-pic {
+		display: inline-block;
+		width: 30px;
+		height: 30px;
+		line-height: 30px;
+		text-align: center;
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+	
+	.progress-point-pic img {
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	.item-block-wrap .new-tips{
+		width: 8px;
+		height: 8px;
+		background: #f00;
+		border-radius: 50%; 
+	    position: absolute;
+    	right: 15px;
+	}
+	.item-content-desc{
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">微信小程序使用流程</span>
+	</div>
+	<div class="layui-card-body">
+		<ul class="progress-wrap">
+			<li class="progress-point">
+				<div class="progress-point-pic">
+					<img src="WEAPP_IMG/register.png" alt="">
+				</div>
+				<p class="progress-point-text">注册微信小程序应用</p>
+			</li>
+			<li class="progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="progress-point">
+				<div class="progress-point-pic">
+					<img src="WEAPP_IMG/set_up.png" alt="">
+				</div>
+				<p class="progress-point-text">信息完善</p>
+			</li>
+			<li class="progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="progress-point">
+				<div class="progress-point-pic">
+					<img src="WEAPP_IMG/public_number.png" alt="">
+				</div>
+				<p class="progress-point-text">开发</p>
+			</li>
+			<li class="progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="progress-point">
+				<div class="progress-point-pic">
+					<img src="WEAPP_IMG/edition.png" alt="">
+				</div>
+				<p class="progress-point-text">提交审核</p>
+			</li>
+			<li class="progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="progress-point">
+				<div class="progress-point-pic">
+					<img src="WEAPP_IMG/complete.png" alt="">
+				</div>
+				<p class="progress-point-text">发布</p>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card card-common card-brief">
+	<div class="layui-card-header">
+		<span class="card-title">微信小程序入口</span>
+	</div>
+	<div class="layui-card-body">
+		<div class="site_list item-block-parent item-five">
+			<a class="item-block item-block-hover-a" href="{:addon_url('weapp://shop/weapp/config')}">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="WEAPP_IMG/administration.png">
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">小程序管理</div>
+						<p class="item-content-desc">小程序管理</p>
+					</div>
+				</div>
+			</a>
+<!--			<a class="item-block item-block-hover-a" href="{:addon_url('weapp://shop/weapp/package')}">-->
+<!--				<div class="item-block-wrap">-->
+<!--					<div class="item-pic">-->
+<!--						<img src="WEAPP_IMG/download.png">-->
+<!--					</div>-->
+<!--					<div class="item-con">-->
+<!--						<div class="item-content-title">小程序发布</div>-->
+<!--						<p class="item-content-desc">小程序发布</p>-->
+<!--					</div>-->
+<!--					{if $is_new_version}<span class="new-tips"></span>{/if}-->
+<!--				</div>-->
+<!--			</a>-->
+			<a class="item-block item-block-hover-a" href="{:addon_url('weapp://shop/message/config')}">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="WEAPP_IMG/message.png">
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">订阅消息</div>
+						<p class="item-content-desc">给用户提供更好的服务闭环体验</p>
+					</div>
+				</div>
+			</a>
+			<a class="item-block item-block-hover-a" href="{:addon_url('weapp://shop/weapp/share')}">
+				<div class="item-block-wrap">
+					<div class="item-pic">
+						<img src="WEAPP_IMG/share.png">
+					</div>
+					<div class="item-con">
+						<div class="item-content-title">分享设置</div>
+						<p class="item-content-desc">小程序分享设置</p>
+					</div>
+				</div>
+			</a>
+			{notempty name="$weapp_menu"}
+				{foreach name="$weapp_menu" item="vo"}
+					<a class="item-block item-block-hover-a" href="{:addon_url($vo.url)}">
+						<div class="item-block-wrap">
+							<div class="item-pic">
+								<img src="{:img($vo.icon)}">
+							</div>
+							<div class="item-con">
+								<div class="item-content-title">{$vo.title}</div>
+								<p class="item-content-desc">{$vo.description}</p>
+							</div>
+						</div>
+					</a>
+				{/foreach}
+			{/notempty}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+{/block}

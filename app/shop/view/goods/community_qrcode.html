@@ -1,0 +1,240 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .layui-layout-admin.admin-style-2 .table-tab{margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse tips-wrap">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">操作提示</h2>
+        <ul class="layui-colla-content layui-show">
+            <li>社群信息可以展示在商品详情中，需在商品中进行设置后才能展示。</li>
+        </ul>
+    </div>
+</div>
+<!-- 搜索框 -->
+<div class="single-filter-box">
+    <button class="layui-btn" onclick="add()">添加社群</button>
+
+    <div class="layui-form">
+        <div class="layui-input-inline">
+            <input type="text" name="keywords" placeholder="请输入社群名称" class="layui-input" autocomplete="off">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="layui-tab table-tab" lay-filter="manjian_tab">
+    <div class="layui-tab-content">
+        <!-- 列表 -->
+        <table id="qr_list" lay-filter="qr_list"></table>
+    </div>
+</div>
+
+<script type="text/html" id="qr_img">
+    <div class='table-title'>
+        <div class='title-pic'>
+            <img layer-src src="{{ns.img(d.qr_img)}}" onerror="this.src = '{:img('public/static/img/default_img/head.png')}' ">
+        </div>
+        <div class='title-pic' style="text-align:left">{{d.qr_name}}</div>
+    </div>
+</script>
+
+<script type="text/html" id="qr_state">
+    <div class='table-title'>
+        {{# if(d.qr_state == 0){ }}
+        <div class='title-pic' style="text-align:left">未启用</div>
+        {{# }else{ }}
+        <div class='title-pic text-color' style="text-align:left">启用</div>
+        {{# } }}
+    </div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+    <div class="table-btn">
+        <a class="layui-btn" lay-event="edit" >编辑</a>
+        {{# if(d.qr_state==0){ }}
+        <a class="layui-btn" lay-event="start">启用</a>
+        {{# }else{ }}
+        <a class="layui-btn" lay-event="close">关闭</a>
+        {{# } }}
+        <a class="layui-btn" lay-event="delete">删除</a>
+    </div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+    var laytpl;
+    layui.use(['form','laytpl'], function() {
+        var table,
+            form = layui.form,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        laytpl = layui.laytpl;
+        table = new Table({
+            elem: '#qr_list',
+            url: ns.url("shop/goods/communityqrcode"),
+            cols: [
+                [ {
+                    field: 'qr_img',
+                    title: '社群信息',
+                    unresize: 'false',
+                    width: '18%',
+                    templet:'#qr_img'
+                },{
+                    field: 'community_describe',
+                    title: '社群描述',
+                    unresize: 'false',
+                    width: '30%',
+                    templet:'<div><span title="{{d.community_describe}}">{{d.community_describe}}</span></div>'
+                }, {
+                    field: 'qr_state',
+                    title: '社群状态',
+                    unresize: 'false',
+                    width: '15%',
+                    templet: '#qr_state'
+                },{
+                    title: '操作',
+                    toolbar: '#operation',
+                    unresize: 'false',
+					align : 'right'
+                }]
+            ]
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'edit': //编辑
+                    location.href = ns.url("shop/goods/editqrcode", {"qr_id": data.qr_id});
+                    break;
+                case 'delete': //删除
+                    deleteQr(data.qr_id,data.qr_state);
+                    break;
+                case 'close': //关闭
+                    close(data.qr_id);
+                    break;
+                case 'start': //启用
+                    start(data.qr_id);
+                    break;
+            }
+        });
+
+        /**
+         * 删除
+         */
+        function deleteQr(qr_id,qr_state) {
+            if(qr_state == 1){
+                return layer.msg('请先关闭再删除');
+            }
+            if (repeat_flag) return false;
+            repeat_flag = true;
+            layer.confirm('确定要删除该社群吗?', function() {
+                $.ajax({
+                    url: ns.url("shop/goods/deleteqr"),
+                    data: {
+                        qr_id:qr_id
+                    },
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+                repeat_flag = false;
+            });
+        }
+
+        /**
+         * 关闭
+         */
+        function close(qr_id) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            layer.confirm('确定关闭吗?', function() {
+                $.ajax({
+                    url: ns.url("shop/goods/editstate"),
+                    data: {
+                        qr_id:qr_id,state:0
+                    },
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            });
+        }
+
+        /**
+         * 开启
+         */
+        function start(qr_id) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            layer.confirm('确定启用吗?', function() {
+                $.ajax({
+                    url: ns.url("shop/goods/editstate"),
+                    data: {
+                        qr_id:qr_id,state:1
+                    },
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            });
+        }
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+    });
+
+    function add() {
+        location.href = ns.url("shop/goods/addqrcode");
+    }
+</script>
+
+<!-- 详情弹框html -->
+<script type="text/html" id="detail">
+    <img layer-src src="{{ns.img(d.qr_img)}}" class="img_prev"/>
+</script>
+{/block}

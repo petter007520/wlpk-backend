@@ -1,0 +1,53 @@
+{block name="resources"}
+<style type="text/css">
+	.whole-set-up .layui-form-label{width: 220px !important;}
+	.whole-set-up .layui-form-item .whole-set-tips {font-size: 14px;color: #999;margin:14px  0  0 220px;}
+</style>
+{/block}
+{block name="main"}
+	<div class="shop-information whole-set-up">
+		<div class="main-title">
+			<div class="title">整体设置</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">访问主域名跳转类型：</label>
+			<div class="layui-input-block">
+				<input type="radio" name="jump_type" value="1" lay-filter="jump_type" title="用户前台" {if $config.jump_type eq '1'}checked{/if}/>
+				<input type="radio" name="jump_type" value="2" lay-filter="jump_type" title="商家后台" {if $config.jump_type eq '2'}checked{/if} />
+			</div>
+			<div class="whole-set-tips">
+				<div>1、设置为用户前台，如果手机访问则跳转手机端域名；如果电脑访问，已部署电脑端则跳转电脑端域名，未部署电脑端则跳转手机端域名。</div>
+				<div>2、设置为商家后台，访问主域名则跳转商家管理端。</div>
+			</div>
+		</div>
+
+	</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+    layui.use(['form'], function() {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识;
+
+        form.render();
+		
+		form.on("radio(jump_type)",function(res){
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			$.ajax({
+			    url: ns.url("shop/config/domainJumpConfig"),
+			    data: {
+					jump_type:res.value
+				},
+			    dataType: 'JSON',
+			    type: 'POST',
+			    success: function(res){
+			        repeat_flag = false;
+			        layer.msg(res.message);
+			    }
+			});
+		})
+    });
+</script>
+{/block}
