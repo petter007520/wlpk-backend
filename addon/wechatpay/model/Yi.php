@@ -29,6 +29,7 @@ class Yi extends BaseModel
     private $apikey;
     private $mchId;
     private $callback_url;
+    private $pay_code;
 
     /**
      * 支付实例
