@@ -55,16 +55,15 @@ class Yi extends BaseModel
         $signBody = [
             "pay_memberid" => $this->mchId,//商户ID
             "pay_orderid" => $param["out_trade_no"],//上送订单号唯一, 字符长度20
+            "pay_amount" => $param["pay_money"],//单位：元
             "pay_applydate" => date('Y-m-d H:i:s',time()),//时间格式：2016-12-26 18:18:18
             "pay_bankcode" => $this->pay_code,//银行编码
             "pay_notifyurl" => $this->callback_url,//交易金额（元）
             "pay_callbackurl" => 'test',//页面跳转返回地址
-            "pay_amount" => $param["pay_money"],//单位：元
-            "pay_productname" => '星新新能源',// 有填值就行，签名用
         ];
 
         $sign = $this->sign($signBody);
-        $signBody = array_merge($signBody,['pay_md5sign'=>$sign]);
+        $signBody = array_merge($signBody,['pay_md5sign'=>$sign,'pay_productname'=>'蔚莱普康']);
         $result = $this->curl($this->api,http_build_query($signBody));
         Log::write('支付返回：'.json_encode($result).'--签名参数'.json_encode($signBody));
         if ($result["status"] != 200 ) return $this->error([], $result["msg"]);
