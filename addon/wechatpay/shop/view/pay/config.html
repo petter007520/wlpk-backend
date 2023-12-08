@@ -10,6 +10,13 @@
 {block name="main"}
 <div class="layui-form form-wrap">
 	<div class="layui-form-item">
+		<label class="layui-form-label">标识：</label>
+		<div class="layui-input-block">
+			<input name="pay_type" type="text" value="{$info.value.pay_type ?? ''}" class="layui-input len-long" lay-verify="required">
+		</div>
+		<div class="word-aux"><span>[API]</span>支付API</div>
+	</div>
+	<div class="layui-form-item">
 		<label class="layui-form-label">支付API：</label>
 		<div class="layui-input-block">
 			<input name="api" type="text" value="{$info.value.api ?? ''}" class="layui-input len-long" lay-verify="required">

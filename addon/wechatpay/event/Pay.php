@@ -48,7 +48,7 @@ class Pay
                     break;
             }
             $params["trade_type"] = $trade_type;
-            $pay_model            = new PayModel($is_weapp, $params['site_id']);
+            $pay_model            = new PayModel($is_weapp, $params['site_id'],$params["pay_type"]);
             $result               = $pay_model->pay($params);
             return $result;
         }

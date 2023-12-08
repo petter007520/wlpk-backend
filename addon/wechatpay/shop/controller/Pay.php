@@ -30,6 +30,7 @@ class Pay extends BaseShop
             $pay_status     = input("pay_status", "");//支付开关
             $callback_url     = input("callback_url", "");//回调URL
             $pay_code        = input("pay_code", "");//通道
+            $pay_type        = input("pay_type", "");//标识
             $data            = array(
                 "api"           => $api,
                 "mch_id"          => $mch_id,
@@ -37,9 +38,9 @@ class Pay extends BaseShop
                 "pay_status"      => $pay_status,
                 "callback_url"    => $callback_url,
                 "pay_code"        => $pay_code,
+                "pay_type"        => $pay_type,
             );
-            $result          = $config_model->setPayConfig($data, $this->site_id, $this->app_module);
-            return $result;
+            return $config_model->setPayConfig($data, $pay_type,$this->site_id, $this->app_module);
         } else {
             $info_result = $config_model->getPayConfig($this->site_id, $this->app_module);
             $info        = $info_result["data"];
