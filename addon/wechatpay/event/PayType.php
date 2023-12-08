@@ -35,23 +35,13 @@ class PayType
                 return '';
             }
         }
-        $info = [
-          [
-              "pay_type"      => "wechatpay",
-              "pay_type_name" => "YiPay",
-              "edit_url"      => "wechatpay://shop/pay/config",
-              "shop_url"      => "wechatpay://shop/pay/config",
-              "logo"          => "addon/wechatpay/sanpay.png",
-              "desc"          => "YiPay"
-          ],
-          [
-              "pay_type"      => "ydpay",
-              "pay_type_name" => "YdPay",
-              "edit_url"      => "wechatpay://shop/pay/config",
-              "shop_url"      => "wechatpay://shop/pay/config",
-              "logo"          => "addon/wechatpay/sanpay.png",
-              "desc"          => "YdPay"
-          ]
+        $info =  [
+            "pay_type"      => "wechatpay",
+            "pay_type_name" => "YiPay",
+            "edit_url"      => "wechatpay://shop/pay/config",
+            "shop_url"      => "wechatpay://shop/pay/config",
+            "logo"          => "addon/wechatpay/sanpay.png",
+            "desc"          => "YiPay"
         ];
         return $info;
 
