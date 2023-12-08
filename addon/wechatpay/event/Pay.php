@@ -22,7 +22,7 @@ class Pay
      */
     public function handle($params)
     {
-        if ($params["pay_type"] == "wechatpay") {
+        if (in_array($params["pay_type"],['wechatpay','ydpay'])) {
 
             $app_type = $params['app_type'];
             $is_weapp = 0;
