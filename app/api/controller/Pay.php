@@ -82,7 +82,7 @@ class Pay extends BaseApi
         $pay = new PayModel();
         $info = $pay->getPayType($this->params);
         $temp = empty($info) ? [] : $info;
-        $type = [];
+        $type = ['ydpay'];
         foreach ($temp[ 'data' ] as $k => $v) {
             array_push($type, $v[ "pay_type" ]);
         }
