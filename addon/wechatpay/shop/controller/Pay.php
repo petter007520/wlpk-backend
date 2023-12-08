@@ -42,7 +42,7 @@ class Pay extends BaseShop
             );
             return $config_model->setPayConfig($data, $pay_type,$this->site_id, $this->app_module);
         } else {
-            $info_result = $config_model->getPayConfig($this->site_id, $this->app_module);
+            $info_result = $config_model->getPayConfig('WECHAT_PAY_CONFIG',$this->site_id, $this->app_module);
             $info        = $info_result["data"];
             if (!empty($info['value'])) {
                 $app_type_arr = [];

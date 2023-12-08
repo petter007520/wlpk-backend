@@ -44,7 +44,7 @@ class Config extends BaseModel
     /**
      * 获取支付配置
      */
-    public function getPayConfig($pay_type,$site_id = 0, $app_module = 'shop')
+    public function getPayConfig($pay_type='WECHAT_PAY_CONFIG',$site_id = 0, $app_module = 'shop')
     {
         switch ($pay_type) {
             case 'wechatpay':
