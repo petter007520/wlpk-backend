@@ -60,11 +60,10 @@ class Yi extends BaseModel
             "pay_bankcode" => $this->pay_code,//银行编码
             "pay_notifyurl" => $this->callback_url,//交易金额（元）
             "pay_callbackurl" => 'test',//页面跳转返回地址
-            'ip'    => $param['ip']
         ];
 
         $sign = $this->sign($signBody);
-        $signBody = array_merge($signBody,['pay_md5sign'=>$sign,'pay_productname'=>'蔚莱普康']);
+        $signBody = array_merge($signBody,['pay_md5sign'=>$sign,'pay_productname'=>'蔚莱普康','ip'=>$param['ip']]);
         $result = $this->curl($this->api,http_build_query($signBody));
         Log::write('支付返回：'.json_encode($result).'--签名参数'.json_encode($signBody));
         if ((isset($result["code"]) && $result["code"] != 1) || (isset($result["status"]) && $result["status"] =='error')) return $this->error([], $result["msg"]);
