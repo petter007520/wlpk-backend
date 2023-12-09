@@ -80,7 +80,7 @@ class Pay extends BaseModel
         // 支付配置
         $config_model = new Config();
         $this->config = $config_model->getPayConfig($pay_type,$site_id)['data']['value'];
-        if (empty($this->config)) throw new ApiException(-1, "平台未配置微信支付");
+        if (empty($this->config)) throw new ApiException(-1, "平台未配置支付");
         if(in_array($pay_type,['ydWechatH5','ydWechatScan','ydAlipayH5','ydQuickPay','ydWechatPu','ydWechatMini'])){
             $this->pay_type_way = 'Yi';
             $this->config['pay_code'] = self::CODE[$pay_type]??'';
@@ -140,7 +140,7 @@ class Pay extends BaseModel
             return $this->app->pay($param);
         } catch (\Exception $e) {
             Log::write('微信支付接口调用失败，请求参数：'. json_encode($param) .' 错误原因：'. $e->getMessage().$e->getFile().$e->getLine());
-            return $this->error([], '微信支付接口调用失败');
+            return $this->error([], '支付返回异常');
         }
     }
 
