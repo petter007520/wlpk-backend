@@ -26,35 +26,26 @@ class Config extends BaseModel
      */
     public function setPayConfig($data, $pay_type,$site_id = 0, $app_module = 'shop')
     {
-        switch ($pay_type) {
-            case 'wechatpay':
-                $config_key = 'WECHAT_PAY_CONFIG';
-                break;
-            case 'ydpay':
-                $config_key = 'YD_PAY_CONFIG';
-                break;
-            default:
-                $config_key = 'WECHAT_PAY_CONFIG';
+        $config_key = 'WECHAT_PAY_CONFIG';
+        if(in_array($pay_type,['ydWechatH5','ydWechatScan','ydAlipayH5','ydQuickPay','ydWechatPu','ydWechatMini'])){
+            $config_key = 'WECHAT_PAY_CONFIG';
+        }elseif ($pay_type=='ydpay'){
+            $config_key = 'YD_PAY_CONFIG';
         }
         $config = new ConfigModel();
-        $res    = $config->setConfig($data, '微信支付配置', 1, [['site_id', '=', $site_id], ['app_module', '=', $app_module], ['config_key', '=', $config_key]]);
-        return $res;
+        return $config->setConfig($data, '微信支付配置', 1, [['site_id', '=', $site_id], ['app_module', '=', $app_module], ['config_key', '=', $config_key]]);
     }
 
     /**
      * 获取支付配置
      */
-    public function getPayConfig($pay_type='WECHAT_PAY_CONFIG',$site_id = 0, $app_module = 'shop')
+    public function getPayConfig($pay_type='ydpay',$site_id = 0, $app_module = 'shop')
     {
-        switch ($pay_type) {
-            case 'wechatpay':
-                $config_key = 'WECHAT_PAY_CONFIG';
-                break;
-            case 'ydpay':
-                $config_key = 'YD_PAY_CONFIG';
-                break;
-            default:
-                $config_key = 'WECHAT_PAY_CONFIG';
+        $config_key = 'WECHAT_PAY_CONFIG';
+        if(in_array($pay_type,['ydWechatH5','ydWechatScan','ydAlipayH5','ydQuickPay','ydWechatPu','ydWechatMini'])){
+            $config_key = 'WECHAT_PAY_CONFIG';
+        }elseif ($pay_type=='ydpay'){
+            $config_key = 'YD_PAY_CONFIG';
         }
         $config = new ConfigModel();
         $res    = $config->getConfig([['site_id', '=', $site_id], ['app_module', '=', $app_module], ['config_key', '=', $config_key]]);

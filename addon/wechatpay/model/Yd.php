@@ -55,7 +55,7 @@ class Yd extends BaseModel
             "amount" => $param["pay_money"],//*字符串类型 “20.00”  请保留2位小数
             "notifyurl" => $this->callback_url,//交易金额（元）
             "orderid" => $param["out_trade_no"],//订单时间（例如：2021-05-06 10:20:09）
-            "remark" => '星新新能源',// 有填值就行，签名用
+            "remark" => '蔚莱普康',// 有填值就行，签名用
             "paytype" => '1',//1:微信支付 2：支付宝支付 3：银行卡支付 4：USDT-TRC20 5：USDT-ERC20
             "returnurl" => 'test',//页面跳转返回地址
         ];
