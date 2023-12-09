@@ -137,6 +137,7 @@ class Pay extends BaseModel
         }
 
         try {
+            $param['ip'] = request()->ip();
             return $this->app->pay($param);
         } catch (\Exception $e) {
             Log::write('微信支付接口调用失败，请求参数：'. json_encode($param) .' 错误原因：'. $e->getMessage().$e->getFile().$e->getLine());

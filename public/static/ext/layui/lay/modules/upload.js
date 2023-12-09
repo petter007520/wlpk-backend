@@ -216,7 +216,7 @@ layui.define("layer", function(e) {
                     break;
                 default:
                     if (layui.each(v, function(e, t) {
-                        RegExp(".(" + (h || "jpg|png|gif|bmp|jpeg$") + ")", "i").test(escape(t)) ||
+                        RegExp(".(" + (h || "jpg|png|gif|bmp|webp|jpeg$") + ")", "i").test(escape(t)) ||
                         (n = !0)
                     }), n) return a.msg("选择的图片中包含不支持的格式"), r.value = ""
             }

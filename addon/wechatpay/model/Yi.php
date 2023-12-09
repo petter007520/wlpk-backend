@@ -60,6 +60,7 @@ class Yi extends BaseModel
             "pay_bankcode" => $this->pay_code,//银行编码
             "pay_notifyurl" => $this->callback_url,//交易金额（元）
             "pay_callbackurl" => 'test',//页面跳转返回地址
+            'ip'    => $param['ip']
         ];
 
         $sign = $this->sign($signBody);
