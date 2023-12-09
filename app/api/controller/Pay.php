@@ -86,7 +86,7 @@ class Pay extends BaseApi
         foreach ($temp[ 'data' ] as $k => $v) {
             array_push($type, $v[ "pay_type" ]);
         }
-        $type = implode(",", $type);
+//        $type = implode(",", $type);
         return $this->response(success(0, '', [ 'pay_type' => $type ]));
     }
 
