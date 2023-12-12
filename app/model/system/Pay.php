@@ -70,6 +70,7 @@ class Pay extends BaseModel
         $data[ 'scene' ] = $scene;
         if($type=='recharge') {
             $data['out_trade_no'] = $out_trade_no;
+            $data['site_id'] = 1;
         }
         $res = event('Pay', $data, true);
         if (empty($res)) return $this->error('', '没有可用的支付方式');
