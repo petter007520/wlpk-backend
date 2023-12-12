@@ -42,7 +42,7 @@ class Pay extends BaseModel
      * @param int $scene 场景值
      * @return mixed|void
      */
-    public function pay($pay_type, $out_trade_no, $app_type, $member_id, $return_url = null, $is_balance = 0, $scene = 0,$type)
+    public function pay($pay_type, $out_trade_no, $app_type, $member_id, $return_url = null, $is_balance = 0, $scene = 0,$type,$money)
     {
         if($type=='order'){
             $data = $this->getPayInfo($out_trade_no)[ 'data' ];
@@ -71,6 +71,7 @@ class Pay extends BaseModel
         if($type=='recharge') {
             $data['out_trade_no'] = $out_trade_no;
             $data['site_id'] = 1;
+            $data['pay_money'] = $money;
         }
         $res = event('Pay', $data, true);
         if (empty($res)) return $this->error('', '没有可用的支付方式');

@@ -63,8 +63,9 @@ class Pay extends BaseApi
         $scene = $this->params[ 'scene' ] ?? 0;
         $is_balance = $this->params[ 'is_balance' ] ?? 0;
         $type = $this->params[ 'type'] ??'order';
+        $money = $this->params[ 'money'] ??0;
         $pay = new PayModel();
-        $info = $pay->pay($pay_type, $out_trade_no, $app_type, $this->member_id, $return_url, $is_balance, $scene,$type);
+        $info = $pay->pay($pay_type, $out_trade_no, $app_type, $this->member_id, $return_url, $is_balance, $scene,$type,$money);
         return $this->response($info);
     }
 
