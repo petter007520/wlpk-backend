@@ -68,7 +68,7 @@ class Pay extends BaseModel
         $data[ 'pay_type' ] = $pay_type;
         $data[ 'member_id' ] = $member_id;
         $data[ 'scene' ] = $scene;
-        $data[ 'out_trade_no' ] = $out_trade_no;
+//        $data[ 'out_trade_no' ] = $out_trade_no;
         $res = event('Pay', $data, true);
         if (empty($res)) return $this->error('', '没有可用的支付方式');
         return $res;
