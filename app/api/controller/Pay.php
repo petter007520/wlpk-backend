@@ -43,6 +43,8 @@ class Pay extends BaseApi
                     $info[ 'order_type' ] = $order_info[ 'order_type' ];
                 }
             }
+        }else{
+            $info['out_trade_no'] = $pay->createOutTradeNo($this->member_id);
         }
         return $this->response($this->success($info));
     }
