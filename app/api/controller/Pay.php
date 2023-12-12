@@ -62,8 +62,9 @@ class Pay extends BaseApi
         $return_url = isset($this->params[ 'return_url' ]) && !empty($this->params[ 'return_url' ]) ? urldecode($this->params[ 'return_url' ]) : null;
         $scene = $this->params[ 'scene' ] ?? 0;
         $is_balance = $this->params[ 'is_balance' ] ?? 0;
+        $type = $this->params[ 'type'] ??'order';
         $pay = new PayModel();
-        $info = $pay->pay($pay_type, $out_trade_no, $app_type, $this->member_id, $return_url, $is_balance, $scene);
+        $info = $pay->pay($pay_type, $out_trade_no, $app_type, $this->member_id, $return_url, $is_balance, $scene,$type);
         return $this->response($info);
     }
 

@@ -42,11 +42,13 @@ class Pay extends BaseModel
      * @param int $scene 场景值
      * @return mixed|void
      */
-    public function pay($pay_type, $out_trade_no, $app_type, $member_id, $return_url = null, $is_balance = 0, $scene = 0)
+    public function pay($pay_type, $out_trade_no, $app_type, $member_id, $return_url = null, $is_balance = 0, $scene = 0,$type)
     {
-        $data = $this->getPayInfo($out_trade_no)[ 'data' ];
-        if (empty($data)) return $this->error('', '未获取到支付信息');
-        if ($data['pay_status'] == 2) return $this->success(['pay_success' => 1]);
+        if($type=='order'){
+            $data = $this->getPayInfo($out_trade_no)[ 'data' ];
+            if (empty($data)) return $this->error('', '未获取到支付信息');
+            if ($data['pay_status'] == 2) return $this->success(['pay_success' => 1]);
+        }
 
         $notify_url = addon_url('pay/pay/notify');
         if (empty($return_url)) {
@@ -60,13 +62,13 @@ class Pay extends BaseModel
             if (isset($use_res['pay_success'])) return $this->success($use_res);
             $data = $this->getPayInfo($out_trade_no)[ 'data' ];
         }
-
         $data[ 'app_type' ] = $app_type;
         $data[ 'notify_url' ] = $notify_url;
         $data[ 'return_url' ] = $return_url;
         $data[ 'pay_type' ] = $pay_type;
         $data[ 'member_id' ] = $member_id;
         $data[ 'scene' ] = $scene;
+        $data[ 'out_trade_no' ] = $out_trade_no;
         $res = event('Pay', $data, true);
         if (empty($res)) return $this->error('', '没有可用的支付方式');
         return $res;
