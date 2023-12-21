@@ -68,7 +68,7 @@ class Memberwithdraw extends BaseApi
         if (empty($member_info[ 'data' ][ 'wx_openid' ]) && empty($member_info[ 'data' ][ 'weapp_openid' ])) {
             unset($transfer_type_list[ 'wechatpay' ]);
         }
-        return $this->response($this->success($transfer_type_list));
+        return $this->response($this->success(["bank"=>"银行卡","alipay"=>"支付宝"]));
     }
 
     /**
