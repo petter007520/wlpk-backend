@@ -75,6 +75,7 @@ class Memberwithdraw extends BaseShop
             $status = input('status', 'all');//提现状态
             $transfer_type = input('transfer_type', '');//提现转账方式
             $member_name = input('member_name', '');//提现转账方式
+            $order = input('order', '');//提现转账方式
 
             $payment_start_date = input('payment_start_date', '');
             $payment_end_time = input('payment_end_time', '');
@@ -92,6 +93,9 @@ class Memberwithdraw extends BaseShop
             }
             if (!empty($member_name)) {
                 $condition[] = [ 'member_name', '=', $member_name ];
+            }
+            if (!empty($order)) {
+                $condition[] = [ 'withdraw_no', '=', $order ];
             }
             if ($start_date != '' && $end_date != '') {
                 $condition[] = [ 'apply_time', 'between', [ strtotime($start_date), strtotime($end_date) ] ];

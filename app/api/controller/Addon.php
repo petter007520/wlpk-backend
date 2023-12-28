@@ -41,7 +41,8 @@ class Addon extends BaseApi
         $res[ 'pintuan' ] = in_array("pintuan", $addons) ? 1 : 0;                        // 拼团
         $res[ 'membersignin' ] = in_array("membersignin", $addons) ? 1 : 0;            // 会员签到
         $res[ 'memberrecharge' ] = in_array("memberrecharge", $addons) ? 1 : 0;        // 会员充值
-        $res[ 'memberwithdraw' ] = in_array("memberwithdraw", $addons) ? 1 : 0;        // 会员提现
+//        $res[ 'memberwithdraw' ] = in_array("memberwithdraw", $addons) ? 1 : 0;        // 会员提现
+        $res[ 'memberwithdraw' ] = 1;        // 会员提现
         $res[ 'pointexchange' ] = in_array("pointexchange", $addons) ? 1 : 0;            // 积分兑换
         $res[ 'manjian' ] = in_array("manjian", $addons) ? 1 : 0;                       //满减
         $res[ 'memberconsume' ] = in_array("memberconsume", $addons) ? 1 : 0;            //会员消费
