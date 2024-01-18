@@ -44,7 +44,7 @@ class Config extends BaseModel
         $config_key = 'WECHAT_PAY_CONFIG';
         if(in_array($pay_type,['ydWechatH5','ydWechatScan','ydAlipayH5','ydQuickPay','ydWechatPu','ydWechatMini'])){
             $config_key = 'WECHAT_PAY_CONFIG';
-        }elseif ($pay_type=='ydpay'){
+        }elseif (in_array($pay_type,['alipay','wechatPay','ydpay'])){
             $config_key = 'YD_PAY_CONFIG';
         }
         $config = new ConfigModel();

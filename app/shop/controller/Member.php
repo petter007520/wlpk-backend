@@ -489,7 +489,7 @@ class Member extends BaseShop
         $remark = input('remark', '商家调整');
         $this->addLog("会员余额调整id:" . $member_id . "金额" . $adjust_num);
         $member_account_model = new MemberAccountModel();
-        return $member_account_model->addMemberAccount($this->site_id, $member_id, 'balance', $adjust_num, 'adjust', 0, $remark ? $remark : '商家调整');
+        return $member_account_model->addMemberAccount($this->site_id, $member_id, 'balance_money', $adjust_num, 'adjust', 0, $remark ? $remark : '商家调整');
     }
 
     /**

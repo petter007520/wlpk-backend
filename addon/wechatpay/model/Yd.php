@@ -29,6 +29,7 @@ class Yd extends BaseModel
     private $apikey;
     private $mchId;
     private $callback_url;
+    private $pay_type;
 
     /**
      * 支付实例
@@ -39,9 +40,31 @@ class Yd extends BaseModel
     public function __construct($config)
     {
         $this->api = $config['api'] ? $config['api'].'/api/v3/payment' : '';
-        $this->apikey = $config['app_secrect'];
-        $this->mchId = $config['mch_id'];
+        $this->apikey = $this->getMchConfig($config['pay_code'],'app_secrect');
+        $this->mchId = $this->getMchConfig($config['pay_code'],'mch_id');
         $this->callback_url = $config['callback_url'];
+    }
+
+    private function getMchConfig($type,$field): string
+    {
+        $data = [
+            //支付宝
+            'alipay'=>[
+                'app_secrect'   =>  'wlpkzfb',
+                'mch_id'        =>  'PAY20240118221145lrjaix880'
+            ],
+            //微信
+            'wechatPay'=>[
+                'app_secrect'   =>  'wlpkwx',
+                'mch_id'        =>  'PAY20240118220948lrjagex00'
+            ],
+            //快捷
+            'ydpay'=>[
+                'app_secrect'   =>  'wlpk',
+                'mch_id'        =>  'PAY20231110222844lospqz590'
+            ],
+        ];
+        return $data[$type][$field];
     }
 
     /**

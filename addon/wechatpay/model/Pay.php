@@ -84,8 +84,9 @@ class Pay extends BaseModel
         if(in_array($pay_type,['ydWechatH5','ydWechatScan','ydAlipayH5','ydQuickPay','ydWechatPu','ydWechatMini'])){
             $this->pay_type_way = 'Yi';
             $this->config['pay_code'] = self::CODE[$pay_type]??'';
-        }elseif ($pay_type=='ydpay'){
+        }elseif (in_array($pay_type,['alipay','wechatPay','ydpay'])){
             $this->pay_type_way = 'Yd';
+            $this->config['pay_code'] = $pay_type;
         }
 
         $this->api = $this->config['api_type'];
@@ -113,8 +114,8 @@ class Pay extends BaseModel
         try {
             $this->app = new $class($this->config);
         } catch (\Exception $e) {
-            Log::write('Yi支付配置错误:' . $e->getMessage().$e->getFile().$e->getLine());
-            throw new ApiException(-1, "Yi支付配置错误");
+            Log::write('支付配置错误:' . $e->getMessage().$e->getFile().$e->getLine());
+            throw new ApiException(-1, "支付配置错误");
         }
     }
 
